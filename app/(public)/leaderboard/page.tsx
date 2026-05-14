@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   Table,
@@ -9,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { TimezoneCookie } from "./timezone-cookie";
 import type { LeaderboardRow } from "@/lib/db";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
@@ -19,61 +16,30 @@ import { ArrowRightIcon } from "lucide-react";
 export const metadata: Metadata = {
   title: "Leaderboard",
   description:
-    "See who is winning the World Cup 2026 Pool today and overall. Standings refresh after every result.",
+    "World Cup 2026 Pool standings. The single overall ranking refreshes the moment an admin enters a final score.",
   alternates: { canonical: "/leaderboard" },
   openGraph: {
     title: "Leaderboard · WC26 Pool",
     description:
-      "Live daily and overall standings for the World Cup 2026 prediction pool.",
+      "Overall standings for the World Cup 2026 prediction pool. Refreshes after every result.",
     url: "/leaderboard",
     type: "website",
   },
 };
 
-type Scope = "today" | "overall";
-
-function todayInTz(tz: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
-export default async function LeaderboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ scope?: Scope; date?: string }>;
-}) {
-  const { scope: scopeParam, date: dateParam } = await searchParams;
-  const scope: Scope = scopeParam === "overall" ? "overall" : "today";
-
-  const cookieStore = await cookies();
-  const tz = cookieStore.get("tz")?.value || "UTC";
-  const day =
-    dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : todayInTz(tz);
-
+export default async function LeaderboardPage() {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let rows: LeaderboardRow[] = [];
-  let loadError: string | null = null;
+  const { data, error } = await supabase
+    .from("v_leaderboard_overall")
+    .select("*")
+    .order("rank", { ascending: true });
 
-  if (scope === "overall") {
-    const { data, error } = await supabase
-      .from("v_leaderboard_overall")
-      .select("*")
-      .order("rank", { ascending: true });
-    if (error) loadError = error.message;
-    rows = (data ?? []) as LeaderboardRow[];
-  } else {
-    const { data, error } = await supabase.rpc("leaderboard_for_day", { d: day, tz });
-    if (error) loadError = error.message;
-    rows = (data ?? []) as LeaderboardRow[];
-  }
+  const loadError = error?.message ?? null;
+  const rows: LeaderboardRow[] = (data ?? []) as LeaderboardRow[];
 
   const myRow = user ? rows.find((r) => r.user_id === user.id) : undefined;
   const players = rows.length;
@@ -81,8 +47,6 @@ export default async function LeaderboardPage({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
-      <TimezoneCookie />
-
       <header className="mb-6 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
@@ -95,15 +59,15 @@ export default async function LeaderboardPage({
             Leaderboard
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Standings refresh the moment an admin enters a final score. Daily and
-            overall scopes use your timezone for the day window.
+            One global ranking across the whole tournament. Standings refresh
+            the moment an admin enters a final score.
           </p>
         </div>
 
         {leader ? (
           <div className="rounded-xl border border-pitch/30 bg-pitch text-pitch-foreground px-4 py-3 shadow-sm">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
-              {scope === "today" ? "Leader today" : "Overall leader"}
+              Overall leader
             </div>
             <div className="mt-1 font-heading text-lg font-semibold tracking-tight">
               {leader.display_name ?? "—"}
@@ -116,37 +80,6 @@ export default async function LeaderboardPage({
         ) : null}
       </header>
 
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div className="inline-flex rounded-lg border border-border bg-card p-1 text-sm">
-          <ScopeLink scope="today" current={scope} label="Today" date={day} />
-          <ScopeLink scope="overall" current={scope} label="Overall" />
-        </div>
-
-        {scope === "today" ? (
-          <form method="get" className="flex items-end gap-2">
-            <input type="hidden" name="scope" value="today" />
-            <div className="flex flex-col">
-              <label
-                htmlFor="date"
-                className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
-              >
-                Day
-              </label>
-              <input
-                id="date"
-                name="date"
-                type="date"
-                defaultValue={day}
-                className="h-9 rounded-md border border-border bg-background px-3 font-mono text-sm tabular-nums focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              />
-            </div>
-            <Button type="submit" variant="outline" size="sm" className="h-9">
-              Go
-            </Button>
-          </form>
-        ) : null}
-      </div>
-
       {loadError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {loadError}
@@ -157,9 +90,7 @@ export default async function LeaderboardPage({
             No results yet
           </p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            {scope === "today"
-              ? "Nothing has finished on this day. Try another date — or grab a pick for one of today's matches."
-              : "No completed matches yet. Check back once the first results are in."}
+            No completed matches yet. Check back once the first results are in.
           </p>
           <Link
             href="/matches"
@@ -248,11 +179,9 @@ export default async function LeaderboardPage({
       {user && !myRow && rows.length > 0 ? (
         <div className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card p-5 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-medium">You&apos;re not yet ranked in this scope.</p>
+            <p className="font-medium">You&apos;re not yet on the board.</p>
             <p className="mt-1 text-muted-foreground">
-              {scope === "today"
-                ? "Pick at least one of today's matches to land on the board."
-                : "Submit predictions to start banking points."}
+              Submit predictions to start banking points.
             </p>
           </div>
           <Link
@@ -287,37 +216,5 @@ function RankBadge({ rank }: { rank: number | null }) {
     >
       {label}
     </span>
-  );
-}
-
-function ScopeLink({
-  scope,
-  current,
-  label,
-  date,
-}: {
-  scope: Scope;
-  current: Scope;
-  label: string;
-  date?: string;
-}) {
-  const active = scope === current;
-  const href =
-    scope === "today"
-      ? `/leaderboard?scope=today${date ? `&date=${date}` : ""}`
-      : `/leaderboard?scope=overall`;
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "inline-flex items-center justify-center rounded-md px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] transition-colors",
-        active
-          ? "bg-foreground text-background shadow-sm"
-          : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      {label}
-    </Link>
   );
 }

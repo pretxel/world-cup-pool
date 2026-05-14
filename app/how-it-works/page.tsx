@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "How it works · WC26 Pool",
     description:
-      "Scoring rules, tie-breakers, and how the daily leaderboard works.",
+      "Scoring rules, tie-breakers, and how the global leaderboard works.",
     url: "/how-it-works",
     type: "website",
   },
@@ -97,12 +97,15 @@ export default function HowItWorksPage() {
         </ol>
       </Section>
 
-      <Section index="04" title="Daily leaderboard">
+      <Section index="04" title="Global leaderboard">
         <p>
-          The default Leaderboard view shows points earned on matches played{" "}
-          <em>today</em>, in your timezone. Use the date picker to look at
-          previous days, or switch to &ldquo;Overall&rdquo; for the
-          tournament-wide standings.
+          One ranking across the whole tournament. Every player&apos;s total is
+          the sum of points across every finished match — no daily windows, no
+          timezone splits.
+        </p>
+        <p className="mt-3">
+          The board refreshes the moment an admin posts a final score, and ties
+          break on the rules in Section 03.
         </p>
       </Section>
     </main>

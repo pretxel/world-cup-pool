@@ -313,7 +313,7 @@ function Cadence() {
     {
       tag: "04",
       label: "Climb",
-      copy: "Daily and overall leaderboards refresh in real time.",
+      copy: "The global leaderboard refreshes the moment a result lands.",
     },
   ];
 
