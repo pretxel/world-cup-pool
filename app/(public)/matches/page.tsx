@@ -3,10 +3,14 @@ import type { Metadata } from "next";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
+import { TeamFlag } from "@/components/team-flag";
 import { isLocked, stageLabel, utcDateKey } from "@/lib/match-utils";
 import type { MatchRow } from "@/lib/db";
 import { ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const ROW_STAGGER_MS = 20;
+const ROW_STAGGER_CAP_MS = 800;
 
 export const metadata: Metadata = {
   title: "Matches",
@@ -107,11 +111,21 @@ export default async function MatchesPage() {
               </span>
             </h2>
             <ul className="overflow-hidden rounded-xl border border-border bg-card">
-              {dayMatches.map((m, i) => (
-                <li key={m.id} className={cn(i !== 0 && "border-t border-border")}>
-                  <MatchRowCard match={m} uiStatus={uiStatusFor(m)} />
-                </li>
-              ))}
+              {dayMatches.map((m, i) => {
+                const delay = Math.min(i * ROW_STAGGER_MS, ROW_STAGGER_CAP_MS);
+                return (
+                  <li
+                    key={m.id}
+                    className={cn(
+                      i !== 0 && "border-t border-border",
+                      "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300 motion-safe:fill-mode-both",
+                    )}
+                    style={{ animationDelay: `${delay}ms` }}
+                  >
+                    <MatchRowCard match={m} uiStatus={uiStatusFor(m)} />
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))}
@@ -200,10 +214,12 @@ function MatchRowCard({
           <MatchStateBadge status={uiStatus} size="sm" />
         </div>
         <div className="mt-1.5 flex items-center gap-2 truncate font-heading text-base font-semibold tracking-tight text-foreground sm:text-lg">
+          <TeamFlag team={match.home_team} size="sm" />
           <span className="truncate">{match.home_team}</span>
           <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             vs
           </span>
+          <TeamFlag team={match.away_team} size="sm" />
           <span className="truncate">{match.away_team}</span>
         </div>
         {match.venue ? (

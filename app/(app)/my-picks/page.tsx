@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
+import { TeamFlag } from "@/components/team-flag";
 import { isLocked } from "@/lib/match-utils";
 import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -124,12 +125,14 @@ export default async function MyPicksPage() {
                     </span>
                     <MatchStateBadge status={uiStatus} size="sm" />
                   </div>
-                  <div className="mt-1 truncate font-heading text-base font-semibold tracking-tight">
-                    {m.home_team}{" "}
+                  <div className="mt-1 flex items-center gap-1.5 truncate font-heading text-base font-semibold tracking-tight">
+                    <TeamFlag team={m.home_team} size="sm" />
+                    <span className="truncate">{m.home_team}</span>
                     <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
                       vs
-                    </span>{" "}
-                    {m.away_team}
+                    </span>
+                    <TeamFlag team={m.away_team} size="sm" />
+                    <span className="truncate">{m.away_team}</span>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs">
                     <span className="text-muted-foreground">Pick</span>

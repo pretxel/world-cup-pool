@@ -6,9 +6,13 @@ import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
 import { buttonVariants } from "@/components/ui/button";
+import { TeamFlag } from "@/components/team-flag";
+import { StageIcon } from "@/components/stage-icon";
+import { VenueImage } from "@/components/venue-image";
 import { lockReason, stageLabel } from "@/lib/match-utils";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -150,8 +154,12 @@ export default async function MatchDetailPage({
       {/* Scoreboard panel */}
       <section
         aria-label="Match scoreboard"
-        className="bg-scoreboard relative mt-5 overflow-hidden rounded-2xl text-pitch-foreground ring-1 ring-pitch/30 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.45)]"
+        className="bg-scoreboard relative mt-5 overflow-hidden rounded-2xl text-pitch-foreground ring-1 ring-pitch/30 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.45)] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500 motion-safe:ease-out"
       >
+        <VenueImage
+          venue={match.venue}
+          className="opacity-25 mix-blend-luminosity"
+        />
         <div
           aria-hidden
           className="bg-pitch-stripes pointer-events-none absolute inset-0 opacity-[0.12]"
@@ -159,12 +167,20 @@ export default async function MatchDetailPage({
         <div className="bg-grain pointer-events-none absolute inset-0" />
 
         <div className="relative px-6 pt-5 pb-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-pitch-foreground/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/80 ring-1 ring-pitch-foreground/15">
+          <div className="flex flex-wrap items-center gap-2 motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:duration-300 motion-safe:delay-100 motion-safe:fill-mode-both">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-pitch-foreground/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/80 ring-1 ring-pitch-foreground/15">
+              <StageIcon stage={match.stage} className="size-3" />
               {stageLabel(match.stage)}
               {match.group_code ? ` · ${match.group_code}` : ""}
             </span>
-            <MatchStateBadge status={uiStatus} size="sm" />
+            <span
+              className={cn(
+                match.status === "live" &&
+                  "motion-safe:animate-pulse",
+              )}
+            >
+              <MatchStateBadge status={uiStatus} size="sm" />
+            </span>
           </div>
         </div>
 
@@ -173,18 +189,23 @@ export default async function MatchDetailPage({
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
               Home
             </div>
-            <div
-              className="mt-1 truncate font-heading text-2xl font-semibold leading-tight sm:text-4xl"
-              style={{ fontStretch: "condensed" }}
-            >
-              {match.home_team}
+            <div className="mt-1 flex items-center gap-2 sm:gap-3">
+              <TeamFlag team={match.home_team} size="lg" />
+              <span
+                className="min-w-0 truncate font-heading text-2xl font-semibold leading-tight sm:text-4xl"
+                style={{ fontStretch: "condensed" }}
+              >
+                {match.home_team}
+              </span>
             </div>
           </div>
 
           <div className="grid place-items-center">
             {isFinal ? (
-              <div className="font-mono text-4xl font-semibold leading-none tabular-nums sm:text-6xl">
-                {match.home_score}<span className="px-1 text-pitch-foreground/40">–</span>{match.away_score}
+              <div className="font-mono text-4xl font-semibold leading-none tabular-nums sm:text-6xl motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:fade-in motion-safe:duration-400 motion-safe:delay-200 motion-safe:fill-mode-both">
+                {match.home_score}
+                <span className="px-1 text-pitch-foreground/40">–</span>
+                {match.away_score}
               </div>
             ) : (
               <>
@@ -202,11 +223,14 @@ export default async function MatchDetailPage({
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
               Away
             </div>
-            <div
-              className="mt-1 truncate font-heading text-2xl font-semibold leading-tight sm:text-4xl"
-              style={{ fontStretch: "condensed" }}
-            >
-              {match.away_team}
+            <div className="mt-1 flex items-center justify-end gap-2 sm:gap-3">
+              <span
+                className="min-w-0 truncate font-heading text-2xl font-semibold leading-tight sm:text-4xl"
+                style={{ fontStretch: "condensed" }}
+              >
+                {match.away_team}
+              </span>
+              <TeamFlag team={match.away_team} size="lg" />
             </div>
           </div>
         </div>
