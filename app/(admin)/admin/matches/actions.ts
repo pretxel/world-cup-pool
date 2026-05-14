@@ -105,8 +105,17 @@ export async function setMatchResult(formData: FormData): Promise<void> {
     .eq("id", parsed.match_id);
   if (error) throw new Error(error.message);
 
+  // Always recompute. The DB trigger short-circuits when no column actually
+  // changed (e.g. re-saving identical values), so we call the RPC explicitly
+  // to guarantee scores reflect the current match + prediction state.
+  const { error: rpcError } = await admin.rpc("compute_match_scores", {
+    p_match_id: parsed.match_id,
+  });
+  if (rpcError) throw new Error(rpcError.message);
+
   revalidatePath(`/matches/${parsed.match_id}`);
   revalidatePath("/matches");
+  revalidatePath("/my-picks");
   revalidatePath("/leaderboard");
   revalidateTag("leaderboard", "max");
 }
