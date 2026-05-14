@@ -9,6 +9,15 @@ everyone in one global pool.
 
 ---
 
+## Documentation
+
+- [docs/architecture.md](docs/architecture.md) — system overview, RSC + server-action data flow, scoring trigger + recompute path, kickoff-lock at the RLS layer, cache-tag invalidation.
+- [docs/data-model.md](docs/data-model.md) — every table, constraint, index, and RLS policy; the leaderboard view + function with tie-break ordering. Anchored to lines in the init migration.
+- [docs/operator-guide.md](docs/operator-guide.md) — expanded runbook: seeding a fresh env, adding admins, redeploy/rollback, monitoring queries, common errors.
+- [docs/contributing.md](docs/contributing.md) — local dev setup, code conventions, commit/PR style, OpenSpec workflow, regenerating Supabase types.
+
+---
+
 ## Local development
 
 ```bash
@@ -23,14 +32,14 @@ is missing.
 
 ### Scripts
 
-| command | purpose |
-|---|---|
-| `pnpm dev` | Next dev server with Turbopack. |
-| `pnpm build` | Production build. |
-| `pnpm typecheck` | `tsc --noEmit`. |
-| `pnpm lint` | ESLint. |
-| `pnpm test` | Vitest unit tests (scoring rules). |
-| `pnpm format` | Prettier write. |
+| command          | purpose                            |
+| ---------------- | ---------------------------------- |
+| `pnpm dev`       | Next dev server with Turbopack.    |
+| `pnpm build`     | Production build.                  |
+| `pnpm typecheck` | `tsc --noEmit`.                    |
+| `pnpm lint`      | ESLint.                            |
+| `pnpm test`      | Vitest unit tests (scoring rules). |
+| `pnpm format`    | Prettier write.                    |
 
 ---
 
@@ -125,12 +134,12 @@ update public.profiles
 
 ## How scoring works
 
-| Hit | Points | Description |
-|---|---|---|
-| `exact` | 5 | Both teams' goal counts match. |
-| `winner_gd` | 3 | Correct winner (or correct draw) AND correct goal difference. |
-| `winner` | 1 | Correct winner only. |
-| `miss` | 0 | Wrong winner. |
+| Hit         | Points | Description                                                   |
+| ----------- | ------ | ------------------------------------------------------------- |
+| `exact`     | 5      | Both teams' goal counts match.                                |
+| `winner_gd` | 3      | Correct winner (or correct draw) AND correct goal difference. |
+| `winner`    | 1      | Correct winner only.                                          |
+| `miss`      | 0      | Wrong winner.                                                 |
 
 **Tie-breakers** (in order): more exact hits, then more `winner_gd` hits, then earlier
 `submitted_at` of the user's most recent counted prediction.
@@ -146,12 +155,12 @@ layer, so late writes are refused even if the UI is bypassed.
 app/
   (public)/matches/              public match list + detail + prediction form
   (public)/leaderboard/          today / overall standings
-  (auth)/sign-in/                magic-link + Google sign-in
+  (auth)/sign-in/                magic-link sign-in
   (auth)/sign-out/               POST sign-out
   (app)/my-picks/                authed: list of own picks
   (admin)/admin/matches/         admin: fixtures + results
   onboarding/                    forces display name on first sign-in
-  auth/callback/                 OAuth/magic-link code exchange
+  auth/callback/                 magic-link code exchange
   page.tsx                       landing
   how-it-works/                  scoring + tie-breaker docs
 components/

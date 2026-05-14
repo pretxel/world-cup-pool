@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
-import { Badge } from "@/components/ui/badge";
-import { isLocked, statusLabel } from "@/lib/match-utils";
+import { MatchStateBadge } from "@/components/match-state-badge";
+import { isLocked } from "@/lib/match-utils";
+import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "My picks — World Cup 2026 Pool" };
 
@@ -13,8 +15,6 @@ export default async function MyPicksPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Layout already guards, but pages render in parallel with layouts under
-  // React Server Components — re-check here so we never deref a null user.
   if (!user) redirect("/sign-in?next=/my-picks");
 
   const { data: picks, error } = await supabase
@@ -24,7 +24,13 @@ export default async function MyPicksPage() {
     .order("kickoff_at", { foreignTable: "matches", ascending: true });
 
   if (error) {
-    return <p className="p-6 text-sm text-destructive">Failed to load picks: {error.message}</p>;
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          Failed to load picks: {error.message}
+        </div>
+      </main>
+    );
   }
 
   const { data: scores } = await supabase
@@ -33,30 +39,53 @@ export default async function MyPicksPage() {
     .eq("user_id", user.id);
   const scoreByMatch = new Map(scores?.map((s) => [s.match_id, s]) ?? []);
 
+  const totalPoints = (scores ?? []).reduce((sum, s) => sum + (s.points ?? 0), 0);
+  const exactCount = (scores ?? []).filter((s) => s.hit_type === "exact").length;
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <header className="mb-8 flex items-end justify-between">
+    <main className="mx-auto max-w-4xl px-4 py-10">
+      <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My picks</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Every match you&apos;ve submitted a prediction for.
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            Your ticket
+          </p>
+          <h1
+            className="mt-1 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
+            style={{ fontStretch: "condensed" }}
+          >
+            My picks
+          </h1>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            Every match you&apos;ve submitted a prediction for. Edit any match
+            that hasn&apos;t kicked off yet.
           </p>
         </div>
-        <Link href="/matches" className="text-sm text-muted-foreground hover:underline">
-          Browse matches →
-        </Link>
+        <dl className="grid grid-cols-3 gap-2 sm:gap-3">
+          <Stat label="Picks" value={picks?.length ?? 0} />
+          <Stat label="Exact" value={exactCount} accent="flag" />
+          <Stat label="Points" value={totalPoints} accent="pitch" />
+        </dl>
       </header>
 
       {(picks?.length ?? 0) === 0 ? (
-        <p className="rounded-md border bg-muted/40 p-6 text-sm">
-          You haven&apos;t submitted any predictions yet.{" "}
-          <Link href="/matches" className="underline">
-            Pick some matches.
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            No picks yet
+          </p>
+          <p className="mx-auto mt-2 max-w-sm text-sm">
+            You haven&apos;t locked in any scores yet. Open a match and submit
+            your first pick.
+          </p>
+          <Link
+            href="/matches"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
+          >
+            Browse matches <ArrowRightIcon className="size-3.5" />
           </Link>
-        </p>
+        </div>
       ) : (
-        <ul className="divide-y rounded-lg border">
-          {picks!.map((p) => {
+        <ul className="overflow-hidden rounded-xl border border-border bg-card">
+          {picks!.map((p, i) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const m = (p as any).matches as {
               id: string;
@@ -69,48 +98,80 @@ export default async function MyPicksPage() {
             };
             const locked = isLocked(m);
             const score = scoreByMatch.get(p.match_id);
+            const uiStatus =
+              m.status === "live"
+                ? "live"
+                : m.status === "final"
+                  ? "final"
+                  : m.status === "cancelled"
+                    ? "cancelled"
+                    : locked
+                      ? "locked"
+                      : "scheduled";
+            const exact = score?.hit_type === "exact";
             return (
-              <li key={p.match_id} className="flex items-center justify-between gap-4 p-4">
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs text-muted-foreground">
-                    <LocalTime iso={m.kickoff_at} />
+              <li
+                key={p.match_id}
+                className={cn(
+                  "grid items-center gap-3 px-4 py-3.5 sm:grid-cols-[1fr_auto] sm:gap-4",
+                  i !== 0 && "border-t border-border",
+                )}
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                      <LocalTime iso={m.kickoff_at} />
+                    </span>
+                    <MatchStateBadge status={uiStatus} size="sm" />
                   </div>
-                  <div className="mt-1 font-medium">
-                    {m.home_team} <span className="text-muted-foreground">vs</span> {m.away_team}
+                  <div className="mt-1 truncate font-heading text-base font-semibold tracking-tight">
+                    {m.home_team}{" "}
+                    <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                      vs
+                    </span>{" "}
+                    {m.away_team}
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Your pick:{" "}
-                    <span className="font-mono">
+                  <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs">
+                    <span className="text-muted-foreground">Pick</span>
+                    <span className="font-semibold tabular-nums text-foreground">
                       {p.home_goals}–{p.away_goals}
                     </span>
                     {m.status === "final" && m.home_score != null && m.away_score != null ? (
                       <>
-                        {" "}
-                        · Final:{" "}
-                        <span className="font-mono">
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-muted-foreground">Final</span>
+                        <span className="font-semibold tabular-nums text-foreground">
                           {m.home_score}–{m.away_score}
                         </span>
                       </>
                     ) : null}
                   </div>
                 </div>
-                <div className="text-right">
+
+                <div className="flex items-center gap-3 justify-self-end">
                   {score ? (
-                    <Badge variant={score.points > 0 ? "default" : "outline"}>
-                      {score.points} pt{score.points === 1 ? "" : "s"} · {score.hit_type}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">{statusLabel(m.status)}</Badge>
-                  )}
+                    <span
+                      className={cn(
+                        "rounded-md px-2 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em]",
+                        score.points > 0
+                          ? exact
+                            ? "bg-flag text-flag-foreground"
+                            : "bg-pitch text-pitch-foreground"
+                          : "border border-border bg-secondary text-muted-foreground",
+                      )}
+                    >
+                      +{score.points} pt{score.points === 1 ? "" : "s"} ·{" "}
+                      {score.hit_type}
+                    </span>
+                  ) : null}
                   {!locked ? (
-                    <div className="mt-2">
-                      <Link
-                        className="text-xs text-primary underline"
-                        href={`/matches/${m.id}`}
-                      >
-                        Edit
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/matches/${m.id}`}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
+                    >
+                      <PencilLineIcon className="size-3.5" />
+                      Edit
+                    </Link>
                   ) : null}
                 </div>
               </li>
@@ -119,5 +180,32 @@ export default async function MyPicksPage() {
         </ul>
       )}
     </main>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: "pitch" | "flag";
+}) {
+  return (
+    <div className="rounded-md border border-border bg-card px-3 py-2">
+      <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        {label}
+      </dt>
+      <dd
+        className={cn(
+          "font-mono text-xl font-semibold tabular-nums",
+          accent === "pitch" && "text-pitch",
+          accent === "flag" && "text-flag",
+        )}
+      >
+        {value}
+      </dd>
+    </div>
   );
 }

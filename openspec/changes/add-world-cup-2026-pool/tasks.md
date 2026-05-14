@@ -36,8 +36,8 @@
 - [x] 4.2 Create `lib/supabase/browser.ts` exporting a `createBrowserSupabaseClient()` for client components.
 - [x] 4.3 Create `lib/supabase/admin.ts` exporting a service-role client for server-only admin actions (never imported in `'use client'` files).
 - [x] 4.4 Add `middleware.ts` that refreshes the Supabase session cookie and passes through.
-- [x] 4.5 Implement `app/(auth)/sign-in/page.tsx` with magic-link form and "Continue with Google" button calling `supabase.auth.signInWithOtp` / `signInWithOAuth`.
-- [x] 4.6 Implement `app/auth/callback/route.ts` handling the OAuth/magic-link callback exchange.
+- [x] 4.5 Implement `app/(auth)/sign-in/page.tsx` with a magic-link form calling `supabase.auth.signInWithOtp`.
+- [x] 4.6 Implement `app/auth/callback/route.ts` handling the magic-link callback exchange.
 - [x] 4.7 Implement `app/(auth)/sign-out/route.ts` POST handler clearing the session.
 - [x] 4.8 Implement `app/(app)/onboarding/page.tsx` that forces first-time users to set a display name; server action validates 2–32 chars and writes to `profiles`. _(Placed at `app/onboarding/page.tsx` outside the `(app)` group to avoid the `(app)/layout.tsx` redirect loop.)_
 - [x] 4.9 Implement an `app/(app)/layout.tsx` server component that redirects unauthenticated users to `/sign-in` and unfinished onboarding to `/onboarding`.

@@ -36,9 +36,9 @@ Constraints:
 - **Why**: One managed Postgres + Auth + Storage; first-class RLS; `@supabase/ssr` integrates cleanly with App Router cookies; generous free tier covers expected volume.
 - **Alternatives**: Neon Postgres + NextAuth (more wiring for auth-to-DB user mapping, no built-in RLS workflow); Firebase (NoSQL doesn't fit relational match/prediction model).
 
-### 3. Authentication method: Email magic link + Google OAuth
-- **Why**: Magic link avoids password management; Google OAuth is one click and most users already have an account. Both surfaced via Supabase Auth UI with our own styled form.
-- **Alternatives**: Email+password (extra surface area for reset/forgot flows we don't need); anonymous-only (can't reliably identify users across devices for ranking).
+### 3. Authentication method: Email magic link only
+- **Why**: Magic link avoids password management and works for any email address without requiring users to hold an account with a specific identity provider. Surfaced via Supabase Auth with our own styled form.
+- **Alternatives**: Email+password (extra surface area for reset/forgot flows we don't need); third-party OAuth providers such as Google (additional provider setup, redirect-URL configuration, and per-provider terms — magic link covers the same use case with one channel); anonymous-only (can't reliably identify users across devices for ranking).
 
 ### 4. Data model (Postgres tables, all in `public` schema)
 

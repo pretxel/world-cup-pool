@@ -1,0 +1,18 @@
+{
+  "name": "World Cup 2026 Pool",
+  "short_name": "WC26 Pool",
+  "description": "Predict every World Cup 2026 match. Climb the daily leaderboard.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

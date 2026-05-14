@@ -1,13 +1,32 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <main className="mx-auto max-w-md px-6 py-24 text-center">
-      <h1 className="text-4xl font-bold">404</h1>
-      <p className="mt-2 text-muted-foreground">That page doesn&apos;t exist.</p>
-      <Link href="/" className="mt-6 inline-block text-sm underline">
-        Back home
-      </Link>
+    <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+      <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+        Offside · 404
+      </p>
+      <h1
+        className="mt-2 font-heading text-6xl font-semibold leading-none tracking-tight sm:text-7xl"
+        style={{ fontStretch: "condensed" }}
+      >
+        404
+      </h1>
+      <p className="mt-4 max-w-sm text-sm text-muted-foreground">
+        That page isn&apos;t on the fixture list. Head back to the home pitch.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Link href="/" className={buttonVariants()}>
+          Back home
+        </Link>
+        <Link
+          href="/matches"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          Browse matches
+        </Link>
+      </div>
     </main>
   );
 }

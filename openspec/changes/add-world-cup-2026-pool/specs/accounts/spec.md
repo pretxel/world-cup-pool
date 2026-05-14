@@ -1,15 +1,11 @@
 ## ADDED Requirements
 
 ### Requirement: User registration and sign-in
-The system SHALL allow visitors to create an account and sign in using either an email magic link or a Google OAuth provider, backed by Supabase Auth.
+The system SHALL allow visitors to create an account and sign in using an email magic link, backed by Supabase Auth.
 
 #### Scenario: Sign up with magic link
 - **WHEN** a visitor submits a valid email address on the sign-in page
 - **THEN** the system sends a magic-link email and displays a "check your email" confirmation, and clicking the link signs the user in and creates a `profiles` row if one does not yet exist.
-
-#### Scenario: Sign in with Google OAuth
-- **WHEN** an existing or new visitor clicks "Continue with Google" and authorizes the app
-- **THEN** the system creates the user in `auth.users` (if new), creates a matching `profiles` row, and redirects to the home page in a signed-in state.
 
 #### Scenario: Sign-in with malformed email
 - **WHEN** a visitor submits an email that fails RFC 5321 validation

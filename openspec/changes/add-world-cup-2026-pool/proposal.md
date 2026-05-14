@@ -5,7 +5,7 @@ The FIFA World Cup 2026 (48 teams, 104 matches across USA, Canada, Mexico) is a 
 ## What Changes
 
 - New Next.js (App Router) web app deployed on Vercel.
-- New Supabase project hosting Postgres database, Auth (email + magic link / OAuth), and Row-Level Security policies.
+- New Supabase project hosting Postgres database, Auth (email magic link only), and Row-Level Security policies.
 - Single global pool: every authenticated user automatically participates in one shared competition.
 - Account system: users sign up, sign in, set a display name, and view their own profile/picks.
 - Match catalog: admin-curated fixtures for all 104 World Cup 2026 matches (group stage + knockout) with kickoff time in UTC.
