@@ -6,7 +6,7 @@ import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
 import { buttonVariants } from "@/components/ui/button";
-import { isLocked, stageLabel } from "@/lib/match-utils";
+import { lockReason, stageLabel } from "@/lib/match-utils";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
 
@@ -91,7 +91,8 @@ export default async function MatchDetailPage({
     myPrediction = data;
   }
 
-  const locked = isLocked(match);
+  const reason = lockReason(match);
+  const locked = reason !== null;
   const uiStatus: "scheduled" | "locked" | "live" | "final" | "cancelled" =
     match.status === "live"
       ? "live"
@@ -285,7 +286,7 @@ export default async function MatchDetailPage({
                     <span className="font-mono text-base font-semibold tabular-nums text-foreground">
                       {myPrediction.home_goals}–{myPrediction.away_goals}
                     </span>
-                    . Predictions are locked at kickoff.
+                    . {lockedExplain(reason)}
                   </p>
                   {isFinal ? (
                     <p className="mt-1 text-muted-foreground">
@@ -294,7 +295,7 @@ export default async function MatchDetailPage({
                   ) : null}
                 </>
               ) : (
-                "Predictions are locked — kickoff has passed and you didn't submit one for this match."
+                missingPickExplain(reason)
               )}
             </div>
           </div>
@@ -310,4 +311,32 @@ export default async function MatchDetailPage({
       </section>
     </main>
   );
+}
+
+function lockedExplain(reason: ReturnType<typeof lockReason>): string {
+  switch (reason) {
+    case "final":
+      return "This match is final — predictions are locked.";
+    case "cancelled":
+      return "This match was cancelled — predictions are locked.";
+    case "live":
+      return "This match is live — predictions are locked.";
+    case "kickoff":
+    default:
+      return "Predictions are locked at kickoff.";
+  }
+}
+
+function missingPickExplain(reason: ReturnType<typeof lockReason>): string {
+  switch (reason) {
+    case "final":
+      return "This match is final and you didn't submit a prediction.";
+    case "cancelled":
+      return "This match was cancelled — no predictions can be submitted.";
+    case "live":
+      return "This match is live — predictions are locked and you didn't submit one.";
+    case "kickoff":
+    default:
+      return "Predictions are locked — kickoff has passed and you didn't submit one for this match.";
+  }
 }

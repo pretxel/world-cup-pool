@@ -27,6 +27,32 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
     return { ok: false, error: "You need to be signed in to submit a prediction." };
   }
 
+  const { data: match, error: matchError } = await supabase
+    .from("matches")
+    .select("status, kickoff_at")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (matchError) {
+    return { ok: false, error: matchError.message };
+  }
+  if (!match) {
+    return { ok: false, error: "Match not found." };
+  }
+
+  if (match.status === "final") {
+    return { ok: false, error: "Predictions are locked — match is final." };
+  }
+  if (match.status === "cancelled") {
+    return { ok: false, error: "Predictions are locked — match was cancelled." };
+  }
+  if (match.status === "live") {
+    return { ok: false, error: "Predictions are locked — match is live." };
+  }
+  if (new Date(match.kickoff_at).getTime() <= Date.now()) {
+    return { ok: false, error: "Predictions are locked — kickoff has passed." };
+  }
+
   const { error } = await supabase.from("predictions").upsert(
     {
       user_id: user.id,

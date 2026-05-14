@@ -1,7 +1,23 @@
 import type { MatchRow, MatchStatus } from "@/lib/db";
 
-export function isLocked(match: Pick<MatchRow, "kickoff_at">): boolean {
-  return new Date(match.kickoff_at).getTime() <= Date.now();
+export type LockReason = "final" | "cancelled" | "live" | "kickoff";
+
+export function isLocked(match: {
+  kickoff_at: string;
+  status: string;
+}): boolean {
+  return lockReason(match) !== null;
+}
+
+export function lockReason(match: {
+  kickoff_at: string;
+  status: string;
+}): LockReason | null {
+  if (match.status === "final") return "final";
+  if (match.status === "cancelled") return "cancelled";
+  if (match.status === "live") return "live";
+  if (new Date(match.kickoff_at).getTime() <= Date.now()) return "kickoff";
+  return null;
 }
 
 export function statusLabel(status: string): string {
