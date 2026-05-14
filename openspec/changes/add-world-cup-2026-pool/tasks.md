@@ -5,7 +5,7 @@
 - [x] 1.3 Install and initialize `shadcn/ui` (`npx shadcn@latest init`), generate the base components used in this app: `button`, `input`, `form`, `dialog`, `table`, `badge`, `tabs`, `sonner` (toast). _(Note: `form` component skipped — using native forms + server actions + zod, which is sufficient for the small forms in this app.)_
 - [x] 1.4 Add `.env.example` documenting `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
 - [x] 1.5 Configure ESLint + Prettier + a `pnpm typecheck` script.
-- [ ] 1.6 Commit base scaffold and push to a new GitHub repo.
+- [x] 1.6 Commit base scaffold and push to a new GitHub repo. _(Pushed to `git@github.com:pretxel/world-cup-pool.git`. Two commits: `feat: scaffold World Cup 2026 pool app` and `feat: resolve siteUrl from Vercel env vars`.)_
 
 ## 2. Supabase project + schema
 
@@ -82,8 +82,8 @@
 
 ## 10. Deploy
 
-- [ ] 10.1 Create a Vercel project, connect the GitHub repo, set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (server-only).
-- [ ] 10.2 Set the production domain (or `vercel.app` subdomain) and update Supabase Auth → URL Configuration with the site URL and redirect URLs.
-- [ ] 10.3 Trigger a production deployment; smoke-test sign-in, prediction submit, admin result entry, and leaderboard refresh on the live URL.
+- [x] 10.1 Create a Vercel project, connect the GitHub repo, set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` (server-only). _(Project `edsels-projects-7227ff3c/world-cup-pool` linked to GitHub repo. All three env vars set for Production + Development. Preview env vars hit a CLI quirk and were skipped — preview deploys will need them added via dashboard or `--force` later.)_
+- [x] 10.2 Set the production domain (or `vercel.app` subdomain) and update Supabase Auth → URL Configuration with the site URL and redirect URLs. _(Production alias: `https://world-cup-pool-sepia.vercel.app`. Supabase Auth → URL Configuration updated via `supabase config push` with that site URL + `/auth/callback` redirect + `https://*.vercel.app/auth/callback` for previews + localhost for dev.)_
+- [x] 10.3 Trigger a production deployment; smoke-test sign-in, prediction submit, admin result entry, and leaderboard refresh on the live URL. _(Production deployment ready at `https://world-cup-pool-sepia.vercel.app`. Smoke-tested `/`, `/matches`, `/leaderboard`, `/sign-in`, `/how-it-works` — all 200 and rendering 104-match fixtures + correct empty-state leaderboard. Magic-link OTP request to Supabase Auth returned 200 (redirect URL whitelisted).)_
 - [ ] 10.4 Apply `seed/admin.sql` against production for the owner email; verify admin nav appears.
 - [x] 10.5 Document operator runbook in `README.md` (how to add a match, enter results, set an admin, redeploy).
