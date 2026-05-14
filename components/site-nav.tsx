@@ -1,11 +1,19 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NavLinks, MobileNav } from "@/components/site-nav-client";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { DEFAULT_LOCALE, isLocale, localePath } from "@/lib/i18n";
 
 export async function SiteNav() {
   const supabase = await createServerSupabaseClient();
+  const t = await getTranslations("nav");
+  const tCommon = await getTranslations("common");
+  const rawLocale = await getLocale();
+  const locale = isLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
+  const lp = (path: string) => localePath(locale, path);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -21,16 +29,16 @@ export async function SiteNav() {
   }
 
   const links = [
-    { href: "/matches", label: "Matches" },
-    { href: "/leaderboard", label: "Leaderboard" },
-    ...(user ? [{ href: "/my-picks", label: "My picks" }] : []),
-    ...(isAdmin ? [{ href: "/admin/matches", label: "Admin" }] : []),
+    { href: lp("/matches"), label: t("matches") },
+    { href: lp("/leaderboard"), label: t("leaderboard") },
+    ...(user ? [{ href: lp("/my-picks"), label: t("myPicks") }] : []),
+    ...(isAdmin ? [{ href: lp("/admin/matches"), label: t("admin") }] : []),
   ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="group/brand flex items-center gap-2">
+        <Link href={lp("/")} className="group/brand flex items-center gap-2">
           <span
             aria-hidden
             className="grid size-7 place-items-center rounded-md bg-pitch text-pitch-foreground ring-1 ring-pitch/40"
@@ -47,7 +55,7 @@ export async function SiteNav() {
               WC26
             </span>
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:inline">
-              Pool
+              {t("brandTag")}
             </span>
           </span>
         </Link>
@@ -55,19 +63,20 @@ export async function SiteNav() {
         <NavLinks links={links} className="hidden md:flex" />
 
         <div className="flex items-center gap-1.5">
+          <LanguageSwitcher />
           <ThemeToggle />
           {user ? (
-            <form action="/sign-out" method="post" className="hidden sm:block">
+            <form action={lp("/sign-out")} method="post" className="hidden sm:block">
               <Button type="submit" size="sm" variant="ghost">
-                Sign out
+                {tCommon("signOut")}
               </Button>
             </form>
           ) : (
             <Link
-              href="/sign-in"
+              href={lp("/sign-in")}
               className={buttonVariants({ size: "sm", className: "hidden sm:inline-flex" })}
             >
-              Sign in
+              {tCommon("signIn")}
             </Link>
           )}
           <MobileNav links={links} signedIn={!!user} className="md:hidden" />
@@ -77,7 +86,10 @@ export async function SiteNav() {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const t = await getTranslations("footer");
+  const rawLocale = await getLocale();
+  const locale = isLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
   return (
     <footer className="mt-auto border-t border-border/70">
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
@@ -89,14 +101,17 @@ export function SiteFooter() {
             <span className="font-mono text-[8px] font-bold leading-none">26</span>
           </span>
           <span className="font-mono uppercase tracking-[0.2em]">
-            WC26 Pool · 11 Jun – 19 Jul 2026
+            {t("tournament")}
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/how-it-works" className="hover:text-foreground hover:underline">
-            How it works
+          <Link
+            href={localePath(locale, "/how-it-works")}
+            className="hover:text-foreground hover:underline"
+          >
+            {t("howItWorks")}
           </Link>
-          <span className="text-muted-foreground/70">USA · Canada · Mexico</span>
+          <span className="text-muted-foreground/70">{t("hosts")}</span>
         </div>
       </div>
     </footer>

@@ -1,0 +1,26 @@
+{
+  "common": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "browseMatches": "Browse matches",
+    "loading": "Loading…"
+  },
+  "nav": {
+    "matches": "Matches",
+    "leaderboard": "Leaderboard",
+    "myPicks": "My picks",
+    "admin": "Admin",
+    "brandTag": "Pool"
+  },
+  "footer": {
+    "tournament": "WC26 Pool · 11 Jun – 19 Jul 2026",
+    "howItWorks": "How it works",
+    "hosts": "USA · Canada · Mexico"
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français"
+  }
+}

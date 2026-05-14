@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Bricolage_Grotesque, JetBrains_Mono, Manrope } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { env } from "@/lib/env";
+import { DEFAULT_LOCALE } from "@/lib/i18n";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -125,14 +127,15 @@ const organizationJsonLd = {
   logo: `${siteUrl}/opengraph-image`,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = (await getLocale()) || DEFAULT_LOCALE;
   return (
     <html
-      lang="en"
+      lang={locale}
       dir="ltr"
       suppressHydrationWarning
       className={`${manrope.variable} ${bricolage.variable} ${jetbrains.variable} h-full antialiased`}
