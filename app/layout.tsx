@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Bricolage_Grotesque, JetBrains_Mono, Manrope } from "next/font/google";
-import { getLocale } from "next-intl/server";
 import "./globals.css";
-import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { env } from "@/lib/env";
@@ -127,15 +125,14 @@ const organizationJsonLd = {
   logo: `${siteUrl}/opengraph-image`,
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = (await getLocale()) || DEFAULT_LOCALE;
   return (
     <html
-      lang={locale}
+      lang={DEFAULT_LOCALE}
       dir="ltr"
       suppressHydrationWarning
       className={`${manrope.variable} ${bricolage.variable} ${jetbrains.variable} h-full antialiased`}
@@ -147,9 +144,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SiteNav />
-          <div className="flex-1">{children}</div>
-          <SiteFooter />
+          {children}
           <Toaster richColors closeButton />
         </ThemeProvider>
         <Script

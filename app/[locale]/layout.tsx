@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { SUPPORTED_LOCALES, isLocale } from "@/lib/i18n";
 
 export function generateStaticParams() {
@@ -19,5 +20,11 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  return <NextIntlClientProvider>{children}</NextIntlClientProvider>;
+  return (
+    <NextIntlClientProvider>
+      <SiteNav />
+      <div className="flex-1">{children}</div>
+      <SiteFooter />
+    </NextIntlClientProvider>
+  );
 }
