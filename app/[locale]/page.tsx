@@ -5,6 +5,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { ArrowRightIcon, TargetIcon, TrophyIcon, ZapIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { MiniBracket } from "@/components/mini-bracket";
+import { TrophyMark } from "@/components/trophy-mark";
+import { TeamFlagWall } from "@/components/team-flag-wall";
+import { TeamFlag } from "@/components/team-flag";
 
 export async function generateMetadata({
   params,
@@ -32,6 +36,7 @@ export default async function HomePage({
     <main>
       <Hero locale={locale} t={t} />
       <ScoringSection locale={locale} t={t} />
+      <FlagWallDivider />
       <Cadence t={t} />
     </main>
   );
@@ -58,16 +63,26 @@ function Hero({ locale, t }: { locale: Locale; t: T }) {
             <span aria-hidden className="size-1.5 rounded-full bg-flag" />
             {t("eyebrow")}
             <span className="text-muted-foreground/40">·</span>
+            <span className="inline-flex items-center gap-1">
+              <TeamFlag team="United States" size="sm" className="h-3 w-4" />
+              <TeamFlag team="Canada" size="sm" className="h-3 w-4" />
+              <TeamFlag team="Mexico" size="sm" className="h-3 w-4" />
+            </span>
             {t("hostsLine")}
           </div>
 
-          <h1
-            className="mt-6 font-heading text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[5rem]"
-            style={{ fontStretch: "condensed" }}
-          >
-            <span className="block">{t("headlineLine1")}</span>
-            <span className="block text-pitch">{t("headlineLine2")}</span>
-          </h1>
+          <div className="mt-6 flex items-start gap-4 sm:gap-6">
+            <h1
+              className="font-heading text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[5rem]"
+              style={{ fontStretch: "condensed" }}
+            >
+              <span className="block">{t("headlineLine1")}</span>
+              <span className="block text-pitch">{t("headlineLine2")}</span>
+            </h1>
+            <TrophyMark
+              className="hidden w-16 shrink-0 self-end text-foreground sm:block sm:w-20 lg:w-24"
+            />
+          </div>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             {t("lede")}
@@ -113,26 +128,8 @@ function Hero({ locale, t }: { locale: Locale; t: T }) {
               <span>{t("demoMatchday")}</span>
               <span className="live-pulse">{t("demoLive")}</span>
             </div>
-            <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-              <div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-pitch-foreground/70">
-                  {t("demoHome")}
-                </div>
-                <div className="font-heading text-lg font-semibold leading-tight">
-                  Mexico
-                </div>
-              </div>
-              <div className="font-mono text-3xl font-semibold tabular-nums text-pitch-foreground">
-                2 – 1
-              </div>
-              <div className="text-right">
-                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-pitch-foreground/70">
-                  {t("demoAway")}
-                </div>
-                <div className="font-heading text-lg font-semibold leading-tight">
-                  Canada
-                </div>
-              </div>
+            <div className="mt-3">
+              <MiniBracket />
             </div>
           </div>
           <div className="grid grid-cols-3 divide-x divide-border bg-card text-center">
@@ -345,6 +342,27 @@ function Cadence({ t }: { t: T }) {
             </li>
           ))}
         </ol>
+      </div>
+    </section>
+  );
+}
+
+function FlagWallDivider() {
+  return (
+    <section
+      aria-hidden="true"
+      className="relative overflow-hidden border-y border-border/70 bg-muted/30"
+    >
+      <div className="bg-grain pointer-events-none absolute inset-0" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, var(--background) 0%, transparent 12%, transparent 88%, var(--background) 100%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:py-12">
+        <TeamFlagWall className="opacity-60 dark:opacity-40" />
       </div>
     </section>
   );
