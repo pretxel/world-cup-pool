@@ -2,18 +2,22 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { TriangleAlertIcon } from "lucide-react";
+import { isLocale, localePath, DEFAULT_LOCALE } from "@/lib/i18n";
 
-// Locale-agnostic fallback. Localized version lives at
-// app/[locale]/error.tsx and handles errors within the i18n tree.
-export default function GlobalError({
+export default function LocaleError({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("error");
+  const raw = useLocale();
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -24,26 +28,29 @@ export default function GlobalError({
         <TriangleAlertIcon className="size-5" />
       </span>
       <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-        Stoppage time
+        {t("eyebrow")}
       </p>
       <h1
         className="mt-2 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
         style={{ fontStretch: "condensed" }}
       >
-        Something went wrong
+        {t("headline")}
       </h1>
       <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-        {error.message || "An unexpected error occurred."}
+        {error.message || t("fallback")}
       </p>
       {error.digest ? (
         <p className="mt-1 font-mono text-[10px] tracking-[0.18em] text-muted-foreground/70">
-          ref: {error.digest}
+          {t("ref", { digest: error.digest })}
         </p>
       ) : null}
       <div className="mt-6 flex justify-center gap-3">
-        <Button onClick={reset}>Try again</Button>
-        <Link href="/" className={buttonVariants({ variant: "outline" })}>
-          Home
+        <Button onClick={reset}>{t("tryAgain")}</Button>
+        <Link
+          href={localePath(locale, "/")}
+          className={buttonVariants({ variant: "outline" })}
+        >
+          {t("home")}
         </Link>
       </div>
     </main>

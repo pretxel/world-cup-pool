@@ -1,14 +1,26 @@
 import { redirect } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/sign-in");
+    redirect(localePath(locale, "/sign-in"));
   }
 
   const { data: profile } = await supabase
@@ -18,7 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single();
 
   if (!profile?.display_name) {
-    redirect("/onboarding");
+    redirect(localePath(locale, "/onboarding"));
   }
 
   return <>{children}</>;

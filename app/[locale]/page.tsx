@@ -1,59 +1,45 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRightIcon, TargetIcon, TrophyIcon, ZapIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-const scoringTiers: Array<{
-  pts: number;
-  title: string;
-  detail: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  accent: "pitch" | "flag" | "muted" | "ghost";
-}> = [
-  {
-    pts: 5,
-    title: "Exact score",
-    detail: "Both teams’ goal counts called perfectly.",
-    Icon: TargetIcon,
-    accent: "pitch",
-  },
-  {
-    pts: 3,
-    title: "Winner + goal difference",
-    detail: "You picked 2–1, the actual is 3–2.",
-    Icon: ZapIcon,
-    accent: "flag",
-  },
-  {
-    pts: 1,
-    title: "Correct winner",
-    detail: "Right team won, but the gap was off.",
-    Icon: TrophyIcon,
-    accent: "muted",
-  },
-  {
-    pts: 0,
-    title: "Miss",
-    detail: "Wrong winner. The bracket marches on.",
-    Icon: ArrowRightIcon,
-    accent: "ghost",
-  },
-];
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "home" });
+  return { title: t("title"), description: t("description") };
+}
 
-export default function HomePage() {
+type T = Awaited<ReturnType<typeof getTranslations<"home">>>;
+
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+  const t = await getTranslations("home");
+
   return (
     <main>
-      <Hero />
-      <ScoringSection />
-      <Cadence />
+      <Hero locale={locale} t={t} />
+      <ScoringSection locale={locale} t={t} />
+      <Cadence t={t} />
     </main>
   );
 }
 
-function Hero() {
+function Hero({ locale, t }: { locale: Locale; t: T }) {
   return (
     <section className="relative isolate overflow-hidden border-b border-border/70">
-      {/* Pitch stripes painted into the corner — broadcast field motif */}
       <div
         aria-hidden
         className="bg-pitch-stripes absolute -right-32 -top-24 h-[42rem] w-[42rem] -rotate-12 opacity-[0.08] dark:opacity-[0.18]"
@@ -64,78 +50,73 @@ function Hero() {
             "radial-gradient(closest-side at 50% 50%, black 35%, transparent 75%)",
         }}
       />
-      {/* Subtle grain overlay */}
       <div className="bg-grain pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pt-16 pb-20 sm:pt-24 sm:pb-28 lg:grid-cols-[1.6fr_1fr] lg:items-end">
         <div className="rise" style={{ animationDelay: "0ms" }}>
-          {/* Tournament eyebrow ticker */}
           <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/60 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground backdrop-blur">
             <span aria-hidden className="size-1.5 rounded-full bg-flag" />
-            FIFA World Cup 2026
+            {t("eyebrow")}
             <span className="text-muted-foreground/40">·</span>
-            USA · Canada · Mexico
+            {t("hostsLine")}
           </div>
 
           <h1
             className="mt-6 font-heading text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[5rem]"
             style={{ fontStretch: "condensed" }}
           >
-            <span className="block">Call the score.</span>
-            <span className="block text-pitch">Climb the table.</span>
+            <span className="block">{t("headlineLine1")}</span>
+            <span className="block text-pitch">{t("headlineLine2")}</span>
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            One global pool. Submit an exact-score pick for every fixture before
-            kickoff and your ranking shifts the moment the final whistle blows.
-            No setup, no fees, no excuses.
+            {t("lede")}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              href="/sign-in"
+              href={localePath(locale, "/sign-in")}
               className={buttonVariants({
                 size: "lg",
                 className:
                   "h-11 gap-2 px-5 text-sm font-semibold uppercase tracking-[0.16em]",
               })}
             >
-              Sign in to play
+              {t("ctaSignIn")}
               <ArrowRightIcon />
             </Link>
             <Link
-              href="/matches"
+              href={localePath(locale, "/matches")}
               className={buttonVariants({
                 size: "lg",
                 variant: "outline",
                 className: "h-11 px-5 text-sm font-medium",
               })}
             >
-              Browse matches
+              {t("ctaBrowse")}
             </Link>
             <Link
               href="#scoring"
               className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
-              How scoring works
+              {t("ctaScoring")}
             </Link>
           </div>
         </div>
 
-        {/* Scoreboard panel — broadcast tile */}
         <div
           className="rise relative overflow-hidden rounded-2xl ring-1 ring-border bg-card shadow-[0_24px_60px_-24px_rgba(15,23,42,0.18)] dark:shadow-[0_24px_60px_-24px_rgba(0,0,0,0.55)]"
           style={{ animationDelay: "120ms" }}
         >
           <div className="bg-scoreboard relative px-5 py-4 text-pitch-foreground">
             <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-pitch-foreground/70">
-              <span>Matchday — Sample</span>
-              <span className="live-pulse">Live</span>
+              <span>{t("demoMatchday")}</span>
+              <span className="live-pulse">{t("demoLive")}</span>
             </div>
             <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
               <div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-pitch-foreground/70">
-                  Home
+                  {t("demoHome")}
                 </div>
                 <div className="font-heading text-lg font-semibold leading-tight">
                   Mexico
@@ -146,7 +127,7 @@ function Hero() {
               </div>
               <div className="text-right">
                 <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-pitch-foreground/70">
-                  Away
+                  {t("demoAway")}
                 </div>
                 <div className="font-heading text-lg font-semibold leading-tight">
                   Canada
@@ -155,12 +136,12 @@ function Hero() {
             </div>
           </div>
           <div className="grid grid-cols-3 divide-x divide-border bg-card text-center">
-            <Stat label="Your pick" value="2 – 1" mono accent="pitch" />
-            <Stat label="Points" value="+5" mono accent="flag" />
-            <Stat label="Daily rank" value="↑12" mono />
+            <Stat label={t("demoYourPick")} value="2 – 1" mono accent="pitch" />
+            <Stat label={t("demoPoints")} value="+5" mono accent="flag" />
+            <Stat label={t("demoDailyRank")} value="↑12" mono />
           </div>
           <div className="border-t border-border bg-muted/40 px-5 py-3 text-[11px] text-muted-foreground">
-            Demo card · live data appears once matches start.
+            {t("demoFootnote")}
           </div>
         </div>
       </div>
@@ -198,7 +179,28 @@ function Stat({
   );
 }
 
-function ScoringSection() {
+function ScoringSection({ locale, t }: { locale: Locale; t: T }) {
+  const scoringTiers: Array<{
+    pts: number;
+    titleKey:
+      | "scoringTierExactTitle"
+      | "scoringTierWinnerGdTitle"
+      | "scoringTierWinnerTitle"
+      | "scoringTierMissTitle";
+    detailKey:
+      | "scoringTierExactDetail"
+      | "scoringTierWinnerGdDetail"
+      | "scoringTierWinnerDetail"
+      | "scoringTierMissDetail";
+    Icon: React.ComponentType<{ className?: string }>;
+    accent: "pitch" | "flag" | "muted" | "ghost";
+  }> = [
+    { pts: 5, titleKey: "scoringTierExactTitle", detailKey: "scoringTierExactDetail", Icon: TargetIcon, accent: "pitch" },
+    { pts: 3, titleKey: "scoringTierWinnerGdTitle", detailKey: "scoringTierWinnerGdDetail", Icon: ZapIcon, accent: "flag" },
+    { pts: 1, titleKey: "scoringTierWinnerTitle", detailKey: "scoringTierWinnerDetail", Icon: TrophyIcon, accent: "muted" },
+    { pts: 0, titleKey: "scoringTierMissTitle", detailKey: "scoringTierMissDetail", Icon: ArrowRightIcon, accent: "ghost" },
+  ];
+
   return (
     <section
       id="scoring"
@@ -207,17 +209,17 @@ function ScoringSection() {
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            01 · Scoring
+            {t("scoringEyebrow")}
           </p>
           <h2
             className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl"
             style={{ fontStretch: "condensed" }}
           >
-            Four tiers. One pool. No deadlines after kickoff.
+            {t("scoringHeadline")}
           </h2>
         </div>
         <p className="mt-2 max-w-xs text-sm text-muted-foreground sm:text-right">
-          Picks lock at kickoff — the database itself rejects late writes.
+          {t("scoringSubtitle")}
         </p>
       </div>
 
@@ -264,14 +266,14 @@ function ScoringSection() {
                     {tier.pts}
                   </span>
                   <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    pts
+                    {t("scoringPts")}
                   </span>
                 </div>
                 <div className="mt-2 font-heading text-base font-semibold tracking-tight">
-                  {tier.title}
+                  {t(tier.titleKey)}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {tier.detail}
+                  {t(tier.detailKey)}
                 </p>
               </div>
             </li>
@@ -280,12 +282,12 @@ function ScoringSection() {
       </ul>
 
       <p className="mt-8 text-sm text-muted-foreground">
-        Tie-breakers, daily windows, and the dirty details live in{" "}
+        {t("scoringFootnote")}{" "}
         <Link
-          href="/how-it-works"
+          href={localePath(locale, "/how-it-works")}
           className="font-medium text-foreground underline underline-offset-4 hover:text-pitch"
         >
-          how it works
+          {t("scoringFootnoteLink")}
         </Link>
         .
       </p>
@@ -293,28 +295,24 @@ function ScoringSection() {
   );
 }
 
-function Cadence() {
-  const items: Array<{ tag: string; label: string; copy: string }> = [
-    {
-      tag: "01",
-      label: "Pick",
-      copy: "Submit a score for every fixture, edit until kickoff.",
-    },
-    {
-      tag: "02",
-      label: "Lock",
-      copy: "Predictions freeze the moment the ball rolls — enforced at the database.",
-    },
-    {
-      tag: "03",
-      label: "Score",
-      copy: "Points post instantly when an admin enters the final score.",
-    },
-    {
-      tag: "04",
-      label: "Climb",
-      copy: "The global leaderboard refreshes the moment a result lands.",
-    },
+function Cadence({ t }: { t: T }) {
+  const items: Array<{
+    tag: string;
+    labelKey:
+      | "cadencePickLabel"
+      | "cadenceLockLabel"
+      | "cadenceScoreLabel"
+      | "cadenceClimbLabel";
+    copyKey:
+      | "cadencePickCopy"
+      | "cadenceLockCopy"
+      | "cadenceScoreCopy"
+      | "cadenceClimbCopy";
+  }> = [
+    { tag: "01", labelKey: "cadencePickLabel", copyKey: "cadencePickCopy" },
+    { tag: "02", labelKey: "cadenceLockLabel", copyKey: "cadenceLockCopy" },
+    { tag: "03", labelKey: "cadenceScoreLabel", copyKey: "cadenceScoreCopy" },
+    { tag: "04", labelKey: "cadenceClimbLabel", copyKey: "cadenceClimbCopy" },
   ];
 
   return (
@@ -322,10 +320,10 @@ function Cadence() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
         <div className="flex items-baseline justify-between">
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            02 · Cadence
+            {t("cadenceEyebrow")}
           </p>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            Pick → Lock → Score → Climb
+            {t("cadenceTrail")}
           </p>
         </div>
         <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -340,10 +338,10 @@ function Cadence() {
                 </span>
                 <span className="h-px flex-1 bg-border" />
                 <span className="font-heading text-sm font-semibold uppercase tracking-[0.16em] text-pitch">
-                  {step.label}
+                  {t(step.labelKey)}
                 </span>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{step.copy}</p>
+              <p className="mt-3 text-sm text-muted-foreground">{t(step.copyKey)}</p>
             </li>
           ))}
         </ol>

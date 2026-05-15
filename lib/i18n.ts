@@ -1,7 +1,4 @@
-// Staged rollout: this PR ships foundation + English only. The es and fr
-// locale message bundles arrive in the next PR — at which point we widen this
-// list, no other code changes required.
-export const SUPPORTED_LOCALES = ["en"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "fr"] as const;
 export const DEFAULT_LOCALE: Locale = "en";
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];

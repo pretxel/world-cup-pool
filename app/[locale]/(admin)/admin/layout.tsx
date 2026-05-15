@@ -1,13 +1,28 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in?next=/admin/matches");
+  if (!user)
+    redirect(
+      `${localePath(locale, "/sign-in")}?next=${encodeURIComponent(localePath(locale, "/admin/matches"))}`,
+    );
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -16,14 +31,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .single();
 
   if (!profile?.is_admin) {
+    const t = await getTranslations("admin");
     return (
       <main className="mx-auto max-w-md px-6 py-20 text-center">
-        <h1 className="text-2xl font-bold">403 — Admin only</h1>
+        <h1 className="text-2xl font-bold">{t("forbiddenTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This page is restricted. If you should have access, ask the pool owner to mark you as admin.
+          {t("forbiddenBody")}
         </p>
-        <Link href="/" className="mt-6 inline-block text-sm underline">
-          Go home
+        <Link
+          href={localePath(locale, "/")}
+          className="mt-6 inline-block text-sm underline"
+        >
+          {t("goHome")}
         </Link>
       </main>
     );

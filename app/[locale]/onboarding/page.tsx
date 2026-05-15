@@ -1,18 +1,36 @@
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { setDisplayName } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-export const metadata = { title: "Choose a display name" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "onboarding" });
+  return { title: t("title") };
+}
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect(localePath(locale, "/sign-in"));
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -20,7 +38,9 @@ export default async function OnboardingPage() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.display_name) redirect("/matches");
+  if (profile?.display_name) redirect(localePath(locale, "/matches"));
+
+  const t = await getTranslations("onboarding");
 
   return (
     <main className="relative isolate mx-auto flex min-h-[80vh] max-w-lg flex-col justify-center px-6 py-12">
@@ -36,17 +56,15 @@ export default async function OnboardingPage() {
       />
       <div className="relative">
         <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-          Last step
+          {t("eyebrow")}
         </p>
         <h1
           className="mt-1 font-heading text-4xl font-semibold tracking-tight"
           style={{ fontStretch: "condensed" }}
         >
-          Pick a display name
+          {t("headline")}
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          This is the name other players see on the leaderboard. 2–32 characters.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t("lede")}</p>
 
         <form
           action={setDisplayName}
@@ -57,7 +75,7 @@ export default async function OnboardingPage() {
               htmlFor="display_name"
               className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
             >
-              Display name
+              {t("label")}
             </Label>
             <Input
               id="display_name"
@@ -65,7 +83,7 @@ export default async function OnboardingPage() {
               required
               minLength={2}
               maxLength={32}
-              placeholder="e.g. Lionel A."
+              placeholder={t("placeholder")}
               className="h-11 text-base"
             />
           </div>
@@ -73,7 +91,7 @@ export default async function OnboardingPage() {
             type="submit"
             className="h-11 w-full gap-2 text-sm font-semibold uppercase tracking-[0.14em]"
           >
-            Save and continue
+            {t("submit")}
           </Button>
         </form>
       </div>

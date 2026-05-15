@@ -1,35 +1,51 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { SignInForm } from "./sign-in-form";
 import { TargetIcon, TrophyIcon, ZapIcon } from "lucide-react";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description:
-    "Sign in to the World Cup 2026 Pool with a magic-link email to submit predictions and join the leaderboard.",
-  alternates: { canonical: "/sign-in" },
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "signIn" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: { canonical: "/sign-in" },
+    robots: { index: false, follow: true },
+  };
+}
 
 export default async function SignInPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ next?: string }>;
 }) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
   const { next } = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    redirect(next ?? "/matches");
+    redirect(next ?? localePath(locale, "/matches"));
   }
+
+  const t = await getTranslations("signIn");
 
   return (
     <main className="relative isolate min-h-[calc(100vh-9rem)] overflow-hidden">
-      {/* Stadium-stripe accent in the corner */}
       <div
         aria-hidden
         className="bg-pitch-stripes absolute -right-32 -top-32 h-[36rem] w-[36rem] -rotate-12 opacity-[0.08] dark:opacity-[0.18]"
@@ -45,25 +61,24 @@ export default async function SignInPage({
       <div className="relative mx-auto grid max-w-5xl gap-12 px-4 py-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
         <section className="hidden flex-col gap-6 lg:flex">
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            Welcome to the box
+            {t("welcomeEyebrow")}
           </p>
           <h1
             className="font-heading text-5xl font-semibold leading-[1.02] tracking-[-0.03em] sm:text-6xl"
             style={{ fontStretch: "condensed" }}
           >
-            <span className="block">One pool.</span>
-            <span className="block text-pitch">Every match.</span>
+            <span className="block">{t("headlineLine1")}</span>
+            <span className="block text-pitch">{t("headlineLine2")}</span>
           </h1>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            We use your email only to identify your picks. No spam, no daily
-            recap blasts — just enough to put your name on the leaderboard.
+            {t("lede")}
           </p>
 
           <ul className="mt-2 grid gap-3">
             {[
-              { Icon: TargetIcon, title: "Exact-score picks", copy: "Submit a precise scoreline for every fixture before kickoff." },
-              { Icon: ZapIcon, title: "Live scoring", copy: "Standings shift the moment an admin enters a final score." },
-              { Icon: TrophyIcon, title: "Daily + overall", copy: "Climb today's board and the tournament-wide table at the same time." },
+              { Icon: TargetIcon, title: t("bullet1Title"), copy: t("bullet1Copy") },
+              { Icon: ZapIcon, title: t("bullet2Title"), copy: t("bullet2Copy") },
+              { Icon: TrophyIcon, title: t("bullet3Title"), copy: t("bullet3Copy") },
             ].map((b) => (
               <li
                 key={b.title}
@@ -95,17 +110,17 @@ export default async function SignInPage({
                 </span>
               </span>
               <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                WC26 Pool · Sign in
+                {t("cardEyebrow")}
               </span>
             </div>
             <h2
               className="mt-4 font-heading text-3xl font-semibold tracking-tight"
               style={{ fontStretch: "condensed" }}
             >
-              Lock in your picks.
+              {t("cardHeadline")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Use your email. We&apos;ll create the account on the fly if it&apos;s your first time.
+              {t("cardLede")}
             </p>
 
             <div className="mt-6">
@@ -113,12 +128,12 @@ export default async function SignInPage({
             </div>
 
             <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
-              New here? Just enter your email — your account is created instantly.{" "}
+              {t("newHere")}{" "}
               <Link
-                href="/how-it-works"
+                href={localePath(locale, "/how-it-works")}
                 className="font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
               >
-                How it works
+                {t("howItWorks")}
               </Link>
             </p>
           </div>

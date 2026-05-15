@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   Table,
@@ -9,25 +11,41 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { LeaderboardRow } from "@/lib/db";
-import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Leaderboard",
-  description:
-    "World Cup 2026 Pool standings. The single overall ranking refreshes the moment an admin enters a final score.",
-  alternates: { canonical: "/leaderboard" },
-  openGraph: {
-    title: "Leaderboard · WC26 Pool",
-    description:
-      "Overall standings for the World Cup 2026 prediction pool. Refreshes after every result.",
-    url: "/leaderboard",
-    type: "website",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "leaderboard" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: { canonical: "/leaderboard" },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      url: "/leaderboard",
+      type: "website",
+    },
+  };
+}
 
-export default async function LeaderboardPage() {
+export default async function LeaderboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("leaderboard");
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -50,31 +68,32 @@ export default async function LeaderboardPage() {
       <header className="mb-6 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            Standings
+            {t("eyebrow")}
           </p>
           <h1
             className="mt-1 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
             style={{ fontStretch: "condensed" }}
           >
-            Leaderboard
+            {t("headline")}
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            One global ranking across the whole tournament. Standings refresh
-            the moment an admin enters a final score.
+            {t("lede")}
           </p>
         </div>
 
         {leader ? (
           <div className="rounded-xl border border-pitch/30 bg-pitch text-pitch-foreground px-4 py-3 shadow-sm">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
-              Overall leader
+              {t("leaderLabel")}
             </div>
             <div className="mt-1 font-heading text-lg font-semibold tracking-tight">
               {leader.display_name ?? "—"}
             </div>
             <div className="mt-0.5 font-mono text-xs uppercase tracking-[0.18em] text-pitch-foreground/80">
-              {leader.total_points} pts · {players}{" "}
-              {players === 1 ? "player" : "players"}
+              {t("leaderStat", {
+                points: leader.total_points ?? 0,
+                count: players,
+              })}
             </div>
           </div>
         ) : null}
@@ -87,16 +106,16 @@ export default async function LeaderboardPage() {
       ) : rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            No results yet
+            {t("emptyTitle")}
           </p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            No completed matches yet. Check back once the first results are in.
+            {t("emptyBody")}
           </p>
           <Link
-            href="/matches"
+            href={localePath(locale, "/matches")}
             className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
           >
-            Browse matches <ArrowRightIcon className="size-3.5" />
+            {t("browseMatches")} <ArrowRightIcon className="size-3.5" />
           </Link>
         </div>
       ) : (
@@ -105,19 +124,19 @@ export default async function LeaderboardPage() {
             <TableHeader>
               <TableRow className="bg-muted/40">
                 <TableHead className="w-14 pl-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Rank
+                  {t("headerRank")}
                 </TableHead>
                 <TableHead className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Player
+                  {t("headerPlayer")}
                 </TableHead>
                 <TableHead className="text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Pts
+                  {t("headerPoints")}
                 </TableHead>
                 <TableHead className="hidden text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-                  Exact
+                  {t("headerExact")}
                 </TableHead>
                 <TableHead className="hidden pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-                  W+GD
+                  {t("headerWinnerGd")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -146,13 +165,13 @@ export default async function LeaderboardPage() {
                         >
                           {r.display_name ?? (
                             <span className="text-muted-foreground italic">
-                              (no name)
+                              {t("noName")}
                             </span>
                           )}
                         </span>
                         {isMe ? (
                           <span className="rounded-md bg-flag px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-flag-foreground">
-                            You
+                            {t("you")}
                           </span>
                         ) : null}
                       </div>
@@ -179,16 +198,14 @@ export default async function LeaderboardPage() {
       {user && !myRow && rows.length > 0 ? (
         <div className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card p-5 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-medium">You&apos;re not yet on the board.</p>
-            <p className="mt-1 text-muted-foreground">
-              Submit predictions to start banking points.
-            </p>
+            <p className="font-medium">{t("notYetTitle")}</p>
+            <p className="mt-1 text-muted-foreground">{t("notYetBody")}</p>
           </div>
           <Link
-            href="/matches"
+            href={localePath(locale, "/matches")}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
           >
-            Browse matches <ArrowRightIcon className="size-3.5" />
+            {t("browseMatches")} <ArrowRightIcon className="size-3.5" />
           </Link>
         </div>
       ) : null}

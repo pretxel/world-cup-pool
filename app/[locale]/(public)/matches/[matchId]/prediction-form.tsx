@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { MinusIcon, PlusIcon, Loader2Icon, CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export function PredictionForm({
   kickoffAt: string;
   initial: { home_goals: number; away_goals: number } | null;
 }) {
+  const t = useTranslations("predictionForm");
   const [home, setHome] = useState<number>(initial?.home_goals ?? 0);
   const [away, setAway] = useState<number>(initial?.away_goals ?? 0);
   const [touched, setTouched] = useState(false);
@@ -33,11 +35,12 @@ export function PredictionForm({
     const kickoff = new Date(kickoffAt).getTime();
     const tick = () => setLockedNow(Date.now() >= kickoff);
     tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, [kickoffAt]);
 
-  const initialPick = initial?.home_goals !== undefined && initial?.away_goals !== undefined;
+  const initialPick =
+    initial?.home_goals !== undefined && initial?.away_goals !== undefined;
   const isDirty =
     !initialPick ||
     touched ||
@@ -47,7 +50,7 @@ export function PredictionForm({
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (home < 0 || away < 0 || home > MAX_GOALS || away > MAX_GOALS) {
-      toast.error(`Scores must be between 0 and ${MAX_GOALS}`);
+      toast.error(t("scoresOutOfRange", { max: MAX_GOALS }));
       return;
     }
     startTransition(async () => {
@@ -60,7 +63,7 @@ export function PredictionForm({
         toast.error(result.error);
         return;
       }
-      toast.success("Pick locked in");
+      toast.success(t("pickLocked"));
       setTouched(false);
     });
   }
@@ -73,7 +76,6 @@ export function PredictionForm({
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
         <ScoreStepper
           id={`home-${matchId}`}
-          label="Home"
           team={homeTeam}
           value={home}
           onChange={(v) => {
@@ -81,6 +83,9 @@ export function PredictionForm({
             setTouched(true);
           }}
           disabled={lockedNow || isPending}
+          tDecrease={t("decreaseAria", { team: homeTeam })}
+          tIncrease={t("increaseAria", { team: homeTeam })}
+          tInputAria={t("homeAria", { team: homeTeam })}
         />
 
         <div className="flex flex-col items-center gap-1">
@@ -94,7 +99,6 @@ export function PredictionForm({
 
         <ScoreStepper
           id={`away-${matchId}`}
-          label="Away"
           team={awayTeam}
           value={away}
           onChange={(v) => {
@@ -103,6 +107,9 @@ export function PredictionForm({
           }}
           disabled={lockedNow || isPending}
           align="end"
+          tDecrease={t("decreaseAria", { team: awayTeam })}
+          tIncrease={t("increaseAria", { team: awayTeam })}
+          tInputAria={t("awayAria", { team: awayTeam })}
         />
       </div>
 
@@ -110,16 +117,15 @@ export function PredictionForm({
         <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
           {lockedNow ? (
             <span className="font-mono uppercase tracking-[0.2em]">
-              Locked at kickoff
+              {t("lockedAtKickoff")}
             </span>
           ) : (
             <>
-              <KickoffCountdown kickoffAt={kickoffAt} />
-              <span>
-                {initialPick
-                  ? "Edit any time before kickoff — last save wins."
-                  : "Submit before kickoff. You can update freely until then."}
-              </span>
+              <KickoffCountdown
+                kickoffAt={kickoffAt}
+                lockedLabel={t("lockedAtKickoff")}
+              />
+              <span>{initialPick ? t("lastSaveWins") : t("submitFirst")}</span>
             </>
           )}
         </div>
@@ -133,21 +139,21 @@ export function PredictionForm({
         >
           {isPending ? (
             <>
-              <Loader2Icon className="size-4 animate-spin" /> Saving
+              <Loader2Icon className="size-4 animate-spin" /> {t("saving")}
             </>
           ) : initialPick ? (
             isDirty ? (
               <>
-                <CheckIcon className="size-4" /> Update pick
+                <CheckIcon className="size-4" /> {t("updatePick")}
               </>
             ) : (
               <>
-                <CheckIcon className="size-4" /> Saved
+                <CheckIcon className="size-4" /> {t("saved")}
               </>
             )
           ) : (
             <>
-              <CheckIcon className="size-4" /> Submit pick
+              <CheckIcon className="size-4" /> {t("submitPick")}
             </>
           )}
         </Button>
@@ -158,20 +164,24 @@ export function PredictionForm({
 
 function ScoreStepper({
   id,
-  label,
   team,
   value,
   onChange,
   disabled,
   align = "start",
+  tDecrease,
+  tIncrease,
+  tInputAria,
 }: {
   id: string;
-  label: string;
   team: string;
   value: number;
   onChange: (v: number) => void;
   disabled?: boolean;
   align?: "start" | "end";
+  tDecrease: string;
+  tIncrease: string;
+  tInputAria: string;
 }) {
   return (
     <div
@@ -181,25 +191,17 @@ function ScoreStepper({
       )}
     >
       <div className="min-w-0">
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-          {label}
-        </span>
         <div className="mt-0.5 truncate font-heading text-sm font-semibold tracking-tight sm:text-base">
           {team}
         </div>
       </div>
-      <div
-        className={cn(
-          "inline-flex w-full items-center justify-between gap-1 rounded-xl border border-border bg-muted/30 p-1",
-          align === "end" ? "flex-row" : "flex-row",
-        )}
-      >
+      <div className="inline-flex w-full items-center justify-between gap-1 rounded-xl border border-border bg-muted/30 p-1">
         <Button
           type="button"
           size="icon-sm"
           variant="outline"
           disabled={disabled || value <= 0}
-          aria-label={`Decrease ${team} score`}
+          aria-label={tDecrease}
           onClick={() => onChange(Math.max(0, value - 1))}
           className="size-9 shrink-0 bg-background"
         >
@@ -219,7 +221,7 @@ function ScoreStepper({
             }
           }}
           disabled={disabled}
-          aria-label={`${team} score`}
+          aria-label={tInputAria}
           className={cn(
             "min-w-0 flex-1 bg-transparent text-center font-mono text-3xl font-semibold tabular-nums leading-none text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none disabled:opacity-50 sm:text-4xl",
           )}
@@ -229,7 +231,7 @@ function ScoreStepper({
           size="icon-sm"
           variant="outline"
           disabled={disabled || value >= MAX_GOALS}
-          aria-label={`Increase ${team} score`}
+          aria-label={tIncrease}
           onClick={() => onChange(Math.min(MAX_GOALS, value + 1))}
           className="size-9 shrink-0 bg-background"
         >

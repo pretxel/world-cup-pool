@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -13,9 +14,10 @@ const schema = z.object({
 export type SubmitResult = { ok: true } | { ok: false; error: string };
 
 export async function submitPrediction(input: unknown): Promise<SubmitResult> {
+  const t = await getTranslations("predictionForm");
   const parsed = schema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: "Scores must be whole numbers between 0 and 20." };
+    return { ok: false, error: t("errorInvalidScores") };
   }
   const { matchId, homeGoals, awayGoals } = parsed.data;
 
@@ -24,7 +26,7 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { ok: false, error: "You need to be signed in to submit a prediction." };
+    return { ok: false, error: t("errorNotSignedIn") };
   }
 
   const { data: match, error: matchError } = await supabase
@@ -37,20 +39,20 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
     return { ok: false, error: matchError.message };
   }
   if (!match) {
-    return { ok: false, error: "Match not found." };
+    return { ok: false, error: t("errorMatchNotFound") };
   }
 
   if (match.status === "final") {
-    return { ok: false, error: "Predictions are locked — match is final." };
+    return { ok: false, error: t("lockedFinal") };
   }
   if (match.status === "cancelled") {
-    return { ok: false, error: "Predictions are locked — match was cancelled." };
+    return { ok: false, error: t("lockedCancelled") };
   }
   if (match.status === "live") {
-    return { ok: false, error: "Predictions are locked — match is live." };
+    return { ok: false, error: t("lockedLive") };
   }
   if (new Date(match.kickoff_at).getTime() <= Date.now()) {
-    return { ok: false, error: "Predictions are locked — kickoff has passed." };
+    return { ok: false, error: t("lockedKickoff") };
   }
 
   const { error } = await supabase.from("predictions").upsert(
@@ -66,12 +68,16 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
 
   if (error) {
     if (error.code === "42501" || /row-level security/i.test(error.message)) {
-      return { ok: false, error: "Predictions are locked — kickoff has passed." };
+      return { ok: false, error: t("lockedKickoff") };
     }
     return { ok: false, error: error.message };
   }
 
-  revalidatePath(`/matches/${matchId}`);
-  revalidatePath("/my-picks");
+  revalidatePath(`/en/matches/${matchId}`);
+  revalidatePath(`/es/matches/${matchId}`);
+  revalidatePath(`/fr/matches/${matchId}`);
+  revalidatePath("/en/my-picks");
+  revalidatePath("/es/my-picks");
+  revalidatePath("/fr/my-picks");
   return { ok: true };
 }

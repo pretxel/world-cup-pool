@@ -1,30 +1,48 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { TeamFlag } from "@/components/team-flag";
-import { isLocked, stageLabel, utcDateKey } from "@/lib/match-utils";
-import type { MatchRow } from "@/lib/db";
+import { isLocked, utcDateKey } from "@/lib/match-utils";
+import type { MatchRow, MatchStage } from "@/lib/db";
 import { ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 const ROW_STAGGER_MS = 20;
 const ROW_STAGGER_CAP_MS = 800;
 
-export const metadata: Metadata = {
-  title: "Matches",
-  description:
-    "Browse every World Cup 2026 fixture by day, check kickoff times in your timezone, and submit a score prediction before each match locks.",
-  alternates: { canonical: "/matches" },
-  openGraph: {
-    title: "Matches · WC26 Pool",
-    description:
-      "Every World Cup 2026 fixture grouped by day. Submit predictions before kickoff.",
-    url: "/matches",
-    type: "website",
-  },
+const STAGE_KEYS: Record<MatchStage, keyof IntlMessages["stages"]> = {
+  group: "group",
+  r32: "r32",
+  r16: "r16",
+  qf: "qf",
+  sf: "sf",
+  third: "third",
+  final: "final",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "matches" });
+  return {
+    title: t("title"),
+    description: t("description"),
+    alternates: { canonical: "/matches" },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      url: "/matches",
+      type: "website",
+    },
+  };
+}
 
 type MatchUiStatus = "scheduled" | "locked" | "live" | "final" | "cancelled";
 
@@ -35,7 +53,18 @@ function uiStatusFor(m: MatchRow): MatchUiStatus {
   return isLocked(m) ? "locked" : "scheduled";
 }
 
-export default async function MatchesPage() {
+export default async function MatchesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("matches");
+  const tStages = await getTranslations("stages");
+
   const supabase = await createServerSupabaseClient();
   const { data: matches, error } = await supabase
     .from("matches")
@@ -46,7 +75,7 @@ export default async function MatchesPage() {
     return (
       <main className="mx-auto max-w-4xl px-4 py-10">
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          Failed to load matches: {error.message}
+          {t("loadFailed", { message: error.message })}
         </div>
       </main>
     );
@@ -75,23 +104,22 @@ export default async function MatchesPage() {
       <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            Fixture list
+            {t("eyebrow")}
           </p>
           <h1
             className="mt-1 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
             style={{ fontStretch: "condensed" }}
           >
-            Matches
+            {t("headline")}
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            All {stats.total} fixtures, ordered by kickoff. Tap a match to submit
-            your pick. Predictions lock the second kickoff hits.
+            {t("lede", { total: stats.total })}
           </p>
         </div>
         <dl className="grid grid-cols-3 gap-2 sm:gap-3">
-          <Stat label="Open" value={stats.upcoming} />
-          <Stat label="Live" value={stats.live} accent="live" />
-          <Stat label="Final" value={stats.final} accent="final" />
+          <Stat label={t("statOpen")} value={stats.upcoming} />
+          <Stat label={t("statLive")} value={stats.live} accent="live" />
+          <Stat label={t("statFinal")} value={stats.final} accent="final" />
         </dl>
       </header>
 
@@ -100,14 +128,14 @@ export default async function MatchesPage() {
           <section key={day}>
             <h2 className="sticky top-[3.55rem] z-10 -mx-4 mb-3 flex items-baseline gap-3 border-b border-border bg-background/85 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/70">
               <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                Matchday {String(idx + 1).padStart(2, "0")}
+                {t("matchday", { n: String(idx + 1).padStart(2, "0") })}
               </span>
               <span aria-hidden className="h-px flex-1 bg-border" />
               <span className="font-heading text-sm font-semibold tracking-tight text-foreground">
                 <LocalTime iso={`${day}T00:00:00Z`} format="date" />
               </span>
               <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
-                {dayMatches.length} {dayMatches.length === 1 ? "match" : "matches"}
+                {t("matchCount", { count: dayMatches.length })}
               </span>
             </h2>
             <ul className="overflow-hidden rounded-xl border border-border bg-card">
@@ -122,7 +150,17 @@ export default async function MatchesPage() {
                     )}
                     style={{ animationDelay: `${delay}ms` }}
                   >
-                    <MatchRowCard match={m} uiStatus={uiStatusFor(m)} />
+                    <MatchRowCard
+                      match={m}
+                      uiStatus={uiStatusFor(m)}
+                      locale={locale}
+                      tStage={tStages(STAGE_KEYS[m.stage as MatchStage])}
+                      tKickoff={t("rowKickoff")}
+                      tFinal={t("rowFinal")}
+                      tOnNow={t("rowOnNow")}
+                      tLocked={t("rowLocked")}
+                      tPick={t("rowPick")}
+                    />
                   </li>
                 );
               })}
@@ -133,11 +171,10 @@ export default async function MatchesPage() {
         {list.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-              Empty bracket
+              {t("emptyTitle")}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm">
-              No matches loaded yet. An admin needs to seed the fixture list
-              before picks can open.
+              {t("emptyBody")}
             </p>
           </div>
         ) : null}
@@ -180,9 +217,23 @@ function Stat({
 function MatchRowCard({
   match,
   uiStatus,
+  locale,
+  tStage,
+  tKickoff,
+  tFinal,
+  tOnNow,
+  tLocked,
+  tPick,
 }: {
   match: MatchRow;
   uiStatus: MatchUiStatus;
+  locale: Locale;
+  tStage: string;
+  tKickoff: string;
+  tFinal: string;
+  tOnNow: string;
+  tLocked: string;
+  tPick: string;
 }) {
   const finalKnown =
     match.status === "final" &&
@@ -191,12 +242,12 @@ function MatchRowCard({
 
   return (
     <Link
-      href={`/matches/${match.id}`}
+      href={localePath(locale, `/matches/${match.id}`)}
       className="group/match relative flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50"
     >
       <div className="flex w-14 shrink-0 flex-col items-start">
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Kickoff
+          {tKickoff}
         </span>
         <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
           <LocalTime iso={match.kickoff_at} format="time" />
@@ -208,7 +259,7 @@ function MatchRowCard({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-sm border border-border bg-secondary px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            {stageLabel(match.stage)}
+            {tStage}
             {match.group_code ? ` · ${match.group_code}` : ""}
           </span>
           <MatchStateBadge status={uiStatus} size="sm" />
@@ -234,7 +285,7 @@ function MatchRowCard({
         {finalKnown ? (
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              Final
+              {tFinal}
             </div>
             <div className="font-mono text-xl font-semibold tabular-nums text-foreground">
               {match.home_score}–{match.away_score}
@@ -242,15 +293,15 @@ function MatchRowCard({
           </div>
         ) : uiStatus === "live" ? (
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-destructive live-pulse">
-            on now
+            {tOnNow}
           </div>
         ) : uiStatus === "locked" ? (
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            Locked
+            {tLocked}
           </div>
         ) : (
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            Pick
+            {tPick}
           </div>
         )}
         <ChevronRightIcon

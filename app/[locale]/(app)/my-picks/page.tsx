@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
@@ -7,16 +8,38 @@ import { TeamFlag } from "@/components/team-flag";
 import { isLocked } from "@/lib/match-utils";
 import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
-export const metadata = { title: "My picks — World Cup 2026 Pool" };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "myPicks" });
+  return { title: t("title") };
+}
 
-export default async function MyPicksPage() {
+export default async function MyPicksPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("myPicks");
+
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/sign-in?next=/my-picks");
+  if (!user)
+    redirect(
+      `${localePath(locale, "/sign-in")}?next=${encodeURIComponent(localePath(locale, "/my-picks"))}`,
+    );
 
   const { data: picks, error } = await supabase
     .from("predictions")
@@ -28,7 +51,7 @@ export default async function MyPicksPage() {
     return (
       <main className="mx-auto max-w-3xl px-4 py-10">
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          Failed to load picks: {error.message}
+          {t("loadFailed", { message: error.message })}
         </div>
       </main>
     );
@@ -48,40 +71,36 @@ export default async function MyPicksPage() {
       <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            Your ticket
+            {t("eyebrow")}
           </p>
           <h1
             className="mt-1 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
             style={{ fontStretch: "condensed" }}
           >
-            My picks
+            {t("headline")}
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Every match you&apos;ve submitted a prediction for. Edit any match
-            that hasn&apos;t kicked off yet.
+            {t("lede")}
           </p>
         </div>
         <dl className="grid grid-cols-3 gap-2 sm:gap-3">
-          <Stat label="Picks" value={picks?.length ?? 0} />
-          <Stat label="Exact" value={exactCount} accent="flag" />
-          <Stat label="Points" value={totalPoints} accent="pitch" />
+          <Stat label={t("statPicks")} value={picks?.length ?? 0} />
+          <Stat label={t("statExact")} value={exactCount} accent="flag" />
+          <Stat label={t("statPoints")} value={totalPoints} accent="pitch" />
         </dl>
       </header>
 
       {(picks?.length ?? 0) === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-            No picks yet
+            {t("emptyEyebrow")}
           </p>
-          <p className="mx-auto mt-2 max-w-sm text-sm">
-            You haven&apos;t locked in any scores yet. Open a match and submit
-            your first pick.
-          </p>
+          <p className="mx-auto mt-2 max-w-sm text-sm">{t("emptyBody")}</p>
           <Link
-            href="/matches"
+            href={localePath(locale, "/matches")}
             className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
           >
-            Browse matches <ArrowRightIcon className="size-3.5" />
+            {t("browseMatches")} <ArrowRightIcon className="size-3.5" />
           </Link>
         </div>
       ) : (
@@ -135,14 +154,14 @@ export default async function MyPicksPage() {
                     <span className="truncate">{m.away_team}</span>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs">
-                    <span className="text-muted-foreground">Pick</span>
+                    <span className="text-muted-foreground">{t("rowPick")}</span>
                     <span className="font-semibold tabular-nums text-foreground">
                       {p.home_goals}–{p.away_goals}
                     </span>
                     {m.status === "final" && m.home_score != null && m.away_score != null ? (
                       <>
                         <span className="text-muted-foreground/60">·</span>
-                        <span className="text-muted-foreground">Final</span>
+                        <span className="text-muted-foreground">{t("rowFinal")}</span>
                         <span className="font-semibold tabular-nums text-foreground">
                           {m.home_score}–{m.away_score}
                         </span>
@@ -163,17 +182,17 @@ export default async function MyPicksPage() {
                           : "border border-border bg-secondary text-muted-foreground",
                       )}
                     >
-                      +{score.points} pt{score.points === 1 ? "" : "s"} ·{" "}
+                      +{score.points} {score.points === 1 ? t("ptsSingular") : t("ptsPlural")} ·{" "}
                       {score.hit_type}
                     </span>
                   ) : null}
                   {!locked ? (
                     <Link
-                      href={`/matches/${m.id}`}
+                      href={localePath(locale, `/matches/${m.id}`)}
                       className="inline-flex items-center gap-1 text-xs font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
                     >
                       <PencilLineIcon className="size-3.5" />
-                      Edit
+                      {t("rowEdit")}
                     </Link>
                   ) : null}
                 </div>

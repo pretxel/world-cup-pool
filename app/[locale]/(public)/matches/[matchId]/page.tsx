@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
@@ -9,17 +10,30 @@ import { buttonVariants } from "@/components/ui/button";
 import { TeamFlag } from "@/components/team-flag";
 import { StageIcon } from "@/components/stage-icon";
 import { VenueImage } from "@/components/venue-image";
-import { lockReason, stageLabel } from "@/lib/match-utils";
+import { lockReason } from "@/lib/match-utils";
+import type { MatchStage } from "@/lib/db";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
 import { cn } from "@/lib/utils";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+
+const STAGE_KEYS: Record<MatchStage, keyof IntlMessages["stages"]> = {
+  group: "group",
+  r32: "r32",
+  r16: "r16",
+  qf: "qf",
+  sf: "sf",
+  third: "third",
+  final: "final",
+};
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ matchId: string }>;
+  params: Promise<{ locale: string; matchId: string }>;
 }): Promise<Metadata> {
-  const { matchId } = await params;
+  const { locale, matchId } = await params;
+  const t = await getTranslations({ locale, namespace: "matchDetail" });
   const supabase = await createServerSupabaseClient();
   const { data: match } = await supabase
     .from("matches")
@@ -29,22 +43,31 @@ export async function generateMetadata({
 
   if (!match) {
     return {
-      title: "Match not found",
-      description: "This match is not in the World Cup 2026 Pool fixture list.",
+      title: t("metaTitleNotFound"),
+      description: t("metaDescriptionNotFound"),
       robots: { index: false, follow: false },
     };
   }
 
   const kickoff = new Date(match.kickoff_at);
-  const kickoffLabel = kickoff.toLocaleString("en-US", {
+  const kickoffLabel = kickoff.toLocaleString(locale, {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "UTC",
   });
   const title = `${match.home_team} vs ${match.away_team}`;
   const description = match.venue
-    ? `Predict ${match.home_team} vs ${match.away_team} at ${match.venue}. Kickoff ${kickoffLabel} UTC. Submit your score before the match locks.`
-    : `Predict ${match.home_team} vs ${match.away_team}. Kickoff ${kickoffLabel} UTC. Submit your score before the match locks.`;
+    ? t("metaDescriptionWithVenue", {
+        home: match.home_team,
+        away: match.away_team,
+        venue: match.venue,
+        kickoff: kickoffLabel,
+      })
+    : t("metaDescription", {
+        home: match.home_team,
+        away: match.away_team,
+        kickoff: kickoffLabel,
+      });
   const canonical = `/matches/${matchId}`;
 
   return {
@@ -68,9 +91,16 @@ export async function generateMetadata({
 export default async function MatchDetailPage({
   params,
 }: {
-  params: Promise<{ matchId: string }>;
+  params: Promise<{ locale: string; matchId: string }>;
 }) {
-  const { matchId } = await params;
+  const { locale: raw, matchId } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("matchDetail");
+  const tStages = await getTranslations("stages");
+  const tForm = await getTranslations("predictionForm");
+
   const supabase = await createServerSupabaseClient();
 
   const { data: match, error } = await supabase
@@ -113,6 +143,8 @@ export default async function MatchDetailPage({
     match.home_score != null &&
     match.away_score != null;
 
+  const stageLabelLocalized = tStages(STAGE_KEYS[match.stage as MatchStage]);
+
   const sportsEventJsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
@@ -128,13 +160,49 @@ export default async function MatchDetailPage({
       { "@type": "SportsTeam", name: match.home_team },
       { "@type": "SportsTeam", name: match.away_team },
     ],
-    ...(match.venue
-      ? { location: { "@type": "Place", name: match.venue } }
-      : {}),
-    description: `${stageLabel(match.stage)}${
-      match.group_code ? ` · ${match.group_code}` : ""
-    }: ${match.home_team} vs ${match.away_team}.`,
+    ...(match.venue ? { location: { "@type": "Place", name: match.venue } } : {}),
+    description: `${stageLabelLocalized}${match.group_code ? ` · ${match.group_code}` : ""}: ${match.home_team} vs ${match.away_team}.`,
   };
+
+  function lockedExplain(): string {
+    switch (reason) {
+      case "final":
+        return t("lockedWithPickFinal", {
+          home: myPrediction?.home_goals ?? 0,
+          away: myPrediction?.away_goals ?? 0,
+        }).split(". ").slice(1).join(". ");
+      case "cancelled":
+        return t("lockedWithPickCancelled", {
+          home: myPrediction?.home_goals ?? 0,
+          away: myPrediction?.away_goals ?? 0,
+        }).split(". ").slice(1).join(". ");
+      case "live":
+        return t("lockedWithPickLive", {
+          home: myPrediction?.home_goals ?? 0,
+          away: myPrediction?.away_goals ?? 0,
+        }).split(". ").slice(1).join(". ");
+      case "kickoff":
+      default:
+        return t("lockedWithPickKickoff", {
+          home: myPrediction?.home_goals ?? 0,
+          away: myPrediction?.away_goals ?? 0,
+        }).split(". ").slice(1).join(". ");
+    }
+  }
+
+  function missingPickExplain(): string {
+    switch (reason) {
+      case "final":
+        return t("missingPickFinal");
+      case "cancelled":
+        return t("missingPickCancelled");
+      case "live":
+        return t("missingPickLive");
+      case "kickoff":
+      default:
+        return t("missingPickKickoff");
+    }
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
@@ -144,16 +212,15 @@ export default async function MatchDetailPage({
       />
 
       <Link
-        href="/matches"
+        href={localePath(locale, "/matches")}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeftIcon className="size-3.5" />
-        All matches
+        {t("back")}
       </Link>
 
-      {/* Scoreboard panel */}
       <section
-        aria-label="Match scoreboard"
+        aria-label={t("scoreboardLabel")}
         className="bg-scoreboard relative mt-5 overflow-hidden rounded-2xl text-pitch-foreground ring-1 ring-pitch/30 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.45)] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500 motion-safe:ease-out"
       >
         <VenueImage
@@ -170,14 +237,11 @@ export default async function MatchDetailPage({
           <div className="flex flex-wrap items-center gap-2 motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:duration-300 motion-safe:delay-100 motion-safe:fill-mode-both">
             <span className="inline-flex items-center gap-1.5 rounded-md bg-pitch-foreground/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/80 ring-1 ring-pitch-foreground/15">
               <StageIcon stage={match.stage} className="size-3" />
-              {stageLabel(match.stage)}
+              {stageLabelLocalized}
               {match.group_code ? ` · ${match.group_code}` : ""}
             </span>
             <span
-              className={cn(
-                match.status === "live" &&
-                  "motion-safe:animate-pulse",
-              )}
+              className={cn(match.status === "live" && "motion-safe:animate-pulse")}
             >
               <MatchStateBadge status={uiStatus} size="sm" />
             </span>
@@ -187,7 +251,7 @@ export default async function MatchDetailPage({
         <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-6 pt-3 pb-6 sm:gap-6 sm:px-8">
           <div className="min-w-0">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
-              Home
+              {t("home")}
             </div>
             <div className="mt-1 flex items-center gap-2 sm:gap-3">
               <TeamFlag team={match.home_team} size="lg" />
@@ -210,7 +274,7 @@ export default async function MatchDetailPage({
             ) : (
               <>
                 <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
-                  vs
+                  {t("vs")}
                 </div>
                 <div className="mt-1 font-heading text-2xl font-semibold leading-none sm:text-4xl">
                   —
@@ -221,7 +285,7 @@ export default async function MatchDetailPage({
 
           <div className="min-w-0 text-right">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
-              Away
+              {t("away")}
             </div>
             <div className="mt-1 flex items-center justify-end gap-2 sm:gap-3">
               <span
@@ -238,8 +302,7 @@ export default async function MatchDetailPage({
         <div className="relative flex flex-col gap-2 border-t border-pitch-foreground/15 bg-black/10 px-6 py-3 text-pitch-foreground/85 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]">
             <span>
-              Kickoff{" "}
-              <LocalTime iso={match.kickoff_at} />
+              {t("kickoffLabel")} <LocalTime iso={match.kickoff_at} />
             </span>
             {match.venue ? (
               <span className="flex items-center gap-1 text-pitch-foreground/70">
@@ -252,27 +315,34 @@ export default async function MatchDetailPage({
             <KickoffCountdown
               kickoffAt={match.kickoff_at}
               className="text-pitch-foreground/85"
-              lockedLabel="Locked at kickoff"
+              lockedLabel={tForm("lockedAtKickoff")}
             />
           ) : null}
         </div>
       </section>
 
-      {/* Prediction zone */}
       <section className="mt-8">
         <div className="mb-3 flex items-baseline justify-between">
           <h2
             className="font-heading text-xl font-semibold tracking-tight"
             style={{ fontStretch: "condensed" }}
           >
-            Your prediction
+            {t("predictionHeading")}
           </h2>
           {myPrediction && !isFinal ? (
             <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-              Current pick:{" "}
-              <span className="font-semibold tabular-nums text-foreground">
-                {myPrediction.home_goals}–{myPrediction.away_goals}
-              </span>
+              {t.rich("currentPick", {
+                home: () => (
+                  <span className="font-semibold tabular-nums text-foreground">
+                    {myPrediction.home_goals}
+                  </span>
+                ),
+                away: () => (
+                  <span className="font-semibold tabular-nums text-foreground">
+                    {myPrediction.away_goals}
+                  </span>
+                ),
+              })}
             </span>
           ) : null}
         </div>
@@ -280,22 +350,21 @@ export default async function MatchDetailPage({
         {!user ? (
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 text-sm">
             <p>
-              Sign in to lock a score for{" "}
-              <span className="font-medium text-foreground">
-                {match.home_team} vs {match.away_team}
-              </span>
-              . You can keep editing until kickoff.
+              {t("signInPrompt", {
+                home: match.home_team,
+                away: match.away_team,
+              })}
             </p>
             <div>
               <Link
-                href={`/sign-in?next=/matches/${match.id}`}
+                href={`${localePath(locale, "/sign-in")}?next=${encodeURIComponent(localePath(locale, `/matches/${match.id}`))}`}
                 className={buttonVariants({
                   size: "lg",
                   className:
                     "h-10 gap-2 px-4 text-sm font-semibold uppercase tracking-[0.16em]",
                 })}
               >
-                Sign in
+                {t("signInCta")}
               </Link>
             </div>
           </div>
@@ -306,21 +375,38 @@ export default async function MatchDetailPage({
               {myPrediction ? (
                 <>
                   <p>
-                    Your pick was{" "}
-                    <span className="font-mono text-base font-semibold tabular-nums text-foreground">
-                      {myPrediction.home_goals}–{myPrediction.away_goals}
-                    </span>
-                    . {lockedExplain(reason)}
+                    {t.rich(
+                      reason === "final"
+                        ? "lockedWithPickFinal"
+                        : reason === "cancelled"
+                          ? "lockedWithPickCancelled"
+                          : reason === "live"
+                            ? "lockedWithPickLive"
+                            : "lockedWithPickKickoff",
+                      {
+                        home: () => (
+                          <span className="font-mono text-base font-semibold tabular-nums text-foreground">
+                            {myPrediction.home_goals}
+                          </span>
+                        ),
+                        away: () => (
+                          <span className="font-mono text-base font-semibold tabular-nums text-foreground">
+                            {myPrediction.away_goals}
+                          </span>
+                        ),
+                      },
+                    )}
                   </p>
                   {isFinal ? (
                     <p className="mt-1 text-muted-foreground">
-                      Final score lives in the scoreboard above.
+                      {t("finalFootnote")}
                     </p>
                   ) : null}
                 </>
               ) : (
-                missingPickExplain(reason)
+                missingPickExplain()
               )}
+              <span className="sr-only">{lockedExplain()}</span>
             </div>
           </div>
         ) : (
@@ -335,32 +421,4 @@ export default async function MatchDetailPage({
       </section>
     </main>
   );
-}
-
-function lockedExplain(reason: ReturnType<typeof lockReason>): string {
-  switch (reason) {
-    case "final":
-      return "This match is final — predictions are locked.";
-    case "cancelled":
-      return "This match was cancelled — predictions are locked.";
-    case "live":
-      return "This match is live — predictions are locked.";
-    case "kickoff":
-    default:
-      return "Predictions are locked at kickoff.";
-  }
-}
-
-function missingPickExplain(reason: ReturnType<typeof lockReason>): string {
-  switch (reason) {
-    case "final":
-      return "This match is final and you didn't submit a prediction.";
-    case "cancelled":
-      return "This match was cancelled — no predictions can be submitted.";
-    case "live":
-      return "This match is live — predictions are locked and you didn't submit one.";
-    case "kickoff":
-    default:
-      return "Predictions are locked — kickoff has passed and you didn't submit one for this match.";
-  }
 }
