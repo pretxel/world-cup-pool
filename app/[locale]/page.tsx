@@ -6,9 +6,9 @@ import { ArrowRightIcon, TargetIcon, TrophyIcon, ZapIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { MiniBracket } from "@/components/mini-bracket";
-import { TrophyMark } from "@/components/trophy-mark";
 import { TeamFlagWall } from "@/components/team-flag-wall";
 import { TeamFlag } from "@/components/team-flag";
+import { Logotype } from "@/components/logotype";
 
 export async function generateMetadata({
   params,
@@ -71,18 +71,20 @@ function Hero({ locale, t }: { locale: Locale; t: T }) {
             {t("hostsLine")}
           </div>
 
-          <div className="mt-6 flex items-start gap-4 sm:gap-6">
-            <h1
-              className="font-heading text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[5rem]"
-              style={{ fontStretch: "condensed" }}
-            >
-              <span className="block">{t("headlineLine1")}</span>
-              <span className="block text-pitch">{t("headlineLine2")}</span>
-            </h1>
-            <TrophyMark
-              className="hidden w-16 shrink-0 self-end text-foreground sm:block sm:w-20 lg:w-24"
+          <div className="mt-4">
+            <Logotype
+              size="xl"
+              className="text-foreground"
+              ariaLabel="WC26 Pool"
             />
           </div>
+          <h1
+            className="mt-6 font-heading text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[5rem]"
+            style={{ fontStretch: "condensed" }}
+          >
+            <span className="block">{t("headlineLine1")}</span>
+            <span className="block text-pitch">{t("headlineLine2")}</span>
+          </h1>
 
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             {t("lede")}

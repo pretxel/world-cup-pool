@@ -5,6 +5,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { NavLinks, MobileNav } from "@/components/site-nav-client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { Logotype } from "@/components/logotype";
 import { DEFAULT_LOCALE, isLocale, localePath } from "@/lib/i18n";
 
 export async function SiteNav() {
@@ -38,26 +39,12 @@ export async function SiteNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href={lp("/")} className="group/brand flex items-center gap-2">
-          <span
-            aria-hidden
-            className="grid size-7 place-items-center rounded-md bg-pitch text-pitch-foreground ring-1 ring-pitch/40"
-          >
-            <span className="font-mono text-[10px] font-bold leading-none tracking-tight">
-              26
-            </span>
-          </span>
-          <span className="flex items-baseline gap-1.5">
-            <span
-              className="font-heading text-sm font-semibold tracking-tight text-foreground"
-              style={{ fontStretch: "condensed" }}
-            >
-              WC26
-            </span>
-            <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground sm:inline">
-              {t("brandTag")}
-            </span>
-          </span>
+        <Link
+          href={lp("/")}
+          className="group/brand flex items-center"
+          aria-label="WC26 Pool"
+        >
+          <Logotype size="xs" className="text-foreground" />
         </Link>
 
         <NavLinks links={links} className="hidden md:flex" />
@@ -93,13 +80,8 @@ export async function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border/70">
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <span
-            aria-hidden
-            className="grid size-5 place-items-center rounded-sm bg-pitch text-pitch-foreground"
-          >
-            <span className="font-mono text-[8px] font-bold leading-none">26</span>
-          </span>
+        <div className="flex items-center gap-3">
+          <Logotype size="xs" className="text-foreground" />
           <span className="font-mono uppercase tracking-[0.2em]">
             {t("tournament")}
           </span>

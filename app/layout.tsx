@@ -91,11 +91,6 @@ export const metadata: Metadata = {
     },
   },
   manifest: "/site.webmanifest",
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
 };
 
 export const viewport: Viewport = {
