@@ -21,3 +21,12 @@ export const LOCALE_LABELS: Record<string, string> = {
   es: "Español",
   fr: "Français",
 };
+
+// Flag slug used to render the locale's flag in the language switcher.
+// Pragmatic en→us for the WC26 host-nation context. Switch to gb-eng if
+// preferred — one-line change.
+export const LOCALE_FLAG_SLUG: Record<Locale, string> = {
+  en: "us",
+  es: "es",
+  fr: "fr",
+};

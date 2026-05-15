@@ -3,8 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MenuIcon, XIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { LocaleList } from "@/components/language-switcher";
 import { cn } from "@/lib/utils";
 
 type NavLink = { href: string; label: string };
@@ -66,6 +68,7 @@ export function MobileNav({
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
   const [lastPath, setLastPath] = React.useState(pathname);
+  const tLang = useTranslations("languageSwitcher");
 
   // Close the mobile drawer when the route changes. React's "store info from
   // previous render" pattern — keeps the close logic out of an effect.
@@ -130,6 +133,12 @@ export function MobileNav({
                 </li>
               );
             })}
+            <li className="mt-2 border-t border-border pt-3">
+              <p className="px-3 pb-1 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                {tLang("label")}
+              </p>
+              <LocaleList onAfterChange={() => setOpen(false)} />
+            </li>
             <li className="mt-2 border-t border-border pt-3">
               {signedIn ? (
                 <form action="/sign-out" method="post">
