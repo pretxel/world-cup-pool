@@ -12,6 +12,8 @@ export const REMOTE_TO_LOCAL_TEAM: Record<string, string> = {
   "Türkiye": "Turkey",
   "Turkiye": "Turkey",
   "Cabo Verde": "Cape Verde",
+  "Cape Verde Islands": "Cape Verde",
+  "Bosnia-Herzegovina": "Bosnia and Herzegovina",
   "DR Congo": "DR Congo",
   "Congo DR": "DR Congo",
   "Democratic Republic of the Congo": "DR Congo",
