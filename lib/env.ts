@@ -20,6 +20,10 @@ export const env = {
   supabaseUrl: required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
   supabaseAnonKey: required("NEXT_PUBLIC_SUPABASE_ANON_KEY", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
   siteUrl: resolveSiteUrl(),
+  // Nullable on purpose — the cron route returns 204 with x-skipped: missing-env
+  // when these are absent, so the build doesn't crash on cold envs.
+  footballDataToken: process.env.FOOTBALL_DATA_TOKEN ?? null,
+  cronSecret: process.env.CRON_SECRET ?? null,
 };
 
 export function requireServiceRoleKey(): string {
