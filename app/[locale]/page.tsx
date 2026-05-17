@@ -9,6 +9,7 @@ import { MiniBracket } from "@/components/mini-bracket";
 import { TeamFlagWall } from "@/components/team-flag-wall";
 import { TeamFlag } from "@/components/team-flag";
 import { Logotype } from "@/components/logotype";
+import { TournamentCountdown } from "@/components/tournament-countdown";
 
 export async function generateMetadata({
   params,
@@ -35,6 +36,7 @@ export default async function HomePage({
   return (
     <main>
       <Hero locale={locale} t={t} />
+      <TournamentCountdown />
       <ScoringSection locale={locale} t={t} />
       <FlagWallDivider />
       <Cadence t={t} />

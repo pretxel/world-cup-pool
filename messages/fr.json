@@ -86,7 +86,15 @@
     "cadenceScoreLabel": "Marquer",
     "cadenceScoreCopy": "Les points apparaissent dès qu'un admin saisit le score final.",
     "cadenceClimbLabel": "Grimper",
-    "cadenceClimbCopy": "Le classement global se rafraîchit au moindre résultat."
+    "cadenceClimbCopy": "Le classement global se rafraîchit au moindre résultat.",
+    "countdownEyebrow": "Coup d'envoi dans",
+    "countdownDays": "Jours",
+    "countdownHrs": "Hrs",
+    "countdownMin": "Min",
+    "countdownSec": "Sec",
+    "countdownLive": "Tournoi en direct",
+    "countdownLiveSubhead": "Les pronos sont ouverts sur tout le tableau — entrez dans n'importe quel match.",
+    "countdownSubhead": "{home} vs {away} · {date}"
   },
   "howItWorks": {
     "title": "Fonctionnement",

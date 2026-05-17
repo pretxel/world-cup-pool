@@ -86,7 +86,15 @@
     "cadenceScoreLabel": "Score",
     "cadenceScoreCopy": "Points post instantly when an admin enters the final score.",
     "cadenceClimbLabel": "Climb",
-    "cadenceClimbCopy": "The global leaderboard refreshes the moment a result lands."
+    "cadenceClimbCopy": "The global leaderboard refreshes the moment a result lands.",
+    "countdownEyebrow": "Kickoff in",
+    "countdownDays": "Days",
+    "countdownHrs": "Hrs",
+    "countdownMin": "Min",
+    "countdownSec": "Sec",
+    "countdownLive": "Tournament live",
+    "countdownLiveSubhead": "Picks open across the bracket — jump to any match.",
+    "countdownSubhead": "{home} vs {away} · {date}"
   },
   "howItWorks": {
     "title": "How it works",

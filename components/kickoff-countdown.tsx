@@ -5,16 +5,34 @@ import { cn } from "@/lib/utils";
 
 type Variant = "inline" | "stacked";
 
+type TileLabels = {
+  days: string;
+  hours: string;
+  mins: string;
+  secs: string;
+};
+
+const DEFAULT_LABELS: TileLabels = {
+  days: "days",
+  hours: "hrs",
+  mins: "min",
+  secs: "sec",
+};
+
 export function KickoffCountdown({
   kickoffAt,
   variant = "inline",
   className,
   lockedLabel = "Locked at kickoff",
+  labels,
+  lockedNode,
 }: {
   kickoffAt: string;
   variant?: Variant;
   className?: string;
   lockedLabel?: string;
+  labels?: Partial<TileLabels>;
+  lockedNode?: React.ReactNode;
 }) {
   const [remaining, setRemaining] = React.useState<number>(() =>
     Math.max(0, new Date(kickoffAt).getTime() - Date.now()),
@@ -22,6 +40,7 @@ export function KickoffCountdown({
 
   React.useEffect(() => {
     const target = new Date(kickoffAt).getTime();
+    if (target - Date.now() <= 0) return;
     const tick = () => setRemaining(Math.max(0, target - Date.now()));
     tick();
     const id = setInterval(tick, 1000);
@@ -29,6 +48,9 @@ export function KickoffCountdown({
   }, [kickoffAt]);
 
   if (remaining <= 0) {
+    if (lockedNode !== undefined) {
+      return <>{lockedNode}</>;
+    }
     return (
       <span
         className={cn(
@@ -47,6 +69,8 @@ export function KickoffCountdown({
   const mins = Math.floor((remaining % 3_600_000) / 60_000);
   const secs = Math.floor((remaining % 60_000) / 1_000);
 
+  const resolved: TileLabels = { ...DEFAULT_LABELS, ...labels };
+
   if (variant === "stacked") {
     return (
       <div
@@ -57,10 +81,10 @@ export function KickoffCountdown({
         aria-label={`${days}d ${hours}h ${mins}m ${secs}s until kickoff`}
       >
         {[
-          { value: days, label: "days" },
-          { value: hours, label: "hrs" },
-          { value: mins, label: "min" },
-          { value: secs, label: "sec" },
+          { value: days, label: resolved.days },
+          { value: hours, label: resolved.hours },
+          { value: mins, label: resolved.mins },
+          { value: secs, label: resolved.secs },
         ].map((u) => (
           <div
             key={u.label}

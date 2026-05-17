@@ -86,7 +86,15 @@
     "cadenceScoreLabel": "Puntuar",
     "cadenceScoreCopy": "Los puntos aparecen al instante cuando un admin introduce el resultado final.",
     "cadenceClimbLabel": "Escalar",
-    "cadenceClimbCopy": "La clasificación global se refresca al caer cada resultado."
+    "cadenceClimbCopy": "La clasificación global se refresca al caer cada resultado.",
+    "countdownEyebrow": "Faltan para el pitido inicial",
+    "countdownDays": "Días",
+    "countdownHrs": "Hrs",
+    "countdownMin": "Min",
+    "countdownSec": "Seg",
+    "countdownLive": "Torneo en vivo",
+    "countdownLiveSubhead": "Los pronósticos están abiertos en todo el cuadro — entra a cualquier partido.",
+    "countdownSubhead": "{home} vs {away} · {date}"
   },
   "howItWorks": {
     "title": "Cómo funciona",
