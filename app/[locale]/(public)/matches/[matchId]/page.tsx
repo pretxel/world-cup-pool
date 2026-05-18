@@ -164,32 +164,6 @@ export default async function MatchDetailPage({
     description: `${stageLabelLocalized}${match.group_code ? ` · ${match.group_code}` : ""}: ${match.home_team} vs ${match.away_team}.`,
   };
 
-  function lockedExplain(): string {
-    switch (reason) {
-      case "final":
-        return t("lockedWithPickFinal", {
-          home: myPrediction?.home_goals ?? 0,
-          away: myPrediction?.away_goals ?? 0,
-        }).split(". ").slice(1).join(". ");
-      case "cancelled":
-        return t("lockedWithPickCancelled", {
-          home: myPrediction?.home_goals ?? 0,
-          away: myPrediction?.away_goals ?? 0,
-        }).split(". ").slice(1).join(". ");
-      case "live":
-        return t("lockedWithPickLive", {
-          home: myPrediction?.home_goals ?? 0,
-          away: myPrediction?.away_goals ?? 0,
-        }).split(". ").slice(1).join(". ");
-      case "kickoff":
-      default:
-        return t("lockedWithPickKickoff", {
-          home: myPrediction?.home_goals ?? 0,
-          away: myPrediction?.away_goals ?? 0,
-        }).split(". ").slice(1).join(". ");
-    }
-  }
-
   function missingPickExplain(): string {
     switch (reason) {
       case "final":
@@ -406,7 +380,6 @@ export default async function MatchDetailPage({
               ) : (
                 missingPickExplain()
               )}
-              <span className="sr-only">{lockedExplain()}</span>
             </div>
           </div>
         ) : (
