@@ -60,19 +60,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
+    // Tells Facebook the page is also available in these languages.
+    alternateLocale: ["es_ES", "fr_FR"],
     url: siteUrl,
     siteName,
     title: defaultTitle,
     description: defaultDescription,
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: `${siteName} — predict every match`,
-      },
-    ],
+    // og:image is supplied by the file convention app/opengraph-image.tsx,
+    // which also emits og:image:width/height/type/alt. Defining images here
+    // too would produce a duplicate og:image with no og:image:type.
   },
+  ...(env.facebookAppId ? { facebook: { appId: env.facebookAppId } } : {}),
   twitter: {
     card: "summary_large_image",
     title: defaultTitle,

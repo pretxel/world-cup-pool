@@ -24,6 +24,9 @@ export const env = {
   // when these are absent, so the build doesn't crash on cold envs.
   footballDataToken: process.env.FOOTBALL_DATA_TOKEN ?? null,
   cronSecret: process.env.CRON_SECRET ?? null,
+  // Optional — when set, emits <meta property="fb:app_id"> so the page can be
+  // tied to a Facebook app (Insights, Domain Insights, Comments moderation).
+  facebookAppId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ?? null,
 };
 
 export function requireServiceRoleKey(): string {
