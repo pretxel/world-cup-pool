@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: defaultTitle,
     description: defaultDescription,
-    images: ["/opengraph-image"],
+    images: ["/opengraph-image.png"],
   },
   robots: {
     index: true,
