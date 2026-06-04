@@ -12,6 +12,7 @@
   },
   "nav": {
     "matches": "Partidos",
+    "news": "Noticias",
     "leaderboard": "Clasificación",
     "myPicks": "Mis pronósticos",
     "admin": "Admin",
@@ -142,6 +143,19 @@
     "emptyTitle": "Cuadro vacío",
     "emptyBody": "Aún no hay partidos cargados. Un admin necesita publicar el calendario antes de abrir los pronósticos.",
     "loadFailed": "No se pudieron cargar los partidos: {message}"
+  },
+  "news": {
+    "title": "Noticias",
+    "description": "Las últimas noticias del Mundial 2026, actualizadas durante todo el día. Toca cualquier historia para leerla en la fuente.",
+    "ogTitle": "Noticias · WC26 Pool",
+    "ogDescription": "Noticias recientes del Mundial 2026, actualizadas durante todo el día.",
+    "eyebrow": "Redacción",
+    "headline": "Noticias",
+    "lede": "Noticias recientes del Mundial 2026, actualizadas durante el día. Toca una historia para leerla en la fuente.",
+    "emptyTitle": "Aún no hay titulares",
+    "emptyBody": "El feed todavía no se ha llenado. Vuelve pronto para ver las últimas noticias del Mundial 2026.",
+    "readMore": "Leer",
+    "loadFailed": "No se pudieron cargar las noticias: {message}"
   },
   "matchDetail": {
     "metaTitleNotFound": "Partido no encontrado",

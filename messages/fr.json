@@ -12,6 +12,7 @@
   },
   "nav": {
     "matches": "Matchs",
+    "news": "Actualités",
     "leaderboard": "Classement",
     "myPicks": "Mes pronos",
     "admin": "Admin",
@@ -142,6 +143,19 @@
     "emptyTitle": "Tableau vide",
     "emptyBody": "Aucun match chargé pour l'instant. Un admin doit publier le calendrier avant l'ouverture des pronos.",
     "loadFailed": "Échec du chargement des matchs : {message}"
+  },
+  "news": {
+    "title": "Actualités",
+    "description": "Les dernières actualités de la Coupe du monde 2026, mises à jour tout au long de la journée. Touchez un article pour le lire à la source.",
+    "ogTitle": "Actualités · WC26 Pool",
+    "ogDescription": "Dernières actualités de la Coupe du monde 2026, mises à jour tout au long de la journée.",
+    "eyebrow": "Rédaction",
+    "headline": "Actualités",
+    "lede": "Dernières actualités de la Coupe du monde 2026, mises à jour au fil de la journée. Touchez un article pour le lire à la source.",
+    "emptyTitle": "Pas encore de titres",
+    "emptyBody": "Le flux n'est pas encore rempli. Revenez bientôt pour les dernières actualités de la Coupe du monde 2026.",
+    "readMore": "Lire",
+    "loadFailed": "Échec du chargement des actualités : {message}"
   },
   "matchDetail": {
     "metaTitleNotFound": "Match introuvable",

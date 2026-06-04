@@ -12,6 +12,7 @@
   },
   "nav": {
     "matches": "Matches",
+    "news": "News",
     "leaderboard": "Leaderboard",
     "myPicks": "My picks",
     "admin": "Admin",
@@ -142,6 +143,19 @@
     "emptyTitle": "Empty bracket",
     "emptyBody": "No matches loaded yet. An admin needs to seed the fixture list before picks can open.",
     "loadFailed": "Failed to load matches: {message}"
+  },
+  "news": {
+    "title": "News",
+    "description": "The latest World Cup 2026 headlines, refreshed throughout the day. Tap any story to read it at the source.",
+    "ogTitle": "News · WC26 Pool",
+    "ogDescription": "Fresh World Cup 2026 headlines, updated throughout the day.",
+    "eyebrow": "Newsroom",
+    "headline": "News",
+    "lede": "Fresh World Cup 2026 headlines, refreshed through the day. Tap a story to read it at the source.",
+    "emptyTitle": "No headlines yet",
+    "emptyBody": "The feed hasn't been filled yet. Check back soon for the latest World Cup 2026 news.",
+    "readMore": "Read",
+    "loadFailed": "Failed to load news: {message}"
   },
   "matchDetail": {
     "metaTitleNotFound": "Match not found",

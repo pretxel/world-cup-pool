@@ -24,6 +24,11 @@ export const env = {
   // when these are absent, so the build doesn't crash on cold envs.
   footballDataToken: process.env.FOOTBALL_DATA_TOKEN ?? null,
   cronSecret: process.env.CRON_SECRET ?? null,
+  // News feed for the /news section. Token is required for sync-news to run;
+  // URL overrides the default provider endpoint. Both nullable so cold envs
+  // skip the sync gracefully instead of crashing the build.
+  newsApiToken: process.env.NEWS_API_TOKEN ?? null,
+  newsApiUrl: process.env.NEWS_API_URL ?? null,
   // Optional — when set, emits <meta property="fb:app_id"> so the page can be
   // tied to a Facebook app (Insights, Domain Insights, Comments moderation).
   facebookAppId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ?? null,

@@ -39,6 +39,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      news_articles: {
+        Row: {
+          created_at: string
+          dedup_key: string
+          external_id: string | null
+          id: string
+          image_url: string | null
+          published_at: string
+          source: string | null
+          source_url: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dedup_key: string
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          published_at: string
+          source?: string | null
+          source_url: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dedup_key?: string
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          published_at?: string
+          source?: string | null
+          source_url?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           away_score: number | null
