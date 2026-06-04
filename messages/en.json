@@ -155,6 +155,9 @@
     "emptyTitle": "No headlines yet",
     "emptyBody": "The feed hasn't been filled yet. Check back soon for the latest World Cup 2026 news.",
     "readMore": "Read",
+    "loadingMore": "Loading more…",
+    "endOfFeed": "You're all caught up",
+    "loadMoreFailed": "Couldn't load more — try refreshing",
     "loadFailed": "Failed to load news: {message}"
   },
   "matchDetail": {

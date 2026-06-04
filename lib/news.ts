@@ -24,6 +24,10 @@ export const DEFAULT_NEWS_URL = "https://newsapi.org/v2/everything";
 // Constrain the feed to World Cup 2026 coverage.
 export const NEWS_QUERY = '"World Cup 2026" OR "FIFA World Cup 2026"';
 
+// Articles per page on the public /news feed (initial SSR slice + each
+// infinite-scroll batch).
+export const NEWS_PAGE_SIZE = 12;
+
 // Shape returned by NewsAPI.org /v2/everything. Fields are optional/nullable
 // because upstream is not guaranteed to populate them.
 type NewsApiArticle = {

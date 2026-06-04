@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ArrowUpRightIcon } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { LocalTime } from "@/components/local-time";
 import type { NewsArticleRow } from "@/lib/db";
-import { isHttpUrl } from "@/lib/news";
+import { NEWS_PAGE_SIZE } from "@/lib/news";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
-
-// Surface a bounded, fresh slice of the cached feed.
-const FEED_LIMIT = 40;
+import { NewsFeed } from "./news-feed";
 
 export async function generateMetadata({
   params,
@@ -41,12 +37,15 @@ export default async function NewsPage({
 
   const t = await getTranslations("news");
 
+  // Server-render the first page for fast paint + SEO; the rest streams in via
+  // infinite scroll (NewsFeed → loadMoreNews). Ordering must match the action.
   const supabase = await createServerSupabaseClient();
   const { data: articles, error } = await supabase
     .from("news_articles")
     .select("*")
     .order("published_at", { ascending: false })
-    .limit(FEED_LIMIT);
+    .order("id", { ascending: false })
+    .range(0, NEWS_PAGE_SIZE - 1);
 
   if (error) {
     return (
@@ -85,78 +84,8 @@ export default async function NewsPage({
           <p className="mx-auto mt-2 max-w-sm text-sm">{t("emptyBody")}</p>
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
-          {list.map((a) => (
-            <li key={a.id}>
-              <ArticleCard article={a} readMore={t("readMore")} />
-            </li>
-          ))}
-        </ul>
+        <NewsFeed initial={list} initialHasMore={list.length === NEWS_PAGE_SIZE} />
       )}
     </main>
-  );
-}
-
-function ArticleCard({
-  article,
-  readMore,
-}: {
-  article: NewsArticleRow;
-  readMore: string;
-}) {
-  // Defense-in-depth: the sync already rejects non-http(s) schemes, but guard
-  // again at render so untrusted feed data can never produce a javascript:
-  // href or an off-scheme image src.
-  const href = isHttpUrl(article.source_url) ? article.source_url : undefined;
-  const imageSrc =
-    article.image_url && isHttpUrl(article.image_url) ? article.image_url : null;
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group/news flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:bg-muted/50"
-    >
-      {imageSrc ? (
-        // External CDN host is arbitrary per article, so skip next/image
-        // optimization and render the source thumbnail directly.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageSrc}
-          alt=""
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          className="aspect-[16/9] w-full object-cover"
-        />
-      ) : null}
-
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <h2 className="font-heading text-lg font-semibold leading-snug tracking-tight text-foreground">
-          {article.title}
-        </h2>
-        {article.summary ? (
-          <p className="line-clamp-3 text-sm text-muted-foreground">
-            {article.summary}
-          </p>
-        ) : null}
-
-        <div className="mt-auto flex items-center justify-between pt-2 text-xs text-muted-foreground">
-          <span className="flex min-w-0 items-center gap-1.5">
-            {article.source ? (
-              <span className="truncate font-medium text-foreground">
-                {article.source}
-              </span>
-            ) : null}
-            <span aria-hidden>·</span>
-            <LocalTime iso={article.published_at} format="date" />
-          </span>
-          <span className="flex shrink-0 items-center gap-1 font-mono uppercase tracking-[0.16em] text-muted-foreground transition-colors group-hover/news:text-foreground">
-            {readMore}
-            <ArrowUpRightIcon className="size-3.5" aria-hidden />
-          </span>
-        </div>
-      </div>
-    </a>
   );
 }

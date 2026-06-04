@@ -155,6 +155,9 @@
     "emptyTitle": "Pas encore de titres",
     "emptyBody": "Le flux n'est pas encore rempli. Revenez bientôt pour les dernières actualités de la Coupe du monde 2026.",
     "readMore": "Lire",
+    "loadingMore": "Chargement…",
+    "endOfFeed": "Vous êtes à jour",
+    "loadMoreFailed": "Impossible de charger plus — essayez d'actualiser",
     "loadFailed": "Échec du chargement des actualités : {message}"
   },
   "matchDetail": {

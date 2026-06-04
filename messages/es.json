@@ -155,6 +155,9 @@
     "emptyTitle": "Aún no hay titulares",
     "emptyBody": "El feed todavía no se ha llenado. Vuelve pronto para ver las últimas noticias del Mundial 2026.",
     "readMore": "Leer",
+    "loadingMore": "Cargando más…",
+    "endOfFeed": "Estás al día",
+    "loadMoreFailed": "No se pudo cargar más — prueba a recargar",
     "loadFailed": "No se pudieron cargar las noticias: {message}"
   },
   "matchDetail": {
