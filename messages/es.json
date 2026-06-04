@@ -140,6 +140,7 @@
     "rowOnNow": "en vivo",
     "rowLocked": "Cerrado",
     "rowPick": "Pronosticar",
+    "rowPicked": "Hecho",
     "emptyTitle": "Cuadro vacío",
     "emptyBody": "Aún no hay partidos cargados. Un admin necesita publicar el calendario antes de abrir los pronósticos.",
     "loadFailed": "No se pudieron cargar los partidos: {message}"

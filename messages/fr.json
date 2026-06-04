@@ -140,6 +140,7 @@
     "rowOnNow": "en direct",
     "rowLocked": "Verrouillé",
     "rowPick": "Prono",
+    "rowPicked": "Fait",
     "emptyTitle": "Tableau vide",
     "emptyBody": "Aucun match chargé pour l'instant. Un admin doit publier le calendrier avant l'ouverture des pronos.",
     "loadFailed": "Échec du chargement des matchs : {message}"

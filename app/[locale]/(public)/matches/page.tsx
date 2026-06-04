@@ -7,7 +7,7 @@ import { MatchStateBadge } from "@/components/match-state-badge";
 import { TeamFlag } from "@/components/team-flag";
 import { isLocked, utcDateKey } from "@/lib/match-utils";
 import type { MatchRow, MatchStage } from "@/lib/db";
-import { ChevronRightIcon, MapPinIcon } from "lucide-react";
+import { CheckCircle2Icon, ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -82,6 +82,21 @@ export default async function MatchesPage({
   }
 
   const list = (matches ?? []) as MatchRow[];
+
+  // Only signed-in requests pay for the per-user pick lookup; anonymous
+  // visitors get the list unchanged. RLS (predictions_select_own) scopes the
+  // read to the current user.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let pickedIds = new Set<string>();
+  if (user) {
+    const { data: picks } = await supabase
+      .from("predictions")
+      .select("match_id")
+      .eq("user_id", user.id);
+    pickedIds = new Set((picks ?? []).map((p) => p.match_id));
+  }
 
   const byDay = new Map<string, MatchRow[]>();
   for (const m of list) {
@@ -160,6 +175,8 @@ export default async function MatchesPage({
                       tOnNow={t("rowOnNow")}
                       tLocked={t("rowLocked")}
                       tPick={t("rowPick")}
+                      picked={pickedIds.has(m.id)}
+                      tPicked={t("rowPicked")}
                     />
                   </li>
                 );
@@ -224,6 +241,8 @@ function MatchRowCard({
   tOnNow,
   tLocked,
   tPick,
+  picked,
+  tPicked,
 }: {
   match: MatchRow;
   uiStatus: MatchUiStatus;
@@ -234,6 +253,8 @@ function MatchRowCard({
   tOnNow: string;
   tLocked: string;
   tPick: string;
+  picked: boolean;
+  tPicked: string;
 }) {
   const finalKnown =
     match.status === "final" &&
@@ -263,6 +284,12 @@ function MatchRowCard({
             {match.group_code ? ` · ${match.group_code}` : ""}
           </span>
           <MatchStateBadge status={uiStatus} size="sm" />
+          {picked ? (
+            <span className="inline-flex items-center gap-1 rounded-sm border border-pitch/40 bg-pitch/10 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-pitch">
+              <CheckCircle2Icon className="size-3" aria-hidden />
+              {tPicked}
+            </span>
+          ) : null}
         </div>
         <div className="mt-1.5 flex items-center gap-2 truncate font-heading text-base font-semibold tracking-tight text-foreground sm:text-lg">
           <TeamFlag team={match.home_team} size="sm" />

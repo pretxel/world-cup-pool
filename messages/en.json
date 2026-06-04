@@ -140,6 +140,7 @@
     "rowOnNow": "on now",
     "rowLocked": "Locked",
     "rowPick": "Pick",
+    "rowPicked": "Picked",
     "emptyTitle": "Empty bracket",
     "emptyBody": "No matches loaded yet. An admin needs to seed the fixture list before picks can open.",
     "loadFailed": "Failed to load matches: {message}"
