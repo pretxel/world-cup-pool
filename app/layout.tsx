@@ -154,6 +154,25 @@ export default function RootLayout({
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
+        {env.gaMeasurementId ? (
+          <>
+            <Script
+              id="ga-loader"
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${env.gaMeasurementId}`}
+            />
+            <Script
+              id="ga-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${env.gaMeasurementId}');`,
+              }}
+            />
+          </>
+        ) : null}
       </body>
     </html>
   );

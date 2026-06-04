@@ -27,6 +27,9 @@ export const env = {
   // Optional — when set, emits <meta property="fb:app_id"> so the page can be
   // tied to a Facebook app (Insights, Domain Insights, Comments moderation).
   facebookAppId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ?? null,
+  // Google Analytics 4 measurement ID. Defaults to the project's stream so
+  // analytics works without extra config; override per-environment if needed.
+  gaMeasurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-18P5786JW2",
 };
 
 export function requireServiceRoleKey(): string {
