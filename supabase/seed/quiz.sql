@@ -3,6 +3,7 @@
 -- Apply with: psql "$DATABASE_URL" -f supabase/seed/quiz.sql  (or supabase db reset locally).
 
 insert into public.quiz_questions (prompt, options, correct_index, active_on) values
+  ('How often is the men''s FIFA World Cup held?', array['Every 4 years','Every 2 years','Every 3 years','Every year'], 0, '2026-06-05'),
   ('Which country won the first FIFA World Cup, in 1930?', array['Uruguay','Brazil','Argentina','Italy'], 0, '2026-06-06'),
   ('How many World Cups has Brazil won?', array['3','4','5','6'], 2, '2026-06-07'),
   ('Which country hosted and won the 1998 World Cup?', array['France','Brazil','Italy','Spain'], 0, '2026-06-08'),

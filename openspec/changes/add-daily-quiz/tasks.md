@@ -6,7 +6,7 @@
 - [x] 1.4 RLS: `quiz_questions` admin-only via `is_admin()` (public reads through the view); `quiz_answers` owner-select, no direct insert/update/delete
 - [x] 1.5 `answer_quiz(uuid, smallint)` SECURITY DEFINER: assert today's, insert with computed is_correct, reject dupes, return `{ is_correct, correct_index }`; granted to authenticated
 - [x] 1.6 View `v_quiz_leaderboard` (10×correct points, total answered, first answer, rank); granted to anon, authenticated
-- [ ] 1.7 Apply migration; confirm public view hides correct_index and anon cannot read the base table — BLOCKED: Docker/local Supabase down. Run `supabase db push`.
+- [x] 1.7 Applied to prod via `supabase db push` + seed; verified `v_quiz_questions_public` columns are `id, prompt, options, active_on` (no correct_index) and `quiz_questions` has no SELECT grant for anon/authenticated
 
 ## 2. Types & lib
 
@@ -41,7 +41,7 @@
 ## 7. Verify
 
 - [x] 7.1 `pnpm typecheck`, `pnpm lint`, `pnpm test` clean (71/71, incl. streak tests)
-- [ ] 7.2 Confirm correct_index absent from the page payload before answering, present only in the action result after — BLOCKED: needs DB + browser
+- [x] 7.2 Confirmed on prod: today's question renders with prompt+options but `correct_index` is absent from the `/quiz` payload
 - [ ] 7.3 Answer flow: first grades + reveals; second rejected; anonymous cannot answer — BLOCKED: needs DB + session
 - [ ] 7.4 Quiz leaderboard ranks correctly; pool leaderboard unchanged — BLOCKED: needs DB
 
