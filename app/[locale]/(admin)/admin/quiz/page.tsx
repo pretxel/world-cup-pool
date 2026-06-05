@@ -1,0 +1,125 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { saveQuestion, deleteQuestion } from "./actions";
+import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "quiz" });
+  return { title: t("adminTitle") };
+}
+
+export default async function AdminQuizPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  setRequestLocale(locale);
+
+  const t = await getTranslations("quiz");
+
+  const supabase = await createServerSupabaseClient();
+  // Admin RLS (quiz_questions_admin_all) lets an admin read the base table,
+  // correct_index included.
+  const { data: questions } = await supabase
+    .from("quiz_questions")
+    .select("*")
+    .order("active_on", { ascending: true });
+  const list = questions ?? [];
+
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-10">
+      <header className="mb-8 border-b border-border pb-6">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+          {t("adminTitle")}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("adminLede")}</p>
+      </header>
+
+      <form action={saveQuestion} className="mb-10 flex flex-col gap-4 rounded-xl border border-border bg-card p-5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          {t("adminNew")}
+        </p>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="prompt">{t("fieldPrompt")}</Label>
+          <Input id="prompt" name="prompt" required />
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex flex-col gap-1.5">
+              <Label htmlFor={`option_${i}`}>{t("fieldOption", { n: i + 1 })}</Label>
+              <Input id={`option_${i}`} name={`option_${i}`} />
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="correct_index">{t("fieldCorrect")}</Label>
+            <select
+              id="correct_index"
+              name="correct_index"
+              required
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            >
+              {[0, 1, 2, 3].map((i) => (
+                <option key={i} value={i}>
+                  {t("fieldOption", { n: i + 1 })}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="active_on">{t("fieldDate")}</Label>
+            <Input id="active_on" name="active_on" type="date" required />
+          </div>
+        </div>
+
+        <Button type="submit" className="self-start">
+          {t("create")}
+        </Button>
+      </form>
+
+      <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+        {t("scheduled", { count: list.length })}
+      </h2>
+      <ul className="flex flex-col gap-2">
+        {list.map((q) => (
+          <li
+            key={q.id}
+            className="flex items-start justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3"
+          >
+            <div className="min-w-0">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                {q.active_on}
+              </p>
+              <p className="mt-0.5 truncate text-sm font-medium">{q.prompt}</p>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {q.options
+                  .map((o, i) => (i === q.correct_index ? `✓ ${o}` : o))
+                  .join(" · ")}
+              </p>
+            </div>
+            <form action={deleteQuestion}>
+              <input type="hidden" name="id" value={q.id} />
+              <Button type="submit" size="sm" variant="ghost">
+                {t("deleteQ")}
+              </Button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}

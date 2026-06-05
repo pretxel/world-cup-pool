@@ -39,6 +39,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      quiz_questions: {
+        Row: {
+          active_on: string
+          correct_index: number
+          created_at: string
+          id: string
+          options: string[]
+          prompt: string
+          updated_at: string
+        }
+        Insert: {
+          active_on: string
+          correct_index: number
+          created_at?: string
+          id?: string
+          options: string[]
+          prompt: string
+          updated_at?: string
+        }
+        Update: {
+          active_on?: string
+          correct_index?: number
+          created_at?: string
+          id?: string
+          options?: string[]
+          prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_answers: {
+        Row: {
+          answered_at: string
+          choice_index: number
+          id: string
+          is_correct: boolean
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          choice_index: number
+          id?: string
+          is_correct: boolean
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          choice_index?: number
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_articles: {
         Row: {
           created_at: string
@@ -254,8 +326,40 @@ export type Database = {
           },
         ]
       }
+      v_quiz_questions_public: {
+        Row: {
+          active_on: string | null
+          id: string | null
+          options: string[] | null
+          prompt: string | null
+        }
+        Relationships: []
+      }
+      v_quiz_leaderboard: {
+        Row: {
+          display_name: string | null
+          first_answer: string | null
+          rank: number | null
+          total_answered: number | null
+          total_points: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      answer_quiz: {
+        Args: { p_question_id: string; p_choice: number }
+        Returns: { is_correct: boolean; correct_index: number }[]
+      }
       compute_match_scores: { Args: { p_match_id: string }; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
       leaderboard_for_day: {

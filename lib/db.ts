@@ -23,6 +23,9 @@ export type MatchRow = Narrow<
 export type PredictionRow = Tables<"predictions">;
 export type ScoreRow = Narrow<Tables<"scores">, "hit_type", HitType>;
 export type NewsArticleRow = Tables<"news_articles">;
+export type QuizQuestionPublicRow = Tables<"v_quiz_questions_public">;
+export type QuizAnswerRow = Tables<"quiz_answers">;
+export type QuizLeaderboardRow = Tables<"v_quiz_leaderboard">;
 
 export type LeaderboardRow =
   Database["public"]["Functions"]["leaderboard_for_day"]["Returns"][number];
