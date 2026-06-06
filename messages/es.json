@@ -101,7 +101,18 @@
     "countdownSec": "Seg",
     "countdownLive": "Torneo en vivo",
     "countdownLiveSubhead": "Los pronósticos están abiertos en todo el cuadro — entra a cualquier partido.",
-    "countdownSubhead": "{home} vs {away} · {date}"
+    "countdownSubhead": "{home} vs {away} · {date}",
+    "featuresEyebrow": "03 · Más para jugar",
+    "featuresHeadline": "Más allá del cuadro.",
+    "groupsTitle": "Grupos de amigos",
+    "groupsCopy": "Crea un grupo privado, comparte un código y compite en una mini clasificación con la gente que conoces de verdad.",
+    "groupsCta": "Crear un grupo",
+    "newsTitle": "Noticias",
+    "newsCopy": "Las últimas noticias del Mundial 2026, actualizadas durante el día. Toca cualquier historia para leerla en la fuente.",
+    "newsCta": "Leer las noticias",
+    "quizTitle": "Reto Diario",
+    "quizCopy": "Una pregunta de trivia del Mundial al día. Responde antes de medianoche UTC, mantén tu racha y sube en la clasificación.",
+    "quizCta": "Jugar la pregunta de hoy"
   },
   "howItWorks": {
     "title": "Cómo funciona",

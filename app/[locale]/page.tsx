@@ -2,7 +2,15 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buttonVariants } from "@/components/ui/button";
-import { ArrowRightIcon, TargetIcon, TrophyIcon, ZapIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  BrainIcon,
+  NewspaperIcon,
+  TargetIcon,
+  TrophyIcon,
+  UsersIcon,
+  ZapIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { MiniBracket } from "@/components/mini-bracket";
@@ -40,6 +48,7 @@ export default async function HomePage({
       <ScoringSection locale={locale} t={t} />
       <FlagWallDivider />
       <Cadence t={t} />
+      <FeatureSections locale={locale} t={t} />
     </main>
   );
 }
@@ -347,6 +356,61 @@ function Cadence({ t }: { t: T }) {
           ))}
         </ol>
       </div>
+    </section>
+  );
+}
+
+function FeatureSections({ locale, t }: { locale: Locale; t: T }) {
+  const features: Array<{
+    titleKey: "groupsTitle" | "newsTitle" | "quizTitle";
+    copyKey: "groupsCopy" | "newsCopy" | "quizCopy";
+    ctaKey: "groupsCta" | "newsCta" | "quizCta";
+    href: string;
+    Icon: React.ComponentType<{ className?: string }>;
+  }> = [
+    { titleKey: "groupsTitle", copyKey: "groupsCopy", ctaKey: "groupsCta", href: "/groups", Icon: UsersIcon },
+    { titleKey: "newsTitle", copyKey: "newsCopy", ctaKey: "newsCta", href: "/news", Icon: NewspaperIcon },
+    { titleKey: "quizTitle", copyKey: "quizCopy", ctaKey: "quizCta", href: "/quiz", Icon: BrainIcon },
+  ];
+
+  return (
+    <section className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
+      <div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+          {t("featuresEyebrow")}
+        </p>
+        <h2
+          className="mt-2 font-heading text-3xl font-semibold tracking-tight sm:text-4xl"
+          style={{ fontStretch: "condensed" }}
+        >
+          {t("featuresHeadline")}
+        </h2>
+      </div>
+
+      <ul className="mt-10 grid gap-4 sm:grid-cols-3">
+        {features.map((f) => (
+          <li
+            key={f.href}
+            className="group flex flex-col rounded-xl bg-card p-5 ring-1 ring-border transition-shadow hover:shadow-lg"
+          >
+            <div className="grid size-9 place-items-center rounded-md bg-pitch text-pitch-foreground">
+              <f.Icon className="size-4" />
+            </div>
+            <h3 className="mt-5 font-heading text-lg font-semibold tracking-tight">
+              {t(f.titleKey)}
+            </h3>
+            <p className="mt-2 flex-1 text-sm text-muted-foreground">
+              {t(f.copyKey)}
+            </p>
+            <Link
+              href={localePath(locale, f.href)}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
+            >
+              {t(f.ctaKey)} <ArrowRightIcon className="size-3.5" />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
