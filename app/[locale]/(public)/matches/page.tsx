@@ -1,11 +1,20 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
+import { MatchTeamFilter } from "@/components/match-team-filter";
 import { TeamFlag } from "@/components/team-flag";
-import { isLocked, utcDateKey } from "@/lib/match-utils";
+import {
+  filterableTeams,
+  isLocked,
+  matchInvolvesTeam,
+  parseTeamParam,
+  reconcileSelectedTeams,
+  utcDateKey,
+} from "@/lib/match-utils";
 import type { MatchRow, MatchStage } from "@/lib/db";
 import { CheckCircle2Icon, ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,12 +64,16 @@ function uiStatusFor(m: MatchRow): MatchUiStatus {
 
 export default async function MatchesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ team?: string | string[] }>;
 }) {
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
+
+  const { team: teamParam } = await searchParams;
 
   const t = await getTranslations("matches");
   const tStages = await getTranslations("stages");
@@ -98,8 +111,21 @@ export default async function MatchesPage({
     pickedIds = new Set((picks ?? []).map((p) => p.match_id));
   }
 
+  // Ephemeral team filter: chips reflect the full schedule, but the list,
+  // day groups, and stats below render the selected subset. Selection lives in
+  // the `?team=` param; unknown values are dropped so a bad param falls back to
+  // "show everything".
+  const availableTeams = filterableTeams(list);
+  const selectedTeams = reconcileSelectedTeams(
+    parseTeamParam(teamParam),
+    availableTeams,
+  );
+  const selectedKeys = new Set(selectedTeams.map((team) => team.toLowerCase()));
+  const filtered = list.filter((m) => matchInvolvesTeam(m, selectedKeys));
+  const isFiltered = selectedTeams.length > 0;
+
   const byDay = new Map<string, MatchRow[]>();
-  for (const m of list) {
+  for (const m of filtered) {
     const key = utcDateKey(m.kickoff_at);
     const arr = byDay.get(key) ?? [];
     arr.push(m);
@@ -108,10 +134,10 @@ export default async function MatchesPage({
 
   const dayEntries = [...byDay.entries()];
   const stats = {
-    total: list.length,
-    upcoming: list.filter((m) => uiStatusFor(m) === "scheduled").length,
-    live: list.filter((m) => m.status === "live").length,
-    final: list.filter((m) => m.status === "final").length,
+    total: filtered.length,
+    upcoming: filtered.filter((m) => uiStatusFor(m) === "scheduled").length,
+    live: filtered.filter((m) => m.status === "live").length,
+    final: filtered.filter((m) => m.status === "final").length,
   };
 
   return (
@@ -128,7 +154,7 @@ export default async function MatchesPage({
             {t("headline")}
           </h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            {t("lede", { total: stats.total })}
+            {t("lede", { total: filtered.length })}
           </p>
         </div>
         <dl className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -137,6 +163,17 @@ export default async function MatchesPage({
           <Stat label={t("statFinal")} value={stats.final} accent="final" />
         </dl>
       </header>
+
+      {availableTeams.length > 0 ? (
+        <Suspense fallback={null}>
+          <MatchTeamFilter
+            teams={availableTeams}
+            selected={selectedTeams}
+            allLabel={t("filterAll")}
+            label={t("filterLabel")}
+          />
+        </Suspense>
+      ) : null}
 
       <div className="space-y-12">
         {dayEntries.map(([day, dayMatches], idx) => (
@@ -185,14 +222,22 @@ export default async function MatchesPage({
           </section>
         ))}
 
-        {list.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-              {t("emptyTitle")}
+              {isFiltered ? t("filterEmptyTitle") : t("emptyTitle")}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm">
-              {t("emptyBody")}
+              {isFiltered ? t("filterEmptyBody") : t("emptyBody")}
             </p>
+            {isFiltered ? (
+              <Link
+                href={localePath(locale, "/matches")}
+                className="mt-4 inline-flex items-center rounded-full border border-border bg-card px-3 py-1 font-heading text-xs font-medium tracking-tight text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {t("filterClear")}
+              </Link>
+            ) : null}
           </div>
         ) : null}
       </div>

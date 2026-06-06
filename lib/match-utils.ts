@@ -1,4 +1,5 @@
 import type { MatchRow, MatchStatus } from "@/lib/db";
+import { flagSlug } from "@/lib/team-flag";
 
 export type LockReason = "final" | "cancelled" | "live" | "kickoff";
 
@@ -58,4 +59,57 @@ export function stageLabel(stage: string): string {
 
 export function utcDateKey(iso: string): string {
   return iso.slice(0, 10);
+}
+
+// --- Team filter (ephemeral, URL-driven) ---------------------------------
+// Teams are plain text on matches; there is no team entity. These helpers back
+// the `?team=` filter on the public /matches list. A "team" key is the team's
+// display name, case-folded, so comparisons are case-insensitive while the URL
+// and chips keep canonical names.
+
+type TeamPair = { home_team: string; away_team: string };
+
+// Normalize a `?team=` value into a set of case-folded team keys. Accepts a
+// single comma-separated string ("Brazil,Argentina") and/or a repeated param
+// (["Brazil", "Mexico"]). Blank segments are dropped.
+export function parseTeamParam(raw: string | string[] | undefined): Set<string> {
+  if (!raw) return new Set();
+  const parts = (Array.isArray(raw) ? raw : [raw])
+    .flatMap((value) => value.split(","))
+    .map((value) => value.trim().toLowerCase())
+    .filter((value) => value.length > 0);
+  return new Set(parts);
+}
+
+// Distinct real country teams present in a match list, sorted alphabetically
+// for a stable chip order. Knockout placeholders (values with no flag mapping,
+// e.g. "2nd Group A") are excluded.
+export function filterableTeams(matches: TeamPair[]): string[] {
+  const teams = new Set<string>();
+  for (const match of matches) {
+    if (flagSlug(match.home_team)) teams.add(match.home_team);
+    if (flagSlug(match.away_team)) teams.add(match.away_team);
+  }
+  return [...teams].sort((a, b) => a.localeCompare(b));
+}
+
+// Drop unknown/placeholder values from a parsed selection by intersecting it
+// with the known filterable teams. Returns canonical team names in
+// `available` order, so an all-unknown `?team=` collapses to an empty (= "All")
+// selection.
+export function reconcileSelectedTeams(
+  selected: Set<string>,
+  available: string[],
+): string[] {
+  return available.filter((team) => selected.has(team.toLowerCase()));
+}
+
+// True when a match involves any selected team (case-insensitive on either
+// side). An empty selection matches every fixture.
+export function matchInvolvesTeam(match: TeamPair, selected: Set<string>): boolean {
+  if (selected.size === 0) return true;
+  return (
+    selected.has(match.home_team.toLowerCase()) ||
+    selected.has(match.away_team.toLowerCase())
+  );
 }
