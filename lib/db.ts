@@ -29,3 +29,12 @@ export type QuizLeaderboardRow = Tables<"v_quiz_leaderboard">;
 
 export type LeaderboardRow =
   Database["public"]["Functions"]["leaderboard_for_day"]["Returns"][number];
+
+export type GroupMemberRole = "owner" | "member";
+export type GroupRow = Tables<"groups">;
+export type GroupMemberRow = Narrow<Tables<"group_members">, "role", GroupMemberRole>;
+
+// One row of a group's mini board. Same shape as the global LeaderboardRow,
+// sourced from leaderboard_for_group() instead of leaderboard_for_day().
+export type GroupBoardRow =
+  Database["public"]["Functions"]["leaderboard_for_group"]["Returns"][number];

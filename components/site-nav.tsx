@@ -35,6 +35,7 @@ export async function SiteNav() {
     { href: lp("/quiz"), label: t("quiz") },
     { href: lp("/leaderboard"), label: t("leaderboard") },
     ...(user ? [{ href: lp("/my-picks"), label: t("myPicks") }] : []),
+    ...(user ? [{ href: lp("/groups"), label: t("groups") }] : []),
     ...(isAdmin ? [{ href: lp("/admin/matches"), label: t("admin") }] : []),
   ];
 

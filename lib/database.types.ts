@@ -39,6 +39,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      groups: {
+        Row: {
+          created_at: string
+          id: string
+          join_code: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          join_code: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          join_code?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_questions: {
         Row: {
           active_on: string
@@ -361,7 +432,34 @@ export type Database = {
         Returns: { is_correct: boolean; correct_index: number }[]
       }
       compute_match_scores: { Args: { p_match_id: string }; Returns: undefined }
+      create_group: { Args: { p_name: string }; Returns: string }
+      generate_join_code: { Args: never; Returns: string }
+      group_preview: {
+        Args: { p_code: string }
+        Returns: { id: string; name: string }[]
+      }
       is_admin: { Args: never; Returns: boolean }
+      is_group_member: { Args: { p_group_id: string }; Returns: boolean }
+      is_group_owner: { Args: { p_group_id: string }; Returns: boolean }
+      join_group: { Args: { p_code: string }; Returns: string }
+      leaderboard_for_group: {
+        Args: { p_group_id: string }
+        Returns: {
+          display_name: string
+          exact_hits: number
+          first_submit: string
+          rank: number
+          total_points: number
+          user_id: string
+          winner_gd_hits: number
+          winner_hits: number
+        }[]
+      }
+      leave_group: { Args: { p_group_id: string }; Returns: undefined }
+      remove_group_member: {
+        Args: { p_group_id: string; p_user_id: string }
+        Returns: undefined
+      }
       leaderboard_for_day: {
         Args: { d: string; tz?: string }
         Returns: {
