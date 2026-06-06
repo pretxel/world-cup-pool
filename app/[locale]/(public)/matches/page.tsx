@@ -9,6 +9,7 @@ import { MatchTeamFilter } from "@/components/match-team-filter";
 import { TeamFlag } from "@/components/team-flag";
 import {
   filterableTeams,
+  isConfirmedMatch,
   isLocked,
   matchInvolvesTeam,
   parseTeamParam,
@@ -94,7 +95,11 @@ export default async function MatchesPage({
     );
   }
 
-  const list = (matches ?? []) as MatchRow[];
+  // Public visibility is gated to confirmed matches: knockout fixtures hold
+  // placeholder participants ("2nd Group A") until an admin sets the real
+  // teams, and an unknown matchup is neither readable nor pickable. Everything
+  // below (filter, stats, day groups) operates on this confirmed base.
+  const list = ((matches ?? []) as MatchRow[]).filter(isConfirmedMatch);
 
   // Only signed-in requests pay for the per-user pick lookup; anonymous
   // visitors get the list unchanged. RLS (predictions_select_own) scopes the

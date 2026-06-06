@@ -12,6 +12,7 @@ import {
   deleteMatch,
 } from "./actions";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { isConfirmedMatch } from "@/lib/match-utils";
 
 export async function generateMetadata({
   params,
@@ -122,6 +123,9 @@ export default async function AdminMatchesPage({
                 <Badge variant={m.status === "final" ? "default" : "secondary"}>
                   {tStatus(m.status as keyof IntlMessages["matchStatus"])}
                 </Badge>
+                {!isConfirmedMatch(m) ? (
+                  <Badge variant="destructive">{t("unconfirmed")}</Badge>
+                ) : null}
                 <span className="text-xs text-muted-foreground">
                   <LocalTime iso={m.kickoff_at} />
                 </span>
@@ -183,6 +187,86 @@ export default async function AdminMatchesPage({
                   </form>
                 </div>
               </div>
+
+              <details className="mt-4 rounded-md border p-3">
+                <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("editFixture")}
+                </summary>
+                <form
+                  action={saveFixture}
+                  className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2"
+                >
+                  <input type="hidden" name="id" value={m.id} />
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`stage-${m.id}`}>{t("stage")}</Label>
+                    <select
+                      id={`stage-${m.id}`}
+                      name="stage"
+                      defaultValue={m.stage}
+                      className="h-9 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="group">{t("stageGroup")}</option>
+                      <option value="r32">{t("stageR32")}</option>
+                      <option value="r16">{t("stageR16")}</option>
+                      <option value="qf">{t("stageQf")}</option>
+                      <option value="sf">{t("stageSf")}</option>
+                      <option value="third">{t("stageThird")}</option>
+                      <option value="final">{t("stageFinal")}</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`gc-${m.id}`}>{t("groupCode")}</Label>
+                    <Input
+                      id={`gc-${m.id}`}
+                      name="group_code"
+                      maxLength={1}
+                      defaultValue={m.group_code ?? ""}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`ht-${m.id}`}>{t("homeTeam")}</Label>
+                    <Input
+                      id={`ht-${m.id}`}
+                      name="home_team"
+                      defaultValue={m.home_team}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`at-${m.id}`}>{t("awayTeam")}</Label>
+                    <Input
+                      id={`at-${m.id}`}
+                      name="away_team"
+                      defaultValue={m.away_team}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`ko-${m.id}`}>{t("kickoff")}</Label>
+                    <Input
+                      id={`ko-${m.id}`}
+                      name="kickoff_at"
+                      type="datetime-local"
+                      step="60"
+                      defaultValue={m.kickoff_at.slice(0, 16)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`vn-${m.id}`}>{t("venue")}</Label>
+                    <Input
+                      id={`vn-${m.id}`}
+                      name="venue"
+                      defaultValue={m.venue ?? ""}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Button type="submit" size="sm">
+                      {t("saveEdit")}
+                    </Button>
+                  </div>
+                </form>
+              </details>
             </article>
           );
         })}

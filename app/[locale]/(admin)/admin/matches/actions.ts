@@ -21,7 +21,14 @@ const fixtureSchema = z.object({
   kickoff_at: z
     .string()
     .refine((s) => !Number.isNaN(Date.parse(s)), "Invalid timestamp")
-    .transform((s) => new Date(s).toISOString()),
+    // The admin kickoff field is labelled "UTC ISO" and the app renders kickoff
+    // in UTC throughout. A `datetime-local` input submits a zone-less
+    // "YYYY-MM-DDTHH:mm"; parse it as UTC (not the server's local zone) so the
+    // edit form's UTC-wall-clock prefill round-trips losslessly on any server.
+    .transform((s) => {
+      const hasZone = /([zZ])|([+-]\d{2}:?\d{2})$/.test(s);
+      return new Date(hasZone ? s : `${s}Z`).toISOString();
+    }),
   venue: z.string().trim().optional().nullable(),
 });
 
