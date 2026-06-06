@@ -10,6 +10,10 @@
     "home": "Home",
     "tryAgain": "Try again"
   },
+  "siteMeta": {
+    "title": "World Cup 2026 Pool — Daily Predictions & Live Leaderboard",
+    "description": "Predict every World Cup 2026 match. Submit scores before kickoff, earn points on results, and climb a daily and overall leaderboard."
+  },
   "nav": {
     "matches": "Matches",
     "news": "News",
