@@ -2,16 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { LeaderboardTable } from "@/components/leaderboard-table";
 import type { LeaderboardRow } from "@/lib/db";
-import { cn } from "@/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -119,80 +111,19 @@ export default async function LeaderboardPage({
           </Link>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/40">
-                <TableHead className="w-14 pl-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {t("headerRank")}
-                </TableHead>
-                <TableHead className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {t("headerPlayer")}
-                </TableHead>
-                <TableHead className="text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {t("headerPoints")}
-                </TableHead>
-                <TableHead className="hidden text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-                  {t("headerExact")}
-                </TableHead>
-                <TableHead className="hidden pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-                  {t("headerWinnerGd")}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => {
-                const isMe = user?.id === r.user_id;
-                return (
-                  <TableRow
-                    key={r.user_id}
-                    className={cn(
-                      "transition-colors",
-                      isMe &&
-                        "relative bg-flag/15 hover:bg-flag/20 dark:bg-flag/10",
-                    )}
-                  >
-                    <TableCell className="pl-4">
-                      <RankBadge rank={r.rank} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "truncate font-medium",
-                            isMe && "text-foreground",
-                          )}
-                        >
-                          {r.display_name ?? (
-                            <span className="text-muted-foreground italic">
-                              {t("noName")}
-                            </span>
-                          )}
-                        </span>
-                        {isMe ? (
-                          <span className="rounded-md bg-flag px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-flag-foreground">
-                            {t("you")}
-                          </span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span className="font-mono text-base font-semibold tabular-nums">
-                        {r.total_points}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden text-right font-mono tabular-nums text-muted-foreground sm:table-cell">
-                      {r.exact_hits}
-                    </TableCell>
-                    <TableCell className="hidden pr-4 text-right font-mono tabular-nums text-muted-foreground sm:table-cell">
-                      {r.winner_gd_hits}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <LeaderboardTable
+          rows={rows}
+          currentUserId={user?.id}
+          labels={{
+            rank: t("headerRank"),
+            player: t("headerPlayer"),
+            points: t("headerPoints"),
+            exact: t("headerExact"),
+            winnerGd: t("headerWinnerGd"),
+            you: t("you"),
+            noName: t("noName"),
+          }}
+        />
       )}
 
       {user && !myRow && rows.length > 0 ? (
@@ -210,28 +141,5 @@ export default async function LeaderboardPage({
         </div>
       ) : null}
     </main>
-  );
-}
-
-function RankBadge({ rank }: { rank: number | null }) {
-  const r = rank ?? 0;
-  let tone =
-    "bg-secondary text-muted-foreground ring-1 ring-inset ring-border";
-  let label = "—";
-  if (r > 0) {
-    label = String(r);
-    if (r === 1) tone = "bg-flag text-flag-foreground ring-1 ring-inset ring-flag/40";
-    else if (r === 2) tone = "bg-foreground/85 text-background ring-1 ring-inset ring-foreground/30";
-    else if (r === 3) tone = "bg-pitch/90 text-pitch-foreground ring-1 ring-inset ring-pitch/30";
-  }
-  return (
-    <span
-      className={cn(
-        "inline-flex h-7 min-w-[2rem] items-center justify-center rounded-md px-1.5 font-mono text-sm font-semibold tabular-nums",
-        tone,
-      )}
-    >
-      {label}
-    </span>
   );
 }
