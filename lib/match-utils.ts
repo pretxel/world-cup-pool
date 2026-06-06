@@ -113,3 +113,11 @@ export function matchInvolvesTeam(match: TeamPair, selected: Set<string>): boole
     selected.has(match.away_team.toLowerCase())
   );
 }
+
+// A match is "confirmed" once both participants are real participating
+// countries. Knockout fixtures seed placeholder participants ("2nd Group A",
+// "Winner Match 73", …) that don't resolve to a flag; those stay unconfirmed
+// until an admin sets the real teams. Drives public visibility and pickability.
+export function isConfirmedMatch(match: TeamPair): boolean {
+  return flagSlug(match.home_team) !== null && flagSlug(match.away_team) !== null;
+}

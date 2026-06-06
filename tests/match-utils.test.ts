@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   filterableTeams,
+  isConfirmedMatch,
   isLocked,
   lockReason,
   matchInvolvesTeam,
@@ -147,5 +148,20 @@ describe("matchInvolvesTeam", () => {
     expect(matchInvolvesTeam(team("Brazil", "Spain"), sel)).toBe(true);
     expect(matchInvolvesTeam(team("Mexico", "Spain"), sel)).toBe(true);
     expect(matchInvolvesTeam(team("Spain", "France"), sel)).toBe(false);
+  });
+});
+
+describe("isConfirmedMatch", () => {
+  it("is true when both teams are real countries", () => {
+    expect(isConfirmedMatch(team("Brazil", "Mexico"))).toBe(true);
+  });
+
+  it("is false when one side is a knockout placeholder", () => {
+    expect(isConfirmedMatch(team("Spain", "Winner Match 73"))).toBe(false);
+    expect(isConfirmedMatch(team("2nd Group A", "Croatia"))).toBe(false);
+  });
+
+  it("is false when both sides are placeholders", () => {
+    expect(isConfirmedMatch(team("2nd Group A", "2nd Group B"))).toBe(false);
   });
 });

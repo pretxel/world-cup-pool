@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isConfirmedMatch } from "@/lib/match-utils";
 
 const schema = z.object({
   matchId: z.string().uuid(),
@@ -31,7 +32,7 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
 
   const { data: match, error: matchError } = await supabase
     .from("matches")
-    .select("status, kickoff_at")
+    .select("status, kickoff_at, home_team, away_team")
     .eq("id", matchId)
     .maybeSingle();
 
@@ -40,6 +41,12 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
   }
   if (!match) {
     return { ok: false, error: t("errorMatchNotFound") };
+  }
+
+  // Teams must be confirmed before a pick can be written — defends the hidden
+  // form against a stale client or a direct POST for a placeholder matchup.
+  if (!isConfirmedMatch(match)) {
+    return { ok: false, error: t("errorNotConfirmed") };
   }
 
   if (match.status === "final") {

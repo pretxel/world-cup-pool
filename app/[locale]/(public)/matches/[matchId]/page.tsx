@@ -10,7 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { TeamFlag } from "@/components/team-flag";
 import { StageIcon } from "@/components/stage-icon";
 import { VenueImage } from "@/components/venue-image";
-import { lockReason } from "@/lib/match-utils";
+import { isConfirmedMatch, lockReason } from "@/lib/match-utils";
 import type { MatchStage } from "@/lib/db";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
@@ -127,6 +127,9 @@ export default async function MatchDetailPage({
 
   const reason = lockReason(match);
   const locked = reason !== null;
+  // Knockout fixtures stay unconfirmed (placeholder teams) until an admin sets
+  // the real teams; an unconfirmed match is shown but not pickable.
+  const confirmed = isConfirmedMatch(match);
   const uiStatus: "scheduled" | "locked" | "live" | "final" | "cancelled" =
     match.status === "live"
       ? "live"
@@ -321,7 +324,15 @@ export default async function MatchDetailPage({
           ) : null}
         </div>
 
-        {!user ? (
+        {!confirmed ? (
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-5 text-sm">
+            <LockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <div>
+              <p className="font-medium">{t("notConfirmedTitle")}</p>
+              <p className="mt-1 text-muted-foreground">{t("notConfirmedBody")}</p>
+            </div>
+          </div>
+        ) : !user ? (
           <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 text-sm">
             <p>
               {t("signInPrompt", {
