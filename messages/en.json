@@ -101,7 +101,18 @@
     "countdownSec": "Sec",
     "countdownLive": "Tournament live",
     "countdownLiveSubhead": "Picks open across the bracket — jump to any match.",
-    "countdownSubhead": "{home} vs {away} · {date}"
+    "countdownSubhead": "{home} vs {away} · {date}",
+    "featuresEyebrow": "03 · More to play",
+    "featuresHeadline": "Beyond the bracket.",
+    "groupsTitle": "Friends groups",
+    "groupsCopy": "Spin up a private group, share a code, and race a mini leaderboard against the people you actually know.",
+    "groupsCta": "Create a group",
+    "newsTitle": "News",
+    "newsCopy": "The latest World Cup 2026 headlines, refreshed through the day. Tap any story to read it at the source.",
+    "newsCta": "Read the news",
+    "quizTitle": "Daily Call",
+    "quizCopy": "One World Cup trivia question a day. Answer before midnight UTC, keep your streak, and climb the quiz board.",
+    "quizCta": "Play today's question"
   },
   "howItWorks": {
     "title": "How it works",

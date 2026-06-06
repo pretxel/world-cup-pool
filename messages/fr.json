@@ -101,7 +101,18 @@
     "countdownSec": "Sec",
     "countdownLive": "Tournoi en direct",
     "countdownLiveSubhead": "Les pronos sont ouverts sur tout le tableau — entrez dans n'importe quel match.",
-    "countdownSubhead": "{home} vs {away} · {date}"
+    "countdownSubhead": "{home} vs {away} · {date}",
+    "featuresEyebrow": "03 · Encore plus à jouer",
+    "featuresHeadline": "Au-delà du tableau.",
+    "groupsTitle": "Groupes d'amis",
+    "groupsCopy": "Lancez un groupe privé, partagez un code et affrontez sur un mini classement les gens que vous connaissez vraiment.",
+    "groupsCta": "Créer un groupe",
+    "newsTitle": "Actualités",
+    "newsCopy": "Les dernières actualités de la Coupe du monde 2026, mises à jour au fil de la journée. Touchez un article pour le lire à la source.",
+    "newsCta": "Lire les actualités",
+    "quizTitle": "Défi du Jour",
+    "quizCopy": "Une question de quiz Coupe du monde par jour. Répondez avant minuit UTC, gardez votre série et grimpez au classement.",
+    "quizCta": "Jouer la question du jour"
   },
   "howItWorks": {
     "title": "Fonctionnement",
