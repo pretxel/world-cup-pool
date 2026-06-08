@@ -5,6 +5,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { TeamFlag } from "@/components/team-flag";
+import { AllGroupsSimulation } from "@/components/group-standings-table";
+import { simulateAllGroups } from "@/lib/group-standings";
 import { isLocked } from "@/lib/match-utils";
 import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -65,6 +67,25 @@ export default async function MyPicksPage({
 
   const totalPoints = (scores ?? []).reduce((sum, s) => sum + (s.points ?? 0), 0);
   const exactCount = (scores ?? []).filter((s) => s.hit_type === "exact").length;
+
+  // Simulated group stage from the user's own predictions. Fetch every group
+  // fixture, then derive each group's table from the picks already loaded above
+  // (only predicted matches contribute; unpredicted groups show empty). Real
+  // results are never mixed in.
+  const { data: groupFixtures } = await supabase
+    .from("matches")
+    .select("id, home_team, away_team, group_code")
+    .eq("stage", "group");
+  const predictionsByMatchId = new Map(
+    (picks ?? []).map((p) => [
+      p.match_id,
+      { home_goals: p.home_goals, away_goals: p.away_goals },
+    ]),
+  );
+  const simulatedGroups = simulateAllGroups(
+    groupFixtures ?? [],
+    predictionsByMatchId,
+  );
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
@@ -201,6 +222,8 @@ export default async function MyPicksPage({
           })}
         </ul>
       )}
+
+      <AllGroupsSimulation groups={simulatedGroups} className="mt-12" />
     </main>
   );
 }
