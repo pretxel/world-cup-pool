@@ -6,7 +6,9 @@ import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { TeamFlag } from "@/components/team-flag";
 import { AllGroupsSimulation } from "@/components/group-standings-table";
+import { PaginationControls } from "@/components/pagination-controls";
 import { simulateAllGroups } from "@/lib/group-standings";
+import { paginate, parsePageParam } from "@/lib/pagination";
 import { isLocked } from "@/lib/match-utils";
 import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,10 +26,13 @@ export async function generateMetadata({
 
 export default async function MyPicksPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const { locale: raw } = await params;
+  const { page: pageParam } = await searchParams;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
 
@@ -87,6 +92,13 @@ export default async function MyPicksPage({
     predictionsByMatchId,
   );
 
+  // Paginate the picks list (5 per page) from the `?page=` param. Stats above
+  // and the group simulation below intentionally read the full set — only the
+  // rendered list is windowed. The page value is clamped, so any URL renders.
+  const allPicks = picks ?? [];
+  const pageInfo = paginate(allPicks.length, parsePageParam(pageParam));
+  const pagePicks = allPicks.slice(pageInfo.start, pageInfo.end);
+
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
@@ -125,8 +137,9 @@ export default async function MyPicksPage({
           </Link>
         </div>
       ) : (
+        <>
         <ul className="overflow-hidden rounded-xl border border-border bg-card">
-          {picks!.map((p, i) => {
+          {pagePicks.map((p, i) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const m = (p as any).matches as {
               id: string;
@@ -221,6 +234,19 @@ export default async function MyPicksPage({
             );
           })}
         </ul>
+        <PaginationControls
+          page={pageInfo.page}
+          totalPages={pageInfo.totalPages}
+          basePath={localePath(locale, "/my-picks")}
+          navLabel={t("paginationLabel")}
+          positionLabel={t("pagePosition", {
+            current: pageInfo.page,
+            total: pageInfo.totalPages,
+          })}
+          prevLabel={t("prevPage")}
+          nextLabel={t("nextPage")}
+        />
+        </>
       )}
 
       <AllGroupsSimulation groups={simulatedGroups} className="mt-12" />
