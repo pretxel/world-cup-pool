@@ -284,7 +284,11 @@
     "rowEdit": "Modifier",
     "loadFailed": "Échec du chargement des pronos : {message}",
     "ptsSingular": "pt",
-    "ptsPlural": "pts"
+    "ptsPlural": "pts",
+    "paginationLabel": "Pagination",
+    "pagePosition": "Page {current} sur {total}",
+    "prevPage": "Précédent",
+    "nextPage": "Suivant"
   },
   "groupSimulation": {
     "groupHeading": "Groupe {code}",

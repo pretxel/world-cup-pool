@@ -284,7 +284,11 @@
     "rowEdit": "Editar",
     "loadFailed": "No se pudieron cargar los pronósticos: {message}",
     "ptsSingular": "pt",
-    "ptsPlural": "pts"
+    "ptsPlural": "pts",
+    "paginationLabel": "Paginación",
+    "pagePosition": "Página {current} de {total}",
+    "prevPage": "Anterior",
+    "nextPage": "Siguiente"
   },
   "groupSimulation": {
     "groupHeading": "Grupo {code}",

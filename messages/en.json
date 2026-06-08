@@ -284,7 +284,11 @@
     "rowEdit": "Edit",
     "loadFailed": "Failed to load picks: {message}",
     "ptsSingular": "pt",
-    "ptsPlural": "pts"
+    "ptsPlural": "pts",
+    "paginationLabel": "Pagination",
+    "pagePosition": "Page {current} of {total}",
+    "prevPage": "Previous",
+    "nextPage": "Next"
   },
   "groupSimulation": {
     "groupHeading": "Group {code}",
