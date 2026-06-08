@@ -14,6 +14,8 @@ import { isConfirmedMatch, lockReason } from "@/lib/match-utils";
 import type { MatchStage } from "@/lib/db";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
+import { GroupStandingsTable } from "@/components/group-standings-table";
+import { simulateGroup, type GroupTeamRow } from "@/lib/group-standings";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -100,6 +102,7 @@ export default async function MatchDetailPage({
   const t = await getTranslations("matchDetail");
   const tStages = await getTranslations("stages");
   const tForm = await getTranslations("predictionForm");
+  const tGroupSim = await getTranslations("groupSimulation");
 
   const supabase = await createServerSupabaseClient();
 
@@ -123,6 +126,40 @@ export default async function MatchDetailPage({
       .eq("match_id", matchId)
       .maybeSingle();
     myPrediction = data;
+  }
+
+  // Personal, prediction-only group table for this match's group. Built from
+  // the viewer's own picks across the group's fixtures (real results are never
+  // folded in). Only signed-in, group-stage matches get the section.
+  let groupSim: GroupTeamRow[] | null = null;
+  if (user && match.stage === "group" && match.group_code) {
+    const { data: fixtures } = await supabase
+      .from("matches")
+      .select("id, home_team, away_team")
+      .eq("stage", "group")
+      .eq("group_code", match.group_code);
+    const groupFixtures = fixtures ?? [];
+    const predictionsByMatchId = new Map<
+      string,
+      { home_goals: number; away_goals: number }
+    >();
+    if (groupFixtures.length > 0) {
+      const { data: groupPicks } = await supabase
+        .from("predictions")
+        .select("match_id, home_goals, away_goals")
+        .eq("user_id", user.id)
+        .in(
+          "match_id",
+          groupFixtures.map((f) => f.id),
+        );
+      for (const p of groupPicks ?? []) {
+        predictionsByMatchId.set(p.match_id, {
+          home_goals: p.home_goals,
+          away_goals: p.away_goals,
+        });
+      }
+    }
+    groupSim = simulateGroup(groupFixtures, predictionsByMatchId);
   }
 
   const reason = lockReason(match);
@@ -403,6 +440,27 @@ export default async function MatchDetailPage({
           />
         )}
       </section>
+
+      {groupSim ? (
+        <section className="mt-8">
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              {tGroupSim("matchEyebrow")}
+            </p>
+            <Link
+              href={localePath(locale, "/my-picks")}
+              className="font-mono text-[11px] uppercase tracking-[0.16em] text-foreground underline-offset-4 hover:text-pitch hover:underline"
+            >
+              {tGroupSim("seeAllGroups")} →
+            </Link>
+          </div>
+          <GroupStandingsTable
+            groupCode={match.group_code ?? ""}
+            rows={groupSim}
+            highlightTeams={[match.home_team, match.away_team]}
+          />
+        </section>
+      ) : null}
     </main>
   );
 }
