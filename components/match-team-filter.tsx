@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { TeamFlag } from "@/components/team-flag";
+import { useQueryParamWriter } from "@/components/use-query-param-writer";
 import { cn } from "@/lib/utils";
 
 // Interactive chip row for the public /matches list. The active selection is
 // owned by the URL (`?team=`), read server-side; this component only writes it.
-// Mirrors the locale-preserving navigation pattern in language-switcher.tsx.
 export function MatchTeamFilter({
   teams,
   selected,
@@ -19,29 +18,19 @@ export function MatchTeamFilter({
   allLabel: string;
   label: string;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [, startTransition] = React.useTransition();
+  const writeParams = useQueryParamWriter();
 
   const selectedKeys = React.useMemo(
     () => new Set(selected.map((team) => team.toLowerCase())),
     [selected],
   );
 
-  // Rewrite only the `team` key, preserving the locale path prefix and any
-  // unrelated query params. An empty selection drops the param entirely.
+  // Rewrite only the `team` key; an empty selection drops the param entirely.
   const apply = React.useCallback(
     (next: string[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (next.length === 0) params.delete("team");
-      else params.set("team", next.join(","));
-      const qs = params.toString();
-      startTransition(() => {
-        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-      });
+      writeParams({ team: next.length === 0 ? null : next.join(",") });
     },
-    [router, pathname, searchParams],
+    [writeParams],
   );
 
   const toggle = (team: string) => {

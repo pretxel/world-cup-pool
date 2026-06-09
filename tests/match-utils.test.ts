@@ -5,8 +5,12 @@ import {
   isLocked,
   lockReason,
   matchInvolvesTeam,
+  needsPick,
+  parsePicksParam,
+  parseStatusParam,
   parseTeamParam,
   reconcileSelectedTeams,
+  statusBucket,
 } from "@/lib/match-utils";
 
 const FIXED_NOW = new Date("2026-06-15T12:00:00.000Z").getTime();
@@ -148,6 +152,84 @@ describe("matchInvolvesTeam", () => {
     expect(matchInvolvesTeam(team("Brazil", "Spain"), sel)).toBe(true);
     expect(matchInvolvesTeam(team("Mexico", "Spain"), sel)).toBe(true);
     expect(matchInvolvesTeam(team("Spain", "France"), sel)).toBe(false);
+  });
+});
+
+describe("parseStatusParam", () => {
+  it("returns null for undefined and empty", () => {
+    expect(parseStatusParam(undefined)).toBeNull();
+    expect(parseStatusParam("")).toBeNull();
+  });
+
+  it("accepts the three known buckets, case-insensitively", () => {
+    expect(parseStatusParam("upcoming")).toBe("upcoming");
+    expect(parseStatusParam("Live")).toBe("live");
+    expect(parseStatusParam(" FINAL ")).toBe("final");
+  });
+
+  it("returns null for unknown values", () => {
+    expect(parseStatusParam("banana")).toBeNull();
+    expect(parseStatusParam("cancelled")).toBeNull();
+  });
+
+  it("keeps the first recognized value of a repeated param", () => {
+    expect(parseStatusParam(["banana", "live", "final"])).toBe("live");
+  });
+});
+
+describe("parsePicksParam", () => {
+  it("is true only for the exact opt-in value", () => {
+    expect(parsePicksParam("needed")).toBe(true);
+    expect(parsePicksParam(" Needed ")).toBe(true);
+  });
+
+  it("is false for undefined, empty, and unknown values", () => {
+    expect(parsePicksParam(undefined)).toBe(false);
+    expect(parsePicksParam("")).toBe(false);
+    expect(parsePicksParam("all")).toBe(false);
+  });
+
+  it("uses the first value of a repeated param", () => {
+    expect(parsePicksParam(["needed", "nope"])).toBe(true);
+    expect(parsePicksParam(["nope", "needed"])).toBe(false);
+  });
+});
+
+describe("statusBucket", () => {
+  it("buckets live, final, and cancelled by status", () => {
+    expect(statusBucket({ status: "live", kickoff_at: FUTURE })).toBe("live");
+    expect(statusBucket({ status: "final", kickoff_at: PAST })).toBe("final");
+    expect(statusBucket({ status: "cancelled", kickoff_at: FUTURE })).toBe(
+      "cancelled",
+    );
+  });
+
+  it("buckets scheduled matches as upcoming whether locked or not", () => {
+    expect(statusBucket({ status: "scheduled", kickoff_at: FUTURE })).toBe(
+      "upcoming",
+    );
+    expect(statusBucket({ status: "scheduled", kickoff_at: PAST })).toBe(
+      "upcoming",
+    );
+  });
+});
+
+describe("needsPick", () => {
+  const open = { id: "m1", status: "scheduled", kickoff_at: FUTURE };
+  const lockedUnpicked = { id: "m2", status: "scheduled", kickoff_at: PAST };
+  const live = { id: "m3", status: "live", kickoff_at: PAST };
+
+  it("is true for an unpicked open match", () => {
+    expect(needsPick(open, new Set())).toBe(true);
+  });
+
+  it("is false once the match is picked", () => {
+    expect(needsPick(open, new Set(["m1"]))).toBe(false);
+  });
+
+  it("excludes locked and live unpicked matches", () => {
+    expect(needsPick(lockedUnpicked, new Set())).toBe(false);
+    expect(needsPick(live, new Set())).toBe(false);
   });
 });
 

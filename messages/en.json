@@ -146,9 +146,11 @@
     "eyebrow": "Fixture list",
     "headline": "Matches",
     "lede": "All {total} fixtures, ordered by kickoff. Tap a match to submit your pick. Predictions lock the second kickoff hits.",
-    "statOpen": "Open",
+    "statUpcoming": "Upcoming",
     "statLive": "Live",
     "statFinal": "Final",
+    "filterStatusLabel": "Filter by status",
+    "filterNeedsPick": "To pick",
     "matchday": "Matchday {n}",
     "matchCount": "{count, plural, =0 {0 matches} one {# match} other {# matches}}",
     "rowKickoff": "Kickoff",
@@ -163,8 +165,8 @@
     "filterLabel": "Filter by team",
     "filterAll": "All",
     "filterEmptyTitle": "No matches",
-    "filterEmptyBody": "No fixtures match your selection. Clear the filter to see the full schedule.",
-    "filterClear": "Clear filter",
+    "filterEmptyBody": "No fixtures match your filters. Clear them to see the full schedule.",
+    "filterClear": "Clear filters",
     "loadFailed": "Failed to load matches: {message}"
   },
   "news": {

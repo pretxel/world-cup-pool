@@ -146,9 +146,11 @@
     "eyebrow": "Calendrier",
     "headline": "Matchs",
     "lede": "Les {total} matchs, classés par coup d'envoi. Touchez un match pour envoyer votre prono. Les pronos se verrouillent dès le coup d'envoi.",
-    "statOpen": "Ouverts",
+    "statUpcoming": "À venir",
     "statLive": "Direct",
     "statFinal": "Terminés",
+    "filterStatusLabel": "Filtrer par statut",
+    "filterNeedsPick": "À pronostiquer",
     "matchday": "Journée {n}",
     "matchCount": "{count, plural, =0 {0 match} one {# match} other {# matchs}}",
     "rowKickoff": "Coup d'envoi",
@@ -163,8 +165,8 @@
     "filterLabel": "Filtrer par équipe",
     "filterAll": "Toutes",
     "filterEmptyTitle": "Aucun match",
-    "filterEmptyBody": "Aucun match ne correspond à votre sélection. Retirez le filtre pour voir tout le calendrier.",
-    "filterClear": "Retirer le filtre",
+    "filterEmptyBody": "Aucun match ne correspond à vos filtres. Retirez-les pour voir tout le calendrier.",
+    "filterClear": "Retirer les filtres",
     "loadFailed": "Échec du chargement des matchs : {message}"
   },
   "news": {

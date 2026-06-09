@@ -146,9 +146,11 @@
     "eyebrow": "Calendario",
     "headline": "Partidos",
     "lede": "Los {total} partidos, ordenados por hora de inicio. Toca un partido para enviar tu pronóstico. Los pronósticos se cierran al instante del pitido inicial.",
-    "statOpen": "Abiertos",
+    "statUpcoming": "Próximos",
     "statLive": "En vivo",
     "statFinal": "Finales",
+    "filterStatusLabel": "Filtrar por estado",
+    "filterNeedsPick": "Por pronosticar",
     "matchday": "Jornada {n}",
     "matchCount": "{count, plural, =0 {0 partidos} one {# partido} other {# partidos}}",
     "rowKickoff": "Inicio",
@@ -163,8 +165,8 @@
     "filterLabel": "Filtrar por equipo",
     "filterAll": "Todos",
     "filterEmptyTitle": "Sin partidos",
-    "filterEmptyBody": "Ningún partido coincide con tu selección. Quita el filtro para ver todo el calendario.",
-    "filterClear": "Quitar filtro",
+    "filterEmptyBody": "Ningún partido coincide con tus filtros. Quítalos para ver todo el calendario.",
+    "filterClear": "Quitar filtros",
     "loadFailed": "No se pudieron cargar los partidos: {message}"
   },
   "news": {
