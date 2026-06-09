@@ -5,15 +5,21 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
+import { MatchStatusFilter } from "@/components/match-status-filter";
 import { MatchTeamFilter } from "@/components/match-team-filter";
+import { NeedsPickToggle } from "@/components/needs-pick-toggle";
 import { TeamFlag } from "@/components/team-flag";
 import {
   filterableTeams,
   isConfirmedMatch,
   isLocked,
   matchInvolvesTeam,
+  needsPick,
+  parsePicksParam,
+  parseStatusParam,
   parseTeamParam,
   reconcileSelectedTeams,
+  statusBucket,
   utcDateKey,
 } from "@/lib/match-utils";
 import type { MatchRow, MatchStage } from "@/lib/db";
@@ -68,13 +74,21 @@ export default async function MatchesPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ team?: string | string[] }>;
+  searchParams: Promise<{
+    team?: string | string[];
+    status?: string | string[];
+    picks?: string | string[];
+  }>;
 }) {
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
 
-  const { team: teamParam } = await searchParams;
+  const {
+    team: teamParam,
+    status: statusParam,
+    picks: picksParam,
+  } = await searchParams;
 
   const t = await getTranslations("matches");
   const tStages = await getTranslations("stages");
@@ -116,18 +130,43 @@ export default async function MatchesPage({
     pickedIds = new Set((picks ?? []).map((p) => p.match_id));
   }
 
-  // Ephemeral team filter: chips reflect the full schedule, but the list,
-  // day groups, and stats below render the selected subset. Selection lives in
-  // the `?team=` param; unknown values are dropped so a bad param falls back to
-  // "show everything".
+  // Ephemeral URL-driven filters, applied confirmed → team → status → picks.
+  // Unknown param values are dropped so a bad URL falls back to "show
+  // everything" rather than erroring.
   const availableTeams = filterableTeams(list);
   const selectedTeams = reconcileSelectedTeams(
     parseTeamParam(teamParam),
     availableTeams,
   );
   const selectedKeys = new Set(selectedTeams.map((team) => team.toLowerCase()));
-  const filtered = list.filter((m) => matchInvolvesTeam(m, selectedKeys));
-  const isFiltered = selectedTeams.length > 0;
+  const teamFiltered = list.filter((m) => matchInvolvesTeam(m, selectedKeys));
+
+  // Stats and the needs-pick count come from the team-filtered set BEFORE the
+  // status/picks filters, so each control shows what activating it would
+  // yield (clicking "Live · 3" can never produce an empty list).
+  const stats = {
+    upcoming: teamFiltered.filter((m) => statusBucket(m) === "upcoming").length,
+    live: teamFiltered.filter((m) => statusBucket(m) === "live").length,
+    final: teamFiltered.filter((m) => statusBucket(m) === "final").length,
+  };
+
+  const statusFilter = parseStatusParam(statusParam);
+  const statusFiltered = statusFilter
+    ? teamFiltered.filter((m) => statusBucket(m) === statusFilter)
+    : teamFiltered;
+
+  // The picks filter exists only for signed-in users; an anonymous request
+  // carrying `?picks=needed` is silently ignored.
+  const picksNeeded = user != null && parsePicksParam(picksParam);
+  const needsPickCount = user
+    ? teamFiltered.filter((m) => needsPick(m, pickedIds)).length
+    : 0;
+  const filtered = picksNeeded
+    ? statusFiltered.filter((m) => needsPick(m, pickedIds))
+    : statusFiltered;
+
+  const isFiltered =
+    selectedTeams.length > 0 || statusFilter !== null || picksNeeded;
 
   const byDay = new Map<string, MatchRow[]>();
   for (const m of filtered) {
@@ -138,12 +177,6 @@ export default async function MatchesPage({
   }
 
   const dayEntries = [...byDay.entries()];
-  const stats = {
-    total: filtered.length,
-    upcoming: filtered.filter((m) => uiStatusFor(m) === "scheduled").length,
-    live: filtered.filter((m) => m.status === "live").length,
-    final: filtered.filter((m) => m.status === "final").length,
-  };
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
@@ -162,12 +195,31 @@ export default async function MatchesPage({
             {t("lede", { total: filtered.length })}
           </p>
         </div>
-        <dl className="grid grid-cols-3 gap-2 sm:gap-3">
-          <Stat label={t("statOpen")} value={stats.upcoming} />
-          <Stat label={t("statLive")} value={stats.live} accent="live" />
-          <Stat label={t("statFinal")} value={stats.final} accent="final" />
-        </dl>
+        <Suspense fallback={null}>
+          <MatchStatusFilter
+            counts={stats}
+            active={statusFilter}
+            labels={{
+              upcoming: t("statUpcoming"),
+              live: t("statLive"),
+              final: t("statFinal"),
+            }}
+            groupLabel={t("filterStatusLabel")}
+          />
+        </Suspense>
       </header>
+
+      {user ? (
+        <div className="mb-4">
+          <Suspense fallback={null}>
+            <NeedsPickToggle
+              count={needsPickCount}
+              active={picksNeeded}
+              label={t("filterNeedsPick")}
+            />
+          </Suspense>
+        </div>
+      ) : null}
 
       {availableTeams.length > 0 ? (
         <Suspense fallback={null}>
@@ -247,37 +299,6 @@ export default async function MatchesPage({
         ) : null}
       </div>
     </main>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent?: "live" | "final";
-}) {
-  return (
-    <div className="rounded-md border border-border bg-card px-3 py-2">
-      <dt
-        className={cn(
-          "font-mono text-[10px] uppercase tracking-[0.2em]",
-          accent === "live" ? "text-destructive" : "text-muted-foreground",
-        )}
-      >
-        {label}
-      </dt>
-      <dd
-        className={cn(
-          "font-mono text-xl font-semibold tabular-nums",
-          accent === "final" && "text-pitch",
-        )}
-      >
-        {value}
-      </dd>
-    </div>
   );
 }
 

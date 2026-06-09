@@ -114,6 +114,61 @@ export function matchInvolvesTeam(match: TeamPair, selected: Set<string>): boole
   );
 }
 
+// --- Status + needs-pick filters (ephemeral, URL-driven) ------------------
+// Back the `?status=` and `?picks=` filters on the public /matches list, with
+// the same drop-unknown defense as the team filter: a bad param value falls
+// back to "no filter" instead of erroring.
+
+export type MatchStatusFilter = "upcoming" | "live" | "final";
+
+const STATUS_FILTERS: readonly MatchStatusFilter[] = ["upcoming", "live", "final"];
+
+// Normalize a `?status=` value. Single-select: a repeated param keeps the
+// first recognized value; anything unknown yields null (= no status filter).
+export function parseStatusParam(
+  raw: string | string[] | undefined,
+): MatchStatusFilter | null {
+  if (!raw) return null;
+  for (const value of Array.isArray(raw) ? raw : [raw]) {
+    const key = value.trim().toLowerCase();
+    if ((STATUS_FILTERS as readonly string[]).includes(key)) {
+      return key as MatchStatusFilter;
+    }
+  }
+  return null;
+}
+
+// True only for the exact opt-in value `picks=needed` (first value wins for a
+// repeated param). Everything else is ignored.
+export function parsePicksParam(raw: string | string[] | undefined): boolean {
+  if (!raw) return false;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return value?.trim().toLowerCase() === "needed";
+}
+
+// Bucket a match for the header stats / status filter. Locked-but-not-live
+// fixtures count as "upcoming" so the three buckets sum to the listed total;
+// the per-row badge still distinguishes locked from open.
+export function statusBucket(match: {
+  kickoff_at: string;
+  status: string;
+}): MatchStatusFilter | "cancelled" {
+  if (match.status === "live") return "live";
+  if (match.status === "final") return "final";
+  if (match.status === "cancelled") return "cancelled";
+  return "upcoming";
+}
+
+// A match still needs the user's pick when they haven't predicted it and it is
+// still open (scheduled and unlocked). Locked/live/final fixtures are no
+// longer actionable, so they never count.
+export function needsPick(
+  match: { id: string; kickoff_at: string; status: string },
+  pickedIds: ReadonlySet<string>,
+): boolean {
+  return !pickedIds.has(match.id) && !isLocked(match);
+}
+
 // A match is "confirmed" once both participants are real participating
 // countries. Knockout fixtures seed placeholder participants ("2nd Group A",
 // "Winner Match 73", …) that don't resolve to a flag; those stay unconfirmed
