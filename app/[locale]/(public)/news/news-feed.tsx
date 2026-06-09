@@ -54,7 +54,7 @@ export function NewsFeed({
 
   return (
     <>
-      <ul className="grid gap-4 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((a) => (
           <li key={a.id}>
             <ArticleCard article={a} readMore={t("readMore")} />
@@ -127,15 +127,19 @@ function ArticleCard({
           </p>
         ) : null}
 
-        <div className="mt-auto flex items-center justify-between pt-2 text-xs text-muted-foreground">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
           <span className="flex min-w-0 items-center gap-1.5">
             {article.source ? (
-              <span className="truncate font-medium text-foreground">
-                {article.source}
-              </span>
+              <>
+                <span className="truncate font-medium text-foreground">
+                  {article.source}
+                </span>
+                <span aria-hidden>·</span>
+              </>
             ) : null}
-            <span aria-hidden>·</span>
-            <LocalTime iso={article.published_at} format="date" />
+            <span className="shrink-0 whitespace-nowrap">
+              <LocalTime iso={article.published_at} format="date" />
+            </span>
           </span>
           <span className="flex shrink-0 items-center gap-1 font-mono uppercase tracking-[0.16em] text-muted-foreground transition-colors group-hover/news:text-foreground">
             {readMore}

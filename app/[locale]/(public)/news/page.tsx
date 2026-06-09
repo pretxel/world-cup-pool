@@ -49,7 +49,7 @@ export default async function NewsPage({
 
   if (error) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-10">
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {t("loadFailed", { message: error.message })}
         </div>
@@ -60,13 +60,13 @@ export default async function NewsPage({
   const list = (articles ?? []) as NewsArticleRow[];
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 py-10">
       <header className="mb-8 border-b border-border pb-6">
         <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
           {t("eyebrow")}
         </p>
         <h1
-          className="mt-1 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
+          className="mt-1 font-heading text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl"
           style={{ fontStretch: "condensed" }}
         >
           {t("headline")}
