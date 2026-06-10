@@ -235,15 +235,15 @@ export default async function MatchesPage({
       <div className="space-y-12">
         {dayEntries.map(([day, dayMatches], idx) => (
           <section key={day}>
-            <h2 className="sticky top-[3.55rem] z-10 -mx-4 mb-3 flex items-baseline gap-3 border-b border-border bg-background/85 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+            <h2 className="sticky top-[3.3rem] z-10 -mx-4 mb-3 flex items-baseline gap-3 border-b border-border bg-background/85 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:top-[3.55rem]">
               <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                 {t("matchday", { n: String(idx + 1).padStart(2, "0") })}
               </span>
               <span aria-hidden className="h-px flex-1 bg-border" />
-              <span className="font-heading text-sm font-semibold tracking-tight text-foreground">
+              <span className="min-w-0 truncate font-heading text-sm font-semibold tracking-tight text-foreground">
                 <LocalTime iso={`${day}T00:00:00Z`} format="date" />
               </span>
-              <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
+              <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
                 {t("matchCount", { count: dayMatches.length })}
               </span>
             </h2>
@@ -335,10 +335,10 @@ function MatchRowCard({
   return (
     <Link
       href={localePath(locale, `/matches/${match.id}`)}
-      className="group/match relative flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50"
+      className="group/match relative flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50 sm:gap-4"
     >
-      <div className="flex w-14 shrink-0 flex-col items-start">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="flex w-auto shrink-0 flex-col items-start sm:w-14">
+        <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:block">
           {tKickoff}
         </span>
         <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
@@ -346,7 +346,7 @@ function MatchRowCard({
         </span>
       </div>
 
-      <div aria-hidden className="h-10 w-px bg-border" />
+      <div aria-hidden className="hidden h-10 w-px bg-border sm:block" />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -362,14 +362,18 @@ function MatchRowCard({
             </span>
           ) : null}
         </div>
-        <div className="mt-1.5 flex items-center gap-2 truncate font-heading text-base font-semibold tracking-tight text-foreground sm:text-lg">
-          <TeamFlag team={match.home_team} size="sm" />
-          <span className="truncate">{match.home_team}</span>
-          <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="mt-1.5 flex min-w-0 flex-col gap-1 font-heading text-base font-semibold tracking-tight text-foreground sm:flex-row sm:items-center sm:gap-2 sm:text-lg">
+          <span className="flex min-w-0 items-center gap-2">
+            <TeamFlag team={match.home_team} size="sm" />
+            <span className="truncate">{match.home_team}</span>
+          </span>
+          <span className="hidden text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground sm:inline">
             vs
           </span>
-          <TeamFlag team={match.away_team} size="sm" />
-          <span className="truncate">{match.away_team}</span>
+          <span className="flex min-w-0 items-center gap-2">
+            <TeamFlag team={match.away_team} size="sm" />
+            <span className="truncate">{match.away_team}</span>
+          </span>
         </div>
         {match.venue ? (
           <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
@@ -390,15 +394,15 @@ function MatchRowCard({
             </div>
           </div>
         ) : uiStatus === "live" ? (
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-destructive live-pulse">
+          <div className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-destructive live-pulse sm:block">
             {tOnNow}
           </div>
         ) : uiStatus === "locked" ? (
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:block">
             {tLocked}
           </div>
         ) : (
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:block">
             {tPick}
           </div>
         )}

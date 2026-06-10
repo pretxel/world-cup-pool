@@ -31,7 +31,7 @@ export function MatchStatusFilter({
     <dl
       role="group"
       aria-label={groupLabel}
-      className="grid grid-cols-3 gap-2 sm:gap-3"
+      className="grid grid-cols-3 gap-2 sm:shrink-0 sm:gap-3"
     >
       {(["upcoming", "live", "final"] as const).map((status) => (
         <StatCard
@@ -75,7 +75,7 @@ function StatCard({
       >
         <dt
           className={cn(
-            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            "truncate font-mono text-[10px] uppercase tracking-[0.2em]",
             accent === "live" ? "text-destructive" : "text-muted-foreground",
           )}
         >
