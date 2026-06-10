@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logotype } from "@/components/logotype";
 import { DEFAULT_LOCALE, isLocale, localePath } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export async function SiteNav() {
   const supabase = await createServerSupabaseClient();
@@ -64,7 +65,10 @@ export async function SiteNav() {
           ) : (
             <Link
               href={lp("/sign-in")}
-              className={buttonVariants({ size: "sm", className: "hidden sm:inline-flex" })}
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "hidden sm:inline-flex",
+              )}
             >
               {tCommon("signIn")}
             </Link>
