@@ -262,7 +262,7 @@ export default async function MatchDetailPage({
           </div>
         </div>
 
-        <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-6 pt-3 pb-6 sm:gap-6 sm:px-8">
+        <div className="relative flex flex-col gap-3 px-6 pt-3 pb-6 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-6 sm:px-8">
           <div className="min-w-0">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
               {t("home")}
