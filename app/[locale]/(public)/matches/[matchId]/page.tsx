@@ -14,6 +14,9 @@ import { isConfirmedMatch, lockReason } from "@/lib/match-utils";
 import type { MatchStage } from "@/lib/db";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
+import { SharePickButtons } from "@/components/share-pick-buttons";
+import { buildPickSharePath } from "@/lib/share";
+import { env } from "@/lib/env";
 import { GroupStandingsTable } from "@/components/group-standings-table";
 import { simulateGroup, type GroupTeamRow } from "@/lib/group-standings";
 import { cn } from "@/lib/utils";
@@ -103,6 +106,7 @@ export default async function MatchDetailPage({
   const tStages = await getTranslations("stages");
   const tForm = await getTranslations("predictionForm");
   const tGroupSim = await getTranslations("groupSimulation");
+  const tShare = await getTranslations("sharePick");
 
   const supabase = await createServerSupabaseClient();
 
@@ -440,6 +444,30 @@ export default async function MatchDetailPage({
           />
         )}
       </section>
+
+      {myPrediction ? (
+        <section className="mt-8">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            {tShare("heading")}
+          </p>
+          <SharePickButtons
+            shareUrl={`${env.siteUrl}${buildPickSharePath(locale, match.id, myPrediction.home_goals, myPrediction.away_goals)}`}
+            shareText={tShare("shareText", {
+              home: match.home_team,
+              away: match.away_team,
+              h: myPrediction.home_goals,
+              a: myPrediction.away_goals,
+            })}
+            labels={{
+              x: tShare("shareOnX"),
+              facebook: tShare("shareOnFacebook"),
+              native: tShare("shareNative"),
+              copy: tShare("copyLink"),
+              copied: tShare("copied"),
+            }}
+          />
+        </section>
+      ) : null}
 
       {groupSim ? (
         <section className="mt-8">

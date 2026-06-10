@@ -270,6 +270,21 @@
     "errorMatchNotFound": "Match introuvable.",
     "errorInvalidScores": "Les scores doivent être des entiers entre 0 et 20."
   },
+  "sharePick": {
+    "heading": "Partagez votre prono",
+    "shareText": "Mon prono : {home} {h}–{a} {away} · Pool Coupe du Monde 2026",
+    "shareOnX": "Partager sur X",
+    "shareOnFacebook": "Partager sur Facebook",
+    "shareNative": "Partager…",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "pageTitle": "{home} {h}–{a} {away} — prono partagé",
+    "pageDescription": "Un prono Coupe du Monde 2026 pour {home} vs {away}. Faites votre propre prono avant le coup d'envoi.",
+    "pageEyebrow": "Prono partagé",
+    "pageHeading": "Prono Coupe du Monde 2026",
+    "cta": "Faites votre prono",
+    "ogAlt": "Prono partagé Coupe du Monde 2026 : {home} {h}–{a} {away}"
+  },
   "myPicks": {
     "title": "Mes pronos — Pool Coupe du Monde 2026",
     "eyebrow": "Votre ticket",
