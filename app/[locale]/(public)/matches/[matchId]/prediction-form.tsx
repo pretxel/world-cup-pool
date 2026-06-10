@@ -73,7 +73,7 @@ export function PredictionForm({
       onSubmit={onSubmit}
       className="rounded-xl border border-border bg-card p-5 shadow-sm"
     >
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
+      <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-5">
         <ScoreStepper
           id={`home-${matchId}`}
           team={homeTeam}
