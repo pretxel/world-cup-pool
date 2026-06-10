@@ -270,6 +270,21 @@
     "errorMatchNotFound": "Partido no encontrado.",
     "errorInvalidScores": "Los marcadores deben ser números enteros entre 0 y 20."
   },
+  "sharePick": {
+    "heading": "Comparte tu pronóstico",
+    "shareText": "Mi pronóstico: {home} {h}–{a} {away} · Quiniela Mundial 2026",
+    "shareOnX": "Compartir en X",
+    "shareOnFacebook": "Compartir en Facebook",
+    "shareNative": "Compartir…",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado",
+    "pageTitle": "{home} {h}–{a} {away} — pronóstico compartido",
+    "pageDescription": "Un pronóstico del Mundial 2026 para {home} vs {away}. Haz tu propio pronóstico antes del inicio.",
+    "pageEyebrow": "Pronóstico compartido",
+    "pageHeading": "Pronóstico del Mundial 2026",
+    "cta": "Haz tu propio pronóstico",
+    "ogAlt": "Pronóstico compartido del Mundial 2026: {home} {h}–{a} {away}"
+  },
   "myPicks": {
     "title": "Mis pronósticos — Pool Mundial 2026",
     "eyebrow": "Tu boleto",

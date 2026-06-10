@@ -270,6 +270,21 @@
     "errorMatchNotFound": "Match not found.",
     "errorInvalidScores": "Scores must be whole numbers between 0 and 20."
   },
+  "sharePick": {
+    "heading": "Share your pick",
+    "shareText": "My pick: {home} {h}–{a} {away} · World Cup 2026 Pool",
+    "shareOnX": "Share on X",
+    "shareOnFacebook": "Share on Facebook",
+    "shareNative": "Share…",
+    "copyLink": "Copy link",
+    "copied": "Link copied",
+    "pageTitle": "{home} {h}–{a} {away} — shared pick",
+    "pageDescription": "A World Cup 2026 prediction for {home} vs {away}. Make your own pick before kickoff.",
+    "pageEyebrow": "Shared pick",
+    "pageHeading": "World Cup 2026 prediction",
+    "cta": "Make your own pick",
+    "ogAlt": "Shared World Cup 2026 pick: {home} {h}–{a} {away}"
+  },
   "myPicks": {
     "title": "My picks — World Cup 2026 Pool",
     "eyebrow": "Your ticket",
