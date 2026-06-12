@@ -8,7 +8,7 @@ Rules governing the cron-driven match-result sync from an external football data
 
 ### Requirement: Cron route handler exists at /api/cron/sync-matches
 
-The system SHALL expose a GET route handler at `/api/cron/sync-matches` that, when invoked with a valid `Authorization: Bearer ${CRON_SECRET}` header, fetches the current WC2026 match list from Football-Data.org, mirrors each fixture's status/score into `public.matches`, and calls `compute_match_scores(p_match_id)` for every match it touched. Any other invocation (missing or wrong secret) SHALL receive `401 Unauthorized`.
+The system SHALL expose a GET route handler at `/api/cron/sync-matches` that, when invoked with a valid `Authorization: Bearer ${CRON_SECRET}` header, runs the shared sync core: fetch the current WC2026 match list through the ordered provider chain (Football-Data.org primary, fallback on escalation), mirror each fixture's status/score into `public.matches`, and call `compute_match_scores(p_match_id)` for every match it touched. Any other invocation (missing or wrong secret) SHALL receive `401 Unauthorized`.
 
 #### Scenario: Authorized invocation
 - **WHEN** a request hits `/api/cron/sync-matches` with `Authorization: Bearer <CRON_SECRET>` matching the env var
@@ -21,10 +21,15 @@ The system SHALL expose a GET route handler at `/api/cron/sync-matches` that, wh
 
 ### Requirement: Sync is gated by env vars and degrades cleanly
 
-If `FOOTBALL_DATA_TOKEN` or `CRON_SECRET` is missing in the runtime environment, the route handler SHALL short-circuit with `204 No Content` and an `x-skipped: missing-env` header. It SHALL NOT throw or write to the database.
+If `CRON_SECRET` is missing in a production runtime, the route handler SHALL short-circuit with `204 No Content` and an `x-skipped: missing-env` header; in non-production environments a missing `CRON_SECRET` SHALL allow the request through unauthenticated (local development convenience). If `FOOTBALL_DATA_TOKEN` is missing, the primary provider SHALL be skipped and the run SHALL proceed with the remaining available providers; if no provider is available, the handler SHALL short-circuit with `204 No Content` and `x-skipped: missing-env`. It SHALL NOT throw or write to the database in any short-circuit case.
 
 #### Scenario: Missing FOOTBALL_DATA_TOKEN
 - **WHEN** the route is invoked with a valid `Authorization` header but `FOOTBALL_DATA_TOKEN` is unset
+- **THEN** the run skips the primary provider and proceeds with the keyless fallback provider
+- **AND** no Football-Data.org HTTP request is made
+
+#### Scenario: No provider available
+- **WHEN** the route is invoked with a valid `Authorization` header and no result provider is available
 - **THEN** the handler returns `204` with header `x-skipped: missing-env`
 - **AND** no upstream HTTP request is made
 
@@ -84,8 +89,75 @@ The sync SHALL never downgrade a match that is already locally `'final'` back to
 
 ### Requirement: Run returns a JSON summary
 
-The handler SHALL return a JSON body summarizing the run for log inspection, including counts of matched rows, live transitions, final writes, recompute calls, and unmatched/error rows.
+The handler SHALL return a JSON body summarizing the run for log inspection, including counts of matched rows, live transitions, final writes, recompute calls, and unmatched/error rows, plus which provider's data was applied and staleness counts.
 
 #### Scenario: Summary shape
 - **WHEN** the handler completes a normal run
 - **THEN** the response body is a JSON object containing the keys `fetched`, `matched`, `live`, `final`, `recomputed`, `unmatched`, and `errors`, each whose value is a non-negative integer
+- **AND** the key `source` whose value is one of `"football-data"`, `"espn"`, `"none"`
+- **AND** the keys `stale` and `staleResolved`, each a non-negative integer
+
+### Requirement: Result sync uses ordered providers with fallback escalation
+
+The sync core SHALL obtain remote results through an ordered list of result providers — Football-Data.org as primary, a secondary keyless provider (ESPN scoreboard) as fallback — each normalizing its payload to the shared `RemoteMatch` shape before the matching pipeline runs. The fallback SHALL be consulted when (a) the primary fetch hard-fails (non-OK response or network error), (b) the primary returns zero matches, or (c) after applying primary data, stale matches remain. In case (c), the fallback fetch SHALL be scoped to the stale matches' dates. A provider whose required env vars are absent SHALL be skipped without error.
+
+#### Scenario: Primary hard failure escalates to fallback
+- **WHEN** the primary provider's fetch returns a non-OK status during a sync run
+- **THEN** the run fetches results from the fallback provider instead of failing
+- **AND** the run summary reports the fallback as the source used
+
+#### Scenario: Empty primary payload escalates to fallback
+- **WHEN** the primary provider responds OK but with zero matches
+- **THEN** the run fetches results from the fallback provider
+
+#### Scenario: Stale matches after primary trigger targeted fallback
+- **WHEN** primary data is applied successfully but at least one stale match remains non-final
+- **THEN** the run fetches results from the fallback provider for the stale matches' dates
+- **AND** applies any resolutions through the same matching and write pipeline
+
+#### Scenario: Fallback also fails
+- **WHEN** both primary and fallback providers fail in a single run
+- **THEN** the run completes with a summary whose `source` is `"none"` and `errors` reflects the failures
+- **AND** no partial or corrupt writes occur
+
+#### Scenario: Cross-source final is never overwritten
+- **WHEN** a match was written `status='final'` from one provider
+- **AND** a later run served by the other provider reports a different score or a non-final status for that match
+- **THEN** the local row keeps its final status and score
+
+### Requirement: Staleness detection flags overdue non-final matches
+
+The sync core SHALL provide a staleness check that flags any match whose `kickoff_at` is more than 3 hours in the past, whose status is not terminal (`'final'` and `'cancelled'` are excluded — a cancelled match intentionally has no result), and whose both teams resolve to real countries (placeholder fixtures excluded). The check SHALL run at the end of every sync run, and its counts SHALL be reported in the run summary.
+
+#### Scenario: Overdue match is flagged stale
+- **WHEN** a confirmed match kicked off 4 hours ago and is still `status='scheduled'` or `'live'`
+- **THEN** the staleness check includes it in the stale set
+
+#### Scenario: Placeholder fixture is not stale
+- **WHEN** a knockout fixture with placeholder participants (e.g. "2nd Group A") has a past `kickoff_at`
+- **THEN** the staleness check excludes it
+
+#### Scenario: Recently kicked-off match is not stale
+- **WHEN** a match kicked off 1 hour ago and is `status='live'`
+- **THEN** the staleness check excludes it
+
+#### Scenario: Cancelled match is not stale
+- **WHEN** a match with a past `kickoff_at` has `status='cancelled'`
+- **THEN** the staleness check excludes it
+
+### Requirement: Opportunistic sync trigger from the public matches page
+
+When the public matches page server-renders and the loaded match list contains at least one stale match, the system SHALL schedule a sync run after the response is sent, without blocking or delaying the page render. Opportunistic runs SHALL be debounced so that a given server instance attempts at most one run per 5 minutes.
+
+#### Scenario: Stale match triggers background sync
+- **WHEN** the matches page renders and a stale match is present
+- **AND** no opportunistic run was attempted by this instance in the last 5 minutes
+- **THEN** a sync run is scheduled after the response completes
+
+#### Scenario: No stale matches, no trigger
+- **WHEN** the matches page renders and no match is stale
+- **THEN** no sync run is scheduled
+
+#### Scenario: Debounce suppresses repeat triggers
+- **WHEN** the matches page renders with a stale match twice within 5 minutes on the same instance
+- **THEN** only the first render schedules a sync run

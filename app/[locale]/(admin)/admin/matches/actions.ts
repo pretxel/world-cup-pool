@@ -2,8 +2,11 @@
 
 import { z } from "zod";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { runSync } from "@/lib/result-sync/core";
+import { isLocale, localePath, DEFAULT_LOCALE } from "@/lib/i18n";
 
 const STAGES = ["group", "r32", "r16", "qf", "sf", "third", "final"] as const;
 
@@ -135,6 +138,39 @@ export async function forceRecompute(formData: FormData) {
   if (error) throw new Error(error.message);
   revalidatePath("/leaderboard");
   revalidateTag("leaderboard", "max");
+}
+
+// Human-triggered fallback for the daily cron: run the shared sync core on
+// demand. The summary travels back through query params (server-component
+// page, no client state) so the admin sees what the run did — including the
+// failure case (source=none) — after the redirect.
+export async function syncNow(formData: FormData): Promise<void> {
+  await assertAdmin();
+
+  const rawLocale = formData.get("locale");
+  const locale =
+    typeof rawLocale === "string" && isLocale(rawLocale)
+      ? rawLocale
+      : DEFAULT_LOCALE;
+
+  const summary = await runSync();
+
+  revalidatePath("/admin/matches");
+  revalidatePath("/matches");
+  revalidatePath("/my-picks");
+  revalidatePath("/leaderboard");
+  revalidateTag("leaderboard", "max");
+
+  const params = new URLSearchParams({
+    syncSource: summary.source,
+    syncFetched: String(summary.fetched),
+    syncMatched: String(summary.matched),
+    syncFinal: String(summary.final),
+    syncStale: String(summary.stale),
+    syncStaleResolved: String(summary.staleResolved),
+    syncErrors: String(summary.errors),
+  });
+  redirect(localePath(locale, `/admin/matches?${params.toString()}`));
 }
 
 export async function deleteMatch(formData: FormData) {

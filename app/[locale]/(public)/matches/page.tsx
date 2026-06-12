@@ -22,6 +22,7 @@ import {
   statusBucket,
   utcDateKey,
 } from "@/lib/match-utils";
+import { maybeScheduleOpportunisticSync } from "@/lib/result-sync/opportunistic";
 import type { MatchRow, MatchStage } from "@/lib/db";
 import { CheckCircle2Icon, ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -114,6 +115,11 @@ export default async function MatchesPage({
   // teams, and an unknown matchup is neither readable nor pickable. Everything
   // below (filter, stats, day groups) operates on this confirmed base.
   const list = ((matches ?? []) as MatchRow[]).filter(isConfirmedMatch);
+
+  // Safety net for the daily cron: if a kicked-off match still has no result
+  // hours later, run a result sync after this response is sent. Costs the
+  // render an in-memory scan only; debounced inside.
+  maybeScheduleOpportunisticSync(list);
 
   // Only signed-in requests pay for the per-user pick lookup; anonymous
   // visitors get the list unchanged. RLS (predictions_select_own) scopes the

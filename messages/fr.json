@@ -487,7 +487,18 @@
     "deleteFixture": "Supprimer le match",
     "forbiddenTitle": "403 — Admins seulement",
     "forbiddenBody": "Cette page est restreinte. Si vous pensez devoir y accéder, demandez au propriétaire du pool de vous passer admin.",
-    "goHome": "Retour à l'accueil"
+    "goHome": "Retour à l'accueil",
+    "syncTitle": "Synchronisation des résultats",
+    "syncLede": "Récupérez les scores depuis les fournisseurs maintenant, sans attendre le cron quotidien.",
+    "syncNow": "Synchroniser les résultats",
+    "syncFailed": "Échec de la synchronisation : aucun fournisseur n'a renvoyé de données ({errors} erreurs). Saisissez les résultats manuellement ci-dessous ou réessayez.",
+    "syncSource": "Source",
+    "syncMatched": "Appariés",
+    "syncFinalized": "Finalisés",
+    "syncStaleResolved": "En retard résolus",
+    "syncStale": "Toujours en retard",
+    "syncErrors": "Erreurs",
+    "staleBadge": "Résultat en retard"
   },
   "error": {
     "eyebrow": "Temps additionnel",

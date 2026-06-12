@@ -487,7 +487,18 @@
     "deleteFixture": "Eliminar partido",
     "forbiddenTitle": "403 — Solo admins",
     "forbiddenBody": "Esta página está restringida. Si crees que deberías tener acceso, pide al dueño del pool que te marque como admin.",
-    "goHome": "Ir al inicio"
+    "goHome": "Ir al inicio",
+    "syncTitle": "Sincronización de resultados",
+    "syncLede": "Obtén los marcadores de los proveedores ahora, sin esperar al cron diario.",
+    "syncNow": "Sincronizar resultados ahora",
+    "syncFailed": "La sincronización falló: ningún proveedor devolvió datos ({errors} errores). Ingresa los resultados manualmente abajo o reintenta.",
+    "syncSource": "Fuente",
+    "syncMatched": "Emparejados",
+    "syncFinalized": "Finalizados",
+    "syncStaleResolved": "Atrasados resueltos",
+    "syncStale": "Aún atrasados",
+    "syncErrors": "Errores",
+    "staleBadge": "Resultado atrasado"
   },
   "error": {
     "eyebrow": "Tiempo añadido",

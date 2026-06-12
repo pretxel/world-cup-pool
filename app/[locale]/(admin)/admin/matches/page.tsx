@@ -10,9 +10,11 @@ import {
   setMatchResult,
   forceRecompute,
   deleteMatch,
+  syncNow,
 } from "./actions";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { isConfirmedMatch } from "@/lib/match-utils";
+import { isStaleMatch } from "@/lib/result-sync/staleness";
 
 export async function generateMetadata({
   params,
@@ -41,10 +43,37 @@ const STATUS_KEYS = {
   cancelled: "statusCancelled",
 } as const;
 
+// The syncNow action reports back via query params (server-rendered page, no
+// client state). Non-numeric values render as 0 rather than erroring.
+function parseSyncSummaryParams(params: {
+  [key: string]: string | string[] | undefined;
+}): { source: string; counts: Record<string, number> } | null {
+  const source = params.syncSource;
+  if (typeof source !== "string" || source.length === 0) return null;
+  const count = (key: string) => {
+    const raw = params[key];
+    const n = typeof raw === "string" ? Number(raw) : NaN;
+    return Number.isInteger(n) && n >= 0 ? n : 0;
+  };
+  return {
+    source,
+    counts: {
+      fetched: count("syncFetched"),
+      matched: count("syncMatched"),
+      final: count("syncFinal"),
+      stale: count("syncStale"),
+      staleResolved: count("syncStaleResolved"),
+      errors: count("syncErrors"),
+    },
+  };
+}
+
 export default async function AdminMatchesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
@@ -53,6 +82,9 @@ export default async function AdminMatchesPage({
   const t = await getTranslations("admin");
   const tStages = await getTranslations("stages");
   const tStatus = await getTranslations("matchStatus");
+
+  const syncSummary = parseSyncSummaryParams(await searchParams);
+  const now = new Date();
 
   const supabase = await createServerSupabaseClient();
   const { data: matches } = await supabase
@@ -64,6 +96,63 @@ export default async function AdminMatchesPage({
     <main className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-3xl font-bold">{t("headline")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{t("lede")}</p>
+
+      <section className="mt-6 rounded-lg border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">{t("syncTitle")}</h2>
+            <p className="text-sm text-muted-foreground">{t("syncLede")}</p>
+          </div>
+          <form action={syncNow}>
+            <input type="hidden" name="locale" value={locale} />
+            <Button type="submit">{t("syncNow")}</Button>
+          </form>
+        </div>
+        {syncSummary ? (
+          syncSummary.source === "none" ? (
+            <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              {t("syncFailed", { errors: syncSummary.counts.errors })}
+            </div>
+          ) : (
+            <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 rounded-md border bg-muted/30 p-3 text-sm sm:grid-cols-3">
+              <div className="flex justify-between gap-2 sm:block">
+                <dt className="text-muted-foreground">{t("syncSource")}</dt>
+                <dd className="font-mono">{syncSummary.source}</dd>
+              </div>
+              <div className="flex justify-between gap-2 sm:block">
+                <dt className="text-muted-foreground">{t("syncMatched")}</dt>
+                <dd className="font-mono tabular-nums">
+                  {syncSummary.counts.matched}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-2 sm:block">
+                <dt className="text-muted-foreground">{t("syncFinalized")}</dt>
+                <dd className="font-mono tabular-nums">
+                  {syncSummary.counts.final}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-2 sm:block">
+                <dt className="text-muted-foreground">{t("syncStaleResolved")}</dt>
+                <dd className="font-mono tabular-nums">
+                  {syncSummary.counts.staleResolved}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-2 sm:block">
+                <dt className="text-muted-foreground">{t("syncStale")}</dt>
+                <dd className="font-mono tabular-nums">
+                  {syncSummary.counts.stale}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-2 sm:block">
+                <dt className="text-muted-foreground">{t("syncErrors")}</dt>
+                <dd className="font-mono tabular-nums">
+                  {syncSummary.counts.errors}
+                </dd>
+              </div>
+            </dl>
+          )
+        ) : null}
+      </section>
 
       <section className="mt-8 rounded-lg border p-4">
         <h2 className="mb-3 text-lg font-semibold">{t("newFixture")}</h2>
@@ -125,6 +214,9 @@ export default async function AdminMatchesPage({
                 </Badge>
                 {!isConfirmedMatch(m) ? (
                   <Badge variant="destructive">{t("unconfirmed")}</Badge>
+                ) : null}
+                {isStaleMatch(m, now) ? (
+                  <Badge variant="destructive">{t("staleBadge")}</Badge>
                 ) : null}
                 <span className="text-xs text-muted-foreground">
                   <LocalTime iso={m.kickoff_at} />

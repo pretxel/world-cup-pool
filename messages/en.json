@@ -487,7 +487,18 @@
     "deleteFixture": "Delete fixture",
     "forbiddenTitle": "403 — Admin only",
     "forbiddenBody": "This page is restricted. If you should have access, ask the pool owner to mark you as admin.",
-    "goHome": "Go home"
+    "goHome": "Go home",
+    "syncTitle": "Result sync",
+    "syncLede": "Pull scores from the result providers now instead of waiting for the daily cron.",
+    "syncNow": "Sync results now",
+    "syncFailed": "Sync failed — no provider returned data ({errors} errors). Enter results manually below or retry.",
+    "syncSource": "Source",
+    "syncMatched": "Matched",
+    "syncFinalized": "Finalized",
+    "syncStaleResolved": "Overdue resolved",
+    "syncStale": "Still overdue",
+    "syncErrors": "Errors",
+    "staleBadge": "Result overdue"
   },
   "error": {
     "eyebrow": "Stoppage time",

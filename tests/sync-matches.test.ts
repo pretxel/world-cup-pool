@@ -7,7 +7,7 @@ const FOOTBALL_TOKEN = "test-token";
 const rpcMock = vi.fn();
 const updateMock = vi.fn();
 const eqMock = vi.fn();
-const selectMock = vi.fn();
+const neqMock = vi.fn();
 const fromMock = vi.fn();
 
 vi.mock("@/lib/env", () => ({
@@ -43,14 +43,44 @@ function setupLocalMatches(rows: unknown[]) {
   });
 }
 
+// The sync core now talks to two upstreams; route the stub per host so a test
+// can shape the primary's payload while the ESPN fallback stays inert.
+function stubFetchByHost({
+  footballData,
+  espn,
+}: {
+  footballData?: () => Response;
+  espn?: () => Response;
+} = {}) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("football-data.org")) {
+        return footballData
+          ? footballData()
+          : new Response(JSON.stringify({ matches: [] }), { status: 200 });
+      }
+      if (url.includes("espn.com")) {
+        return espn
+          ? espn()
+          : new Response(JSON.stringify({ events: [] }), { status: 200 });
+      }
+      throw new Error(`unexpected fetch ${url}`);
+    }),
+  );
+}
+
 beforeEach(() => {
   rpcMock.mockReset();
   rpcMock.mockResolvedValue({ error: null });
+  neqMock.mockReset();
+  neqMock.mockResolvedValue({ error: null });
   eqMock.mockReset();
-  eqMock.mockResolvedValue({ error: null });
+  // Sync writes chain .eq(id).neq("status", "final").
+  eqMock.mockImplementation(() => ({ neq: neqMock }));
   updateMock.mockReset();
   updateMock.mockImplementation(() => ({ eq: eqMock }));
-  selectMock.mockReset();
   fromMock.mockReset();
 });
 
@@ -86,9 +116,8 @@ describe("GET /api/cron/sync-matches", () => {
         status: "scheduled",
       },
     ]);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
+    stubFetchByHost({
+      footballData: () =>
         new Response(
           JSON.stringify({
             matches: [
@@ -104,8 +133,7 @@ describe("GET /api/cron/sync-matches", () => {
           }),
           { status: 200 },
         ),
-      ),
-    );
+    });
 
     const { GET } = await import("@/app/api/cron/sync-matches/route");
     const res = await GET(
@@ -113,11 +141,13 @@ describe("GET /api/cron/sync-matches", () => {
     );
 
     expect(res.status).toBe(200);
-    const body = (await res.json()) as Record<string, number>;
+    const body = (await res.json()) as Record<string, number | string>;
     expect(body.matched).toBe(1);
     expect(body.final).toBe(1);
     expect(body.live).toBe(0);
     expect(body.recomputed).toBe(1);
+    expect(body.source).toBe("football-data");
+    expect(body.stale).toBe(0);
     expect(updateMock).toHaveBeenCalledTimes(1);
     expect(updateMock).toHaveBeenCalledWith({
       home_score: 2,
@@ -127,6 +157,34 @@ describe("GET /api/cron/sync-matches", () => {
     expect(rpcMock).toHaveBeenCalledWith("compute_match_scores", {
       p_match_id: MATCH_ID,
     });
+  });
+
+  it("returns the spec'd summary shape", async () => {
+    setupLocalMatches([]);
+    stubFetchByHost();
+
+    const { GET } = await import("@/app/api/cron/sync-matches/route");
+    const res = await GET(
+      makeRequest({ authorization: `Bearer ${CRON_SECRET}` }) as never,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    for (const key of [
+      "fetched",
+      "matched",
+      "live",
+      "final",
+      "recomputed",
+      "unmatched",
+      "errors",
+      "stale",
+      "staleResolved",
+    ]) {
+      expect(body[key], key).toBeTypeOf("number");
+      expect(body[key] as number).toBeGreaterThanOrEqual(0);
+    }
+    expect(["football-data", "espn", "none"]).toContain(body.source);
   });
 
   it("flips IN_PLAY to live when local was scheduled", async () => {
@@ -141,9 +199,8 @@ describe("GET /api/cron/sync-matches", () => {
         status: "scheduled",
       },
     ]);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
+    stubFetchByHost({
+      footballData: () =>
         new Response(
           JSON.stringify({
             matches: [
@@ -159,8 +216,7 @@ describe("GET /api/cron/sync-matches", () => {
           }),
           { status: 200 },
         ),
-      ),
-    );
+    });
 
     const { GET } = await import("@/app/api/cron/sync-matches/route");
     const res = await GET(
@@ -186,9 +242,8 @@ describe("GET /api/cron/sync-matches", () => {
         status: "final",
       },
     ]);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
+    stubFetchByHost({
+      footballData: () =>
         new Response(
           JSON.stringify({
             matches: [
@@ -203,8 +258,7 @@ describe("GET /api/cron/sync-matches", () => {
           }),
           { status: 200 },
         ),
-      ),
-    );
+    });
 
     const { GET } = await import("@/app/api/cron/sync-matches/route");
     const res = await GET(
@@ -220,9 +274,8 @@ describe("GET /api/cron/sync-matches", () => {
 
   it("logs unmatched remote rows and continues", async () => {
     setupLocalMatches([]); // no local rows
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
+    stubFetchByHost({
+      footballData: () =>
         new Response(
           JSON.stringify({
             matches: [
@@ -238,8 +291,7 @@ describe("GET /api/cron/sync-matches", () => {
           }),
           { status: 200 },
         ),
-      ),
-    );
+    });
 
     const { GET } = await import("@/app/api/cron/sync-matches/route");
     const res = await GET(
