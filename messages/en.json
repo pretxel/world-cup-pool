@@ -153,6 +153,8 @@
     "filterNeedsPick": "To pick",
     "matchday": "Matchday {n}",
     "matchCount": "{count, plural, =0 {0 matches} one {# match} other {# matches}}",
+    "dayExpand": "Show matches",
+    "dayCollapse": "Hide matches",
     "rowKickoff": "Kickoff",
     "rowVs": "vs",
     "rowFinal": "Final",

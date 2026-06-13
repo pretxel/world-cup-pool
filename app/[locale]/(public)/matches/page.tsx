@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
+import { MatchDaySection } from "@/components/match-day-section";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { MatchStatusFilter } from "@/components/match-status-filter";
 import { MatchTeamFilter } from "@/components/match-team-filter";
@@ -239,51 +240,57 @@ export default async function MatchesPage({
       ) : null}
 
       <div className="space-y-12">
-        {dayEntries.map(([day, dayMatches], idx) => (
-          <section key={day}>
-            <h2 className="sticky top-[3.3rem] z-10 -mx-4 mb-3 flex items-baseline gap-3 border-b border-border bg-background/85 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/70 md:top-[3.55rem]">
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                {t("matchday", { n: String(idx + 1).padStart(2, "0") })}
-              </span>
-              <span aria-hidden className="h-px flex-1 bg-border" />
-              <span className="min-w-0 truncate font-heading text-sm font-semibold tracking-tight text-foreground">
-                <LocalTime iso={`${day}T00:00:00Z`} format="date" />
-              </span>
-              <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
-                {t("matchCount", { count: dayMatches.length })}
-              </span>
-            </h2>
-            <ul className="overflow-hidden rounded-xl border border-border bg-card">
-              {dayMatches.map((m, i) => {
-                const delay = Math.min(i * ROW_STAGGER_MS, ROW_STAGGER_CAP_MS);
-                return (
-                  <li
-                    key={m.id}
-                    className={cn(
-                      i !== 0 && "border-t border-border",
-                      "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300 motion-safe:fill-mode-both",
-                    )}
-                    style={{ animationDelay: `${delay}ms` }}
-                  >
-                    <MatchRowCard
-                      match={m}
-                      uiStatus={uiStatusFor(m)}
-                      locale={locale}
-                      tStage={tStages(STAGE_KEYS[m.stage as MatchStage])}
-                      tKickoff={t("rowKickoff")}
-                      tFinal={t("rowFinal")}
-                      tOnNow={t("rowOnNow")}
-                      tLocked={t("rowLocked")}
-                      tPick={t("rowPick")}
-                      picked={pickedIds.has(m.id)}
-                      tPicked={t("rowPicked")}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))}
+        {dayEntries.map(([day, dayMatches], idx) => {
+          // A day defaults to collapsed only once every fixture in it is done
+          // (final or cancelled); any day still holding a scheduled, locked, or
+          // live match defaults to expanded. The client shell overrides this
+          // with the user's stored per-day choice after mount.
+          const dayDone = dayMatches.every(
+            (m) => m.status === "final" || m.status === "cancelled",
+          );
+          return (
+            <MatchDaySection
+              key={day}
+              dayKey={day}
+              defaultOpen={!dayDone}
+              matchday={t("matchday", { n: String(idx + 1).padStart(2, "0") })}
+              dateNode={<LocalTime iso={`${day}T00:00:00Z`} format="date" />}
+              countLabel={t("matchCount", { count: dayMatches.length })}
+              expandLabel={t("dayExpand")}
+              collapseLabel={t("dayCollapse")}
+            >
+              <ul className="overflow-hidden rounded-xl border border-border bg-card">
+                {dayMatches.map((m, i) => {
+                  const delay = Math.min(i * ROW_STAGGER_MS, ROW_STAGGER_CAP_MS);
+                  return (
+                    <li
+                      key={m.id}
+                      className={cn(
+                        i !== 0 && "border-t border-border",
+                        "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300 motion-safe:fill-mode-both",
+                      )}
+                      style={{ animationDelay: `${delay}ms` }}
+                    >
+                      <MatchRowCard
+                        match={m}
+                        uiStatus={uiStatusFor(m)}
+                        locale={locale}
+                        tStage={tStages(STAGE_KEYS[m.stage as MatchStage])}
+                        tKickoff={t("rowKickoff")}
+                        tFinal={t("rowFinal")}
+                        tOnNow={t("rowOnNow")}
+                        tLocked={t("rowLocked")}
+                        tPick={t("rowPick")}
+                        picked={pickedIds.has(m.id)}
+                        tPicked={t("rowPicked")}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </MatchDaySection>
+          );
+        })}
 
         {filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
