@@ -8,6 +8,8 @@ import { TeamFlag } from "@/components/team-flag";
 import { AllGroupsSimulation } from "@/components/group-standings-table";
 import { PaginationControls } from "@/components/pagination-controls";
 import { simulateAllGroups } from "@/lib/group-standings";
+import { getActiveCompetition } from "@/lib/competition";
+import { groupStageKey } from "@/lib/competition-schema";
 import { paginate, parsePageParam } from "@/lib/pagination";
 import { isLocked } from "@/lib/match-utils";
 import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
@@ -76,11 +78,20 @@ export default async function MyPicksPage({
   // Simulated group stage from the user's own predictions. Fetch every group
   // fixture, then derive each group's table from the picks already loaded above
   // (only predicted matches contribute; unpredicted groups show empty). Real
-  // results are never mixed in.
-  const { data: groupFixtures } = await supabase
-    .from("matches")
-    .select("id, home_team, away_team, group_code")
-    .eq("stage", "group");
+  // results are never mixed in. The group-stage key and scope come from the
+  // active competition's format; competitions with no group stage skip this.
+  const activeCompetition = await getActiveCompetition();
+  const groupKey = activeCompetition
+    ? groupStageKey(activeCompetition.format)
+    : null;
+  const { data: groupFixtures } =
+    activeCompetition && groupKey
+      ? await supabase
+          .from("matches")
+          .select("id, home_team, away_team, group_code")
+          .eq("competition_id", activeCompetition.id)
+          .eq("stage", groupKey)
+      : { data: [] };
   const predictionsByMatchId = new Map(
     (picks ?? []).map((p) => [
       p.match_id,
@@ -249,7 +260,9 @@ export default async function MyPicksPage({
         </>
       )}
 
-      <AllGroupsSimulation groups={simulatedGroups} className="mt-12" />
+      {groupKey ? (
+        <AllGroupsSimulation groups={simulatedGroups} className="mt-12" />
+      ) : null}
     </main>
   );
 }

@@ -30,13 +30,36 @@ vi.mock("@/lib/supabase/admin", () => ({
   })),
 }));
 
-function setupLocalMatches(rows: unknown[]) {
+function setupLocalMatches(
+  rows: unknown[],
+  competition: { id: string; providers: unknown } | null = {
+    id: "comp-1",
+    providers: {},
+  },
+) {
   fromMock.mockImplementation((table: string) => {
     if (table === "matches") {
-      return {
-        select: () => Promise.resolve({ data: rows, error: null }),
+      // The load chains .select(...).eq("competition_id", …) then awaits;
+      // applyRemote uses .update(...). One object serves both.
+      const chain: Record<string, unknown> = {
+        select: () => chain,
+        eq: () => chain,
+        then: (
+          onF: (v: { data: unknown[]; error: null }) => unknown,
+          onR?: (e: unknown) => unknown,
+        ) => Promise.resolve({ data: rows, error: null }).then(onF, onR),
         update: updateMock,
       };
+      return chain;
+    }
+    if (table === "competitions") {
+      const compChain: Record<string, unknown> = {
+        select: () => compChain,
+        eq: () => compChain,
+        maybeSingle: () =>
+          Promise.resolve({ data: competition, error: null }),
+      };
+      return compChain;
     }
     throw new Error(`unexpected from(${table})`);
   });

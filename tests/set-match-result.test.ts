@@ -50,6 +50,13 @@ vi.mock("@/lib/supabase/admin", () => ({
   })),
 }));
 
+// The managed-competition context reads cookies + the DB; stub it so the action
+// resolves a scope (active) and the in-managed guard is a no-op.
+vi.mock("@/lib/admin/managed-competition", () => ({
+  getManagedCompetition: vi.fn(async () => ({ id: "comp-1", is_active: true })),
+  assertMatchInManaged: vi.fn(async () => {}),
+}));
+
 beforeEach(() => {
   rpcMock.mockReset();
   rpcMock.mockResolvedValue({ error: null });

@@ -19,10 +19,14 @@ export function Logotype({
   size = "md",
   className,
   ariaLabel,
+  edition = "26",
 }: {
   size?: Size;
   className?: string;
   ariaLabel?: string;
+  // Two-character edition shown in the tile (e.g. the World Cup "26").
+  // Competition-driven; defaults to the World Cup 2026 edition.
+  edition?: string;
 }) {
   const compact = size === "xs";
   const viewBox = compact ? COMPACT_VIEWBOX : FULL_VIEWBOX;
@@ -91,7 +95,7 @@ export function Logotype({
           letterSpacing="-1"
           style={{ fill: "var(--pitch-foreground)" }}
         >
-          26
+          {edition}
         </text>
       </g>
 

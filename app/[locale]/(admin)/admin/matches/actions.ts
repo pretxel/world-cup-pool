@@ -6,34 +6,11 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { runSync } from "@/lib/result-sync/core";
+import {
+  getManagedCompetition,
+  assertMatchInManaged,
+} from "@/lib/admin/managed-competition";
 import { isLocale, localePath, DEFAULT_LOCALE } from "@/lib/i18n";
-
-const STAGES = ["group", "r32", "r16", "qf", "sf", "third", "final"] as const;
-
-const fixtureSchema = z.object({
-  id: z.string().uuid().optional(),
-  stage: z.enum(STAGES),
-  group_code: z
-    .string()
-    .regex(/^[A-L]$/i)
-    .transform((v) => v.toUpperCase())
-    .nullable()
-    .optional(),
-  home_team: z.string().trim().min(1),
-  away_team: z.string().trim().min(1),
-  kickoff_at: z
-    .string()
-    .refine((s) => !Number.isNaN(Date.parse(s)), "Invalid timestamp")
-    // The admin kickoff field is labelled "UTC ISO" and the app renders kickoff
-    // in UTC throughout. A `datetime-local` input submits a zone-less
-    // "YYYY-MM-DDTHH:mm"; parse it as UTC (not the server's local zone) so the
-    // edit form's UTC-wall-clock prefill round-trips losslessly on any server.
-    .transform((s) => {
-      const hasZone = /([zZ])|([+-]\d{2}:?\d{2})$/.test(s);
-      return new Date(hasZone ? s : `${s}Z`).toISOString();
-    }),
-  venue: z.string().trim().optional().nullable(),
-});
 
 const resultSchema = z.object({
   match_id: z.string().uuid(),
@@ -45,6 +22,18 @@ const resultSchema = z.object({
     .or(z.literal("").transform(() => null)),
   status: z.enum(["scheduled", "live", "final", "cancelled"]),
 });
+
+const kickoffField = z
+  .string()
+  .refine((s) => !Number.isNaN(Date.parse(s)), "Invalid timestamp")
+  // The admin kickoff field is labelled "UTC ISO" and the app renders kickoff
+  // in UTC throughout. A `datetime-local` input submits a zone-less
+  // "YYYY-MM-DDTHH:mm"; parse it as UTC so the edit form's UTC-wall-clock
+  // prefill round-trips losslessly on any server.
+  .transform((s) => {
+    const hasZone = /([zZ])|([+-]\d{2}:?\d{2})$/.test(s);
+    return new Date(hasZone ? s : `${s}Z`).toISOString();
+  });
 
 async function assertAdmin() {
   const supabase = await createServerSupabaseClient();
@@ -60,9 +49,42 @@ async function assertAdmin() {
   if (!profile?.is_admin) throw new Error("Admin only");
 }
 
+// Public surfaces show the ACTIVE competition, so only revalidate them when the
+// managed competition is the active one. The admin list is always revalidated.
+function revalidateAfterMutation(managedIsActive: boolean, matchPath?: string) {
+  revalidatePath("/admin/matches");
+  if (!managedIsActive) return;
+  if (matchPath) revalidatePath(matchPath);
+  revalidatePath("/matches");
+  revalidatePath("/my-picks");
+  revalidatePath("/leaderboard");
+  revalidateTag("leaderboard", "max");
+}
+
 export async function saveFixture(formData: FormData) {
   await assertAdmin();
-  const parsed = fixtureSchema.parse({
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+
+  const stageKeys = managed.format.stages.map((s) => s.key);
+  const base = z.object({
+    id: z.string().uuid().optional(),
+    stage: z.string().refine((s) => stageKeys.includes(s), {
+      message: "Stage is not valid for this competition",
+    }),
+    group_code: z
+      .string()
+      .trim()
+      .optional()
+      .nullable()
+      .transform((v) => (v ? v.toUpperCase() : null)),
+    home_team: z.string().trim().min(1),
+    away_team: z.string().trim().min(1),
+    kickoff_at: kickoffField,
+    venue: z.string().trim().optional().nullable(),
+  });
+
+  const parsed = base.parse({
     id: (formData.get("id") as string) || undefined,
     stage: formData.get("stage"),
     group_code: (formData.get("group_code") as string) || null,
@@ -75,25 +97,55 @@ export async function saveFixture(formData: FormData) {
     throw new Error("Home and away teams must differ");
   }
 
+  // Never trust a posted competition_id — the managed context is the authority.
+  const postedComp = formData.get("competition_id");
+  if (typeof postedComp === "string" && postedComp && postedComp !== managed.id) {
+    throw new Error("Competition mismatch");
+  }
+
+  // Apply the format's group rule: require a matching code for group stages,
+  // force NULL otherwise.
+  const stageDef = managed.format.stages.find((s) => s.key === parsed.stage)!;
+  let groupCode = parsed.group_code;
+  if (stageDef.hasGroupCode && managed.format.groups.enabled) {
+    const pattern = new RegExp(managed.format.groups.pattern, "i");
+    if (!groupCode || !pattern.test(groupCode)) {
+      throw new Error("Group code is invalid for this stage");
+    }
+  } else {
+    groupCode = null;
+  }
+
+  const row = {
+    stage: parsed.stage,
+    group_code: groupCode,
+    home_team: parsed.home_team,
+    away_team: parsed.away_team,
+    kickoff_at: parsed.kickoff_at,
+    venue: parsed.venue ?? null,
+    competition_id: managed.id,
+  };
+
   const admin = createAdminSupabaseClient();
   if (parsed.id) {
-    const { error } = await admin.from("matches").update(parsed).eq("id", parsed.id);
+    await assertMatchInManaged(admin, parsed.id, managed.id);
+    const { error } = await admin.from("matches").update(row).eq("id", parsed.id);
     if (error) throw new Error(error.message);
   } else {
     if (new Date(parsed.kickoff_at).getTime() <= Date.now()) {
       throw new Error("Kickoff must be in the future for new fixtures");
     }
-    const { error } = await admin.from("matches").insert(parsed);
+    const { error } = await admin.from("matches").insert(row);
     if (error) throw new Error(error.message);
   }
 
-  revalidatePath("/admin/matches");
-  revalidatePath("/matches");
-  revalidateTag("leaderboard", "max");
+  revalidateAfterMutation(managed.is_active);
 }
 
 export async function setMatchResult(formData: FormData): Promise<void> {
   await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
 
   const homeRaw = formData.get("home_score");
   const awayRaw = formData.get("away_score");
@@ -105,6 +157,7 @@ export async function setMatchResult(formData: FormData): Promise<void> {
   });
 
   const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
   const { error } = await admin
     .from("matches")
     .update({
@@ -116,36 +169,36 @@ export async function setMatchResult(formData: FormData): Promise<void> {
   if (error) throw new Error(error.message);
 
   // Always recompute. The DB trigger short-circuits when no column actually
-  // changed (e.g. re-saving identical values), so we call the RPC explicitly
-  // to guarantee scores reflect the current match + prediction state.
+  // changed, so call the RPC explicitly to guarantee scores reflect state.
   const { error: rpcError } = await admin.rpc("compute_match_scores", {
     p_match_id: parsed.match_id,
   });
   if (rpcError) throw new Error(rpcError.message);
 
-  revalidatePath(`/matches/${parsed.match_id}`);
-  revalidatePath("/matches");
-  revalidatePath("/my-picks");
-  revalidatePath("/leaderboard");
-  revalidateTag("leaderboard", "max");
+  revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
 }
 
 export async function forceRecompute(formData: FormData) {
   await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
   const match_id = z.string().uuid().parse(formData.get("match_id"));
+
   const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, match_id, managed.id);
   const { error } = await admin.rpc("compute_match_scores", { p_match_id: match_id });
   if (error) throw new Error(error.message);
-  revalidatePath("/leaderboard");
-  revalidateTag("leaderboard", "max");
+
+  revalidateAfterMutation(managed.is_active);
 }
 
 // Human-triggered fallback for the daily cron: run the shared sync core on
-// demand. The summary travels back through query params (server-component
-// page, no client state) so the admin sees what the run did — including the
-// failure case (source=none) — after the redirect.
+// demand, scoped to the MANAGED competition so an admin can sync a non-active
+// draft. The summary travels back through query params after the redirect.
 export async function syncNow(formData: FormData): Promise<void> {
   await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
 
   const rawLocale = formData.get("locale");
   const locale =
@@ -153,13 +206,9 @@ export async function syncNow(formData: FormData): Promise<void> {
       ? rawLocale
       : DEFAULT_LOCALE;
 
-  const summary = await runSync();
+  const summary = await runSync({ competitionId: managed.id });
 
-  revalidatePath("/admin/matches");
-  revalidatePath("/matches");
-  revalidatePath("/my-picks");
-  revalidatePath("/leaderboard");
-  revalidateTag("leaderboard", "max");
+  revalidateAfterMutation(managed.is_active);
 
   const params = new URLSearchParams({
     syncSource: summary.source,
@@ -175,11 +224,14 @@ export async function syncNow(formData: FormData): Promise<void> {
 
 export async function deleteMatch(formData: FormData) {
   await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
   const id = z.string().uuid().parse(formData.get("id"));
+
   const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, id, managed.id);
   const { error } = await admin.from("matches").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/matches");
-  revalidatePath("/matches");
-  revalidateTag("leaderboard", "max");
+
+  revalidateAfterMutation(managed.is_active);
 }

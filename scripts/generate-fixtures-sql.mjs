@@ -210,16 +210,27 @@ begin;
 
 truncate public.matches restart identity cascade;
 
-insert into public.matches (stage, group_code, home_team, away_team, kickoff_at, venue) values
-${valueRows.join(",\n")};
+-- Every fixture is stamped with the World Cup 2026 competition id (resolved by
+-- slug). matches.competition_id is NOT NULL, so the seeded competition row from
+-- 20260614000000_competitions.sql must exist before this seed runs.
+insert into public.matches (competition_id, stage, group_code, home_team, away_team, kickoff_at, venue)
+select
+  (select id from public.competitions where slug = 'world-cup-2026'),
+  v.stage, v.group_code, v.home_team, v.away_team, v.kickoff_at::timestamptz, v.venue
+from (values
+${valueRows.join(",\n")}
+) as v(stage, group_code, home_team, away_team, kickoff_at, venue);
 
 do $$
 declare
   c int;
 begin
-  select count(*) into c from public.matches;
+  select count(*) into c
+  from public.matches m
+  join public.competitions comp on comp.id = m.competition_id
+  where comp.slug = 'world-cup-2026';
   if c <> 104 then
-    raise exception 'matches seed: expected 104 rows, got %', c;
+    raise exception 'matches seed: expected 104 World Cup 2026 rows, got %', c;
   end if;
 end $$;
 

@@ -19,7 +19,14 @@ begin;
 
 truncate public.matches restart identity cascade;
 
-insert into public.matches (stage, group_code, home_team, away_team, kickoff_at, venue) values
+-- Every fixture is stamped with the World Cup 2026 competition id (resolved by
+-- slug). matches.competition_id is NOT NULL, so the seeded competition row from
+-- 20260614000000_competitions.sql must exist before this seed runs.
+insert into public.matches (competition_id, stage, group_code, home_team, away_team, kickoff_at, venue)
+select
+  (select id from public.competitions where slug = 'world-cup-2026'),
+  v.stage, v.group_code, v.home_team, v.away_team, v.kickoff_at::timestamptz, v.venue
+from (values
   ('group', 'A', 'Mexico', 'South Africa', '2026-06-11T19:00:00Z', 'Estadio Azteca, Mexico City'),
   ('group', 'A', 'South Korea', 'Czech Republic', '2026-06-12T02:00:00Z', 'Estadio Akron, Zapopan'),
   ('group', 'A', 'Czech Republic', 'South Africa', '2026-06-18T16:00:00Z', 'Mercedes-Benz Stadium, Atlanta'),
@@ -123,15 +130,19 @@ insert into public.matches (stage, group_code, home_team, away_team, kickoff_at,
   ('sf', null, 'Winner Match 97', 'Winner Match 98', '2026-07-14T19:00:00Z', 'AT&T Stadium, Arlington'),
   ('sf', null, 'Winner Match 99', 'Winner Match 100', '2026-07-15T19:00:00Z', 'Mercedes-Benz Stadium, Atlanta'),
   ('third', null, 'Loser Match 101', 'Loser Match 102', '2026-07-18T21:00:00Z', 'Hard Rock Stadium, Miami Gardens'),
-  ('final', null, 'Winner Match 101', 'Winner Match 102', '2026-07-19T19:00:00Z', 'MetLife Stadium, East Rutherford');
+  ('final', null, 'Winner Match 101', 'Winner Match 102', '2026-07-19T19:00:00Z', 'MetLife Stadium, East Rutherford')
+) as v(stage, group_code, home_team, away_team, kickoff_at, venue);
 
 do $$
 declare
   c int;
 begin
-  select count(*) into c from public.matches;
+  select count(*) into c
+  from public.matches m
+  join public.competitions comp on comp.id = m.competition_id
+  where comp.slug = 'world-cup-2026';
   if c <> 104 then
-    raise exception 'matches seed: expected 104 rows, got %', c;
+    raise exception 'matches seed: expected 104 World Cup 2026 rows, got %', c;
   end if;
 end $$;
 

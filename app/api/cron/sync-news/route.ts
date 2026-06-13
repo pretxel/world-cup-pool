@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { fetchNewsFeed, type NewsArticle } from "@/lib/news";
+import { getActiveBranding } from "@/lib/competition";
 
 type Summary = {
   fetched: number;
@@ -49,9 +50,12 @@ export async function GET(request: NextRequest) {
   if (!env.newsApiToken) return skipped("missing-env");
 
   // 3. Fetch + normalize (throws on non-OK upstream → leaves cache untouched).
+  // The search query comes from the active competition's branding.
+  const { newsQuery } = await getActiveBranding();
   const { articles, rawCount } = await fetchNewsFeed(
     env.newsApiToken,
     env.newsApiUrl ?? undefined,
+    newsQuery,
   );
 
   const summary: Summary = {

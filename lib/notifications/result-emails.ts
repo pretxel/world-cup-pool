@@ -126,11 +126,22 @@ interface PreparedMessage {
 // result_email_log ledger. No-ops when RESEND_API_KEY is unset. Per-recipient
 // failures are logged and counted, never aborting the rest; ledger rows are
 // written only for messages Resend accepted, so failures retry next run.
-export async function dispatchResultEmails(): Promise<DispatchSummary> {
+// Replace the display-name portion of a "Name <addr>" sender, keeping the
+// verified-domain address from env intact.
+function withFromName(emailFrom: string, name?: string): string {
+  if (!name) return emailFrom;
+  const m = emailFrom.match(/<([^>]+)>/);
+  return m ? `${name} <${m[1]}>` : emailFrom;
+}
+
+export async function dispatchResultEmails(
+  fromName?: string,
+): Promise<DispatchSummary> {
   if (!env.resendApiKey) {
     console.log("[result-emails] RESEND_API_KEY unset — skipping dispatch");
     return { ...ZERO };
   }
+  const fromAddress = withFromName(env.emailFrom, fromName);
 
   const admin = createAdminSupabaseClient();
 
@@ -216,7 +227,7 @@ export async function dispatchResultEmails(): Promise<DispatchSummary> {
     };
     const { subject, html, text } = renderResultEmail(data);
     prepared.push({
-      payload: { from: env.emailFrom, to: [email], subject, html, text },
+      payload: { from: fromAddress, to: [email], subject, html, text },
       rows: p.matchIds.map((match_id) => ({ match_id, user_id: p.userId })),
     });
   }

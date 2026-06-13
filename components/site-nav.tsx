@@ -6,11 +6,13 @@ import { NavLinks, MobileNav } from "@/components/site-nav-client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logotype } from "@/components/logotype";
+import { getActiveBranding } from "@/lib/competition";
 import { DEFAULT_LOCALE, isLocale, localePath } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export async function SiteNav() {
   const supabase = await createServerSupabaseClient();
+  const branding = await getActiveBranding();
   const t = await getTranslations("nav");
   const tCommon = await getTranslations("common");
   const rawLocale = await getLocale();
@@ -46,7 +48,7 @@ export async function SiteNav() {
         <Link
           href={lp("/")}
           className="group/brand flex items-center"
-          aria-label="WC26 Pool"
+          aria-label={`${branding.brandCode} Pool`}
         >
           <Logotype size="xs" className="text-foreground" />
         </Link>

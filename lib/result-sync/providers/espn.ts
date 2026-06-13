@@ -1,10 +1,19 @@
-import type { RemoteMatch, ResultProvider } from "@/lib/result-sync/types";
+import type {
+  ProviderConfig,
+  RemoteMatch,
+  ResultProvider,
+} from "@/lib/result-sync/types";
 
 // Keyless fallback source. ESPN's unofficial scoreboard returns one UTC day
 // per request, so callers must pass the dates they care about; core.ts derives
-// them from the local matches that could plausibly have a result.
-const ESPN_SCOREBOARD_URL =
-  "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+// them from the local matches that could plausibly have a result. The league
+// path is competition-specific (World Cup default below).
+const DEFAULT_LEAGUE_PATH = "fifa.world";
+
+function espnScoreboardUrl(config?: ProviderConfig): string {
+  const leaguePath = config?.espn?.leaguePath ?? DEFAULT_LEAGUE_PATH;
+  return `https://site.api.espn.com/apis/site/v2/sports/soccer/${leaguePath}/scoreboard`;
+}
 
 type EspnCompetitor = {
   homeAway?: string;
@@ -82,7 +91,10 @@ export const espnProvider: ResultProvider = {
     return true;
   },
 
-  async fetchMatches(dates: string[] = []): Promise<RemoteMatch[]> {
+  async fetchMatches(
+    dates: string[] = [],
+    config?: ProviderConfig,
+  ): Promise<RemoteMatch[]> {
     if (dates.length === 0) return [];
     // ESPN buckets days by US Eastern time, not UTC: a UTC date D's
     // late-night kickoffs (00:00–04:00Z) live under Eastern day D-1
@@ -94,7 +106,7 @@ export const espnProvider: ResultProvider = {
     const from = compactDate(addUtcDays(sorted[0], -1));
     const to = compactDate(sorted[sorted.length - 1]);
     const range = from === to ? from : `${from}-${to}`;
-    const resp = await fetch(`${ESPN_SCOREBOARD_URL}?dates=${range}`, {
+    const resp = await fetch(`${espnScoreboardUrl(config)}?dates=${range}`, {
       cache: "no-store",
     });
     if (!resp.ok) {

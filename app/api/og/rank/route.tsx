@@ -81,7 +81,7 @@ export async function GET(request: Request) {
   // fetched by social scrapers with no session. Numbers are read live so the
   // card always reflects the current standing, never the URL.
   const supabase = createClient<Database>(env.supabaseUrl, env.supabaseAnonKey);
-  const [{ data: row }, { count }] = await Promise.all([
+  const [{ data: row }, { count }, { data: comp }] = await Promise.all([
     supabase
       .from("v_leaderboard_overall")
       .select("rank, display_name, total_points, exact_hits")
@@ -90,7 +90,14 @@ export async function GET(request: Request) {
     supabase
       .from("v_leaderboard_overall")
       .select("*", { count: "exact", head: true }),
+    supabase
+      .from("competitions")
+      .select("branding")
+      .eq("is_active", true)
+      .maybeSingle(),
   ]);
+  const brandCode =
+    (comp?.branding as { brandCode?: string } | null)?.brandCode ?? "WC26";
   // Validate inputs before any render or ETag work — an unknown user is a 404,
   // never a half-rendered card.
   if (!row) return new Response("Standing not found", { status: 404 });
@@ -185,7 +192,7 @@ export async function GET(request: Request) {
               opacity: 0.85,
             }}
           >
-            WC26 POOL
+            {brandCode} POOL
           </div>
         </div>
 

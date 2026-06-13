@@ -5,10 +5,14 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { QuizTranslations } from "@/lib/quiz";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from "@/lib/i18n";
 
-// Non-English locales that can carry a quiz translation. English is canonical
-// and lives in the base prompt/options columns.
-const TRANSLATABLE_LOCALES = ["es", "fr"] as const;
+// Non-default locales that can carry a quiz translation. The default locale is
+// canonical and lives in the base prompt/options columns. Derived from
+// SUPPORTED_LOCALES so adding a locale never needs a second edit here.
+const TRANSLATABLE_LOCALES = SUPPORTED_LOCALES.filter(
+  (l) => l !== DEFAULT_LOCALE,
+);
 
 async function assertAdmin() {
   const supabase = await createServerSupabaseClient();
@@ -38,7 +42,7 @@ const questionSchema = z
 
 function revalidateQuiz() {
   // Routes are locale-prefixed (localePrefix: "always"); bare paths wouldn't match.
-  for (const l of ["en", "es", "fr"]) {
+  for (const l of SUPPORTED_LOCALES) {
     revalidatePath(`/${l}/admin/quiz`);
     revalidatePath(`/${l}/quiz`);
   }

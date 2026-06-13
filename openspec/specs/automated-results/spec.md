@@ -3,9 +3,7 @@
 ## Purpose
 
 Rules governing the cron-driven match-result sync from an external football data API into `public.matches`. Defines the route handler, its auth model, the env-var gating, the team-name aliasing strategy, the status/score mapping, and the contract for the response summary.
-
 ## Requirements
-
 ### Requirement: Cron route handler exists at /api/cron/sync-matches
 
 The system SHALL expose a GET route handler at `/api/cron/sync-matches` that, when invoked with a valid `Authorization: Bearer ${CRON_SECRET}` header, runs the shared sync core: fetch the current WC2026 match list through the ordered provider chain (Football-Data.org primary, fallback on escalation), mirror each fixture's status/score into `public.matches`, and call `compute_match_scores(p_match_id)` for every match it touched. Any other invocation (missing or wrong secret) SHALL receive `401 Unauthorized`.
@@ -188,3 +186,33 @@ The email dispatch step SHALL be isolated so that any error it raises is caught 
 - **WHEN** sending to one recipient fails but others succeed
 - **THEN** the failure is logged and the successful recipients are still sent
 - **AND** the failed recipient remains pending for the next run
+
+### Requirement: Result sync scopes to the active competition
+
+Result sync SHALL resolve the active competition, load only its matches, and use a competition-scoped dedupe key so that fixtures from different competitions cannot collide on shared dates/teams.
+
+#### Scenario: Sync loads only active-competition matches
+
+- **WHEN** `runSync()` executes
+- **THEN** it queries matches filtered by the active `competition_id`
+- **AND** the dedupe key is scoped per competition
+
+#### Scenario: Cron and manual sync need no new parameters
+
+- **WHEN** the cron route or admin `syncNow` triggers a sync without specifying a competition
+- **THEN** the sync defaults to the active competition
+
+### Requirement: Provider URLs derive from competition config
+
+The result providers (football-data, ESPN) SHALL build their request URLs from the active competition's `providers` JSONB rather than hardcoded World Cup endpoints. `ResultProvider.fetchMatches` SHALL accept a provider-config argument.
+
+#### Scenario: World Cup provider URLs unchanged
+
+- **WHEN** sync runs for `world-cup-2026`
+- **THEN** the football-data and ESPN URLs resolve to the same endpoints used before the refactor
+
+#### Scenario: Provider URL from competition config
+
+- **WHEN** a competition supplies a different football-data code/season and ESPN league path
+- **THEN** the providers build their URLs from those values
+

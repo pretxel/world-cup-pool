@@ -3,9 +3,7 @@
 ## Purpose
 
 Rules governing the WC26 brand mark: a single `Logotype` React component and the favicon set that derives from it. Defines where the logotype appears (nav, footer, hero, OG image), how it scales, and how Next.js 16's file-based metadata convention ships the favicon.
-
 ## Requirements
-
 ### Requirement: Logotype is a single React component with size variants
 
 The system SHALL provide a single `Logotype` React component (server-renderable, no client state) that renders an inline SVG wordmark in three sizes — `xs`, `md`, `xl` — driven by props, not by separate components. The SVG SHALL use a single `viewBox` so all sizes share the exact same geometry.
@@ -70,3 +68,23 @@ A unit test SHALL render `<Logotype />` at each of the three sizes and assert th
 #### Scenario: Each size renders an svg
 - **WHEN** the unit test renders `<Logotype size="xs" />`, `<Logotype size="md" />`, and `<Logotype size="xl" />`
 - **THEN** each test case finds exactly one `<svg>` element
+
+### Requirement: Branding resolves from the active competition
+
+User-facing brand surfaces — site name, title templates, keywords, OpenGraph cards and alt text, email sender name, news query, logo edition, and footer/nav copy — SHALL resolve from the active competition's `branding` (and `name`/`short_name`) rather than hardcoded World Cup 2026 literals.
+
+#### Scenario: World Cup branding unchanged
+
+- **WHEN** the active competition is `world-cup-2026`
+- **THEN** every brand surface renders the same text and OG imagery as before the refactor
+
+#### Scenario: Branding reskins on competition switch
+
+- **WHEN** an admin switches the active competition to one with different `branding`
+- **THEN** site name, metadata, OG cards, email sender, and footer/nav copy reflect the new competition after revalidation
+
+#### Scenario: No residual hardcoded competition literals
+
+- **WHEN** the codebase is checked for hardcoded `World Cup` / `WC26` literals outside the competitions seed and `branding`
+- **THEN** none remain in `app/`, `components/`, or `lib/`
+

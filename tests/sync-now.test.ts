@@ -45,6 +45,12 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminSupabaseClient: vi.fn(() => ({})),
 }));
 
+// Managed-competition context reads cookies; stub it (active scope).
+vi.mock("@/lib/admin/managed-competition", () => ({
+  getManagedCompetition: vi.fn(async () => ({ id: "comp-1", is_active: true })),
+  assertMatchInManaged: vi.fn(async () => {}),
+}));
+
 vi.mock("@/lib/result-sync/core", () => ({
   runSync: (...args: unknown[]) => runSyncMock(...args),
 }));

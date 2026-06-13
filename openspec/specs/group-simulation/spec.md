@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines a personal, prediction-derived group standings view: how each tournament group's table (played / W / D / L / GF / GA / GD / points / rank) is computed from a signed-in user's predicted group-stage scorelines, which matches contribute, how teams are ordered, and where the table is surfaced (match detail page + My Picks). The simulation is a "what if my picks came true" toy — computed on read, persisted nowhere, never shown to other users, and never folded into competitive scoring or the leaderboard.
-
 ## Requirements
-
 ### Requirement: Standings derived only from the user's own predictions
 
 The system SHALL compute each tournament group's simulated standings exclusively from the signed-in user's predicted scorelines for `stage = 'group'` matches. The system SHALL NOT read another user's predictions, and SHALL NOT fold actual match results (`home_score` / `away_score`) into the simulated table.
@@ -121,3 +119,18 @@ The simulated standings SHALL be computed on read and persisted nowhere. The sys
 #### Scenario: Not part of competitive scoring
 - **WHEN** the simulation is displayed
 - **THEN** it does not change the user's `scores`, total points, or any leaderboard position
+
+### Requirement: Group standings render only for competitions with a group stage
+
+Group standings and simulation SHALL render only when the active competition has a group stage (`groups.enabled = true`), and SHALL key the group-stage query off the competition's group-stage key instead of the literal `'group'`.
+
+#### Scenario: World Cup shows group standings
+
+- **WHEN** the active competition is `world-cup-2026`
+- **THEN** group standings render using the competition's group-stage key
+
+#### Scenario: League-only competition hides group standings
+
+- **WHEN** the active competition has `groups.enabled = false`
+- **THEN** no group standings or simulation UI is rendered
+

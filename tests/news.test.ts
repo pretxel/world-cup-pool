@@ -173,6 +173,19 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminSupabaseClient: vi.fn(() => ({ from: fromMock })),
 }));
 
+// The sync-news route resolves the news query from the active competition's
+// branding; stub it to the World Cup default so the request URL is unchanged.
+vi.mock("@/lib/competition", () => ({
+  getActiveBranding: vi.fn(async () => ({
+    shortName: "World Cup 2026",
+    siteName: "World Cup 2026 Pool",
+    brandCode: "WC26",
+    ogAlt: "World Cup 2026 Pool",
+    emailFromName: "World Cup Pools",
+    newsQuery: '"World Cup 2026" OR "FIFA World Cup 2026"',
+  })),
+}));
+
 function makeRequest(headers: Record<string, string> = {}): Request {
   return new Request("http://localhost/api/cron/sync-news", { headers });
 }

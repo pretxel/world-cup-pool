@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
+import { getActiveBranding } from "@/lib/competition";
 import {
   SUPPORTED_LOCALES,
   isLocale,
@@ -37,16 +38,17 @@ export async function generateMetadata({
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const t = await getTranslations({ locale, namespace: "siteMeta" });
+  const branding = await getActiveBranding();
   const title = t("title");
   const description = t("description");
   return {
-    title: { default: title, template: "%s · WC26 Pool" },
+    title: { default: title, template: `%s · ${branding.brandCode} Pool` },
     description,
     openGraph: {
       type: "website",
       locale: OG_LOCALE[locale],
       alternateLocale: ALT_LOCALES[locale],
-      siteName: "World Cup 2026 Pool",
+      siteName: branding.siteName,
       title,
       description,
       // og:image is supplied by app/opengraph-image.tsx (file convention).

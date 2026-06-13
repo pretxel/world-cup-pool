@@ -131,9 +131,12 @@ export function mapNewsApiResponse(json: NewsApiResponse): NewsArticle[] {
  * is sent via the X-Api-Key header (see fetchNewsFeed), NOT in the query
  * string — secrets in URLs leak into proxy/access logs.
  */
-export function buildNewsRequestUrl(baseUrl: string): string {
+export function buildNewsRequestUrl(
+  baseUrl: string,
+  query: string = NEWS_QUERY,
+): string {
   const u = new URL(baseUrl);
-  if (!u.searchParams.has("q")) u.searchParams.set("q", NEWS_QUERY);
+  if (!u.searchParams.has("q")) u.searchParams.set("q", query);
   u.searchParams.set("sortBy", "publishedAt");
   u.searchParams.set("pageSize", "50");
   return u.toString();
@@ -155,8 +158,9 @@ export type NewsFeedResult = {
 export async function fetchNewsFeed(
   token: string,
   baseUrl: string = DEFAULT_NEWS_URL,
+  query: string = NEWS_QUERY,
 ): Promise<NewsFeedResult> {
-  const resp = await fetch(buildNewsRequestUrl(baseUrl), {
+  const resp = await fetch(buildNewsRequestUrl(baseUrl, query), {
     headers: { "X-Api-Key": token },
     cache: "no-store",
   });

@@ -39,8 +39,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      competitions: {
+        Row: {
+          branding: Json
+          created_at: string
+          format_config: Json
+          id: string
+          is_active: boolean
+          kind: string
+          name: string
+          opening_away: string | null
+          opening_home: string | null
+          opening_venue: string | null
+          providers: Json
+          season: string | null
+          short_name: string
+          slug: string
+          tournament_end_at: string | null
+          tournament_start_at: string
+          updated_at: string
+        }
+        Insert: {
+          branding?: Json
+          created_at?: string
+          format_config: Json
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name: string
+          opening_away?: string | null
+          opening_home?: string | null
+          opening_venue?: string | null
+          providers?: Json
+          season?: string | null
+          short_name: string
+          slug: string
+          tournament_end_at?: string | null
+          tournament_start_at: string
+          updated_at?: string
+        }
+        Update: {
+          branding?: Json
+          created_at?: string
+          format_config?: Json
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name?: string
+          opening_away?: string | null
+          opening_home?: string | null
+          opening_venue?: string | null
+          providers?: Json
+          season?: string | null
+          short_name?: string
+          slug?: string
+          tournament_end_at?: string | null
+          tournament_start_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       groups: {
         Row: {
+          competition_id: string
           created_at: string
           id: string
           join_code: string
@@ -49,6 +110,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          competition_id?: string
           created_at?: string
           id?: string
           join_code: string
@@ -57,6 +119,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          competition_id?: string
           created_at?: string
           id?: string
           join_code?: string
@@ -70,6 +133,13 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "groups_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
             referencedColumns: ["id"]
           },
         ]
@@ -231,6 +301,7 @@ export type Database = {
         Row: {
           away_score: number | null
           away_team: string
+          competition_id: string
           created_at: string
           group_code: string | null
           home_score: number | null
@@ -245,6 +316,9 @@ export type Database = {
         Insert: {
           away_score?: number | null
           away_team: string
+          // NOT NULL in the DB; optional here so admin actions can stamp it
+          // server-side (the managed competition) before the write.
+          competition_id?: string
           created_at?: string
           group_code?: string | null
           home_score?: number | null
@@ -259,6 +333,7 @@ export type Database = {
         Update: {
           away_score?: number | null
           away_team?: string
+          competition_id?: string
           created_at?: string
           group_code?: string | null
           home_score?: number | null
@@ -270,7 +345,15 @@ export type Database = {
           updated_at?: string
           venue?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "matches_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       predictions: {
         Row: {
@@ -468,9 +551,11 @@ export type Database = {
         Args: { p_question_id: string; p_choice: number }
         Returns: { is_correct: boolean; correct_index: number }[]
       }
+      active_competition_id: { Args: never; Returns: string }
       compute_match_scores: { Args: { p_match_id: string }; Returns: undefined }
       create_group: { Args: { p_name: string }; Returns: string }
-      generate_join_code: { Args: never; Returns: string }
+      generate_join_code: { Args: { p_prefix?: string }; Returns: string }
+      set_active_competition: { Args: { p_id: string }; Returns: undefined }
       group_preview: {
         Args: { p_code: string }
         Returns: { id: string; name: string }[]
