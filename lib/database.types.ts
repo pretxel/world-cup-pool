@@ -338,6 +338,39 @@ export type Database = {
         }
         Relationships: []
       }
+      result_email_log: {
+        Row: {
+          match_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          match_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          match_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "result_email_log_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "result_email_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scores: {
         Row: {
           computed_at: string

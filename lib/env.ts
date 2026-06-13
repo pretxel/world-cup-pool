@@ -29,6 +29,12 @@ export const env = {
   // skip the sync gracefully instead of crashing the build.
   newsApiToken: process.env.NEWS_API_TOKEN ?? null,
   newsApiUrl: process.env.NEWS_API_URL ?? null,
+  // Resend transactional email. Nullable so the result-email dispatch step
+  // no-ops (like the cron's missing-env short-circuit) when unset instead of
+  // crashing. `emailFrom` must be a Resend verified-domain sender in
+  // production; the default is dev-only.
+  resendApiKey: process.env.RESEND_API_KEY ?? null,
+  emailFrom: process.env.EMAIL_FROM ?? "World Cup Pools <onboarding@resend.dev>",
   // Optional — when set, emits <meta property="fb:app_id"> so the page can be
   // tied to a Facebook app (Insights, Domain Insights, Comments moderation).
   facebookAppId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ?? null,

@@ -542,5 +542,30 @@
     "body": "Esa página no está en el calendario. Vuelve al área local.",
     "backHome": "Volver al inicio",
     "browseMatches": "Ver partidos"
+  },
+  "email": {
+    "subject": "+{points} pts en tu quiniela del Mundial",
+    "preheader": "Mira cómo te dejaron los últimos resultados en la tabla.",
+    "eyebrow": "Resultados recién llegados",
+    "heading": "{name}, tu posición acaba de cambiar",
+    "headingNoName": "Tu posición acaba de cambiar",
+    "intro": "Así movieron tu posición los últimos resultados.",
+    "resultsLabel": "Lo que acaba de terminar",
+    "standingLabel": "Tu posición",
+    "rankLabel": "Puesto",
+    "playerLabel": "Jugador",
+    "pointsLabel": "Puntos",
+    "exactLabel": "Exacto",
+    "winnerGdLabel": "Ganador/DG",
+    "youLabel": "Tú",
+    "ptsSuffix": "pts",
+    "outcomes": {
+      "exact": "Exacto",
+      "winner_gd": "Ganador + DG",
+      "winner": "Ganador",
+      "miss": "Fallo"
+    },
+    "ctaLabel": "Ver tabla completa",
+    "footer": "Recibes esto porque acaba de terminar un partido que pronosticaste. Los puntos se actualizan automáticamente con cada resultado."
   }
 }
