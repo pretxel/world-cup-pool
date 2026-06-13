@@ -11,7 +11,8 @@ import { TeamFlag } from "@/components/team-flag";
 import { StageIcon } from "@/components/stage-icon";
 import { VenueImage } from "@/components/venue-image";
 import { isConfirmedMatch, lockReason } from "@/lib/match-utils";
-import type { MatchStage } from "@/lib/db";
+import { getActiveStageLabel, getActiveCompetition } from "@/lib/competition";
+import { groupStageKey } from "@/lib/competition-schema";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
 import { ShareButtons } from "@/components/share-buttons";
@@ -21,16 +22,6 @@ import { GroupStandingsTable } from "@/components/group-standings-table";
 import { simulateGroup, type GroupTeamRow } from "@/lib/group-standings";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
-
-const STAGE_KEYS: Record<MatchStage, keyof IntlMessages["stages"]> = {
-  group: "group",
-  r32: "r32",
-  r16: "r16",
-  qf: "qf",
-  sf: "sf",
-  third: "third",
-  final: "final",
-};
 
 export async function generateMetadata({
   params,
@@ -103,7 +94,6 @@ export default async function MatchDetailPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("matchDetail");
-  const tStages = await getTranslations("stages");
   const tForm = await getTranslations("predictionForm");
   const tGroupSim = await getTranslations("groupSimulation");
   const tShare = await getTranslations("sharePick");
@@ -136,11 +126,14 @@ export default async function MatchDetailPage({
   // the viewer's own picks across the group's fixtures (real results are never
   // folded in). Only signed-in, group-stage matches get the section.
   let groupSim: GroupTeamRow[] | null = null;
-  if (user && match.stage === "group" && match.group_code) {
+  const activeComp = await getActiveCompetition();
+  const groupKey = activeComp ? groupStageKey(activeComp.format) : null;
+  if (user && groupKey && match.stage === groupKey && match.group_code) {
     const { data: fixtures } = await supabase
       .from("matches")
       .select("id, home_team, away_team")
-      .eq("stage", "group")
+      .eq("competition_id", match.competition_id)
+      .eq("stage", groupKey)
       .eq("group_code", match.group_code);
     const groupFixtures = fixtures ?? [];
     const predictionsByMatchId = new Map<
@@ -187,7 +180,7 @@ export default async function MatchDetailPage({
     match.home_score != null &&
     match.away_score != null;
 
-  const stageLabelLocalized = tStages(STAGE_KEYS[match.stage as MatchStage]);
+  const stageLabelLocalized = await getActiveStageLabel(match.stage, locale);
 
   const sportsEventJsonLd = {
     "@context": "https://schema.org",

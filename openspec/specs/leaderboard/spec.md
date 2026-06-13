@@ -3,9 +3,7 @@
 ## Purpose
 
 Rules governing the public `/leaderboard` page — its scope, data source, and the surrounding copy across the marketing surface (homepage, how-it-works). The pool exposes a single overall ranking; no daily, weekly, or per-day views are surfaced to visitors.
-
 ## Requirements
-
 ### Requirement: Leaderboard exposes a single global scope
 
 The `/leaderboard` page SHALL render a single overall ranking sourced from the `v_leaderboard_overall` view. It SHALL NOT expose a "Today" / "Daily" scope, a scope tab switcher, or a date picker.
@@ -48,3 +46,24 @@ User-facing copy outside the leaderboard page SHALL describe the leaderboard as 
 - **WHEN** a visitor reads `/how-it-works`
 - **THEN** the leaderboard section is titled and described in global / overall terms only
 - **AND** the page's metadata description does not mention "daily" or "today" in the leaderboard context
+
+### Requirement: Leaderboards scope to the active competition
+
+The overall leaderboard view (`v_leaderboard_overall`), the per-day function (`leaderboard_for_day()`), and the per-group board SHALL include only scores for matches belonging to the active competition, via a `matches` join filtered on `active_competition_id()`. Output row shapes and function signatures SHALL remain unchanged so existing callers are untouched.
+
+#### Scenario: Overall leaderboard excludes other competitions
+
+- **WHEN** the database contains matches for more than one competition
+- **AND** a visitor opens `/leaderboard`
+- **THEN** the ranking reflects only the active competition's scores
+
+#### Scenario: Single-competition parity
+
+- **WHEN** only the active competition has matches (as today with World Cup 2026)
+- **THEN** the leaderboard output is identical to the pre-refactor output for every user and rank
+
+#### Scenario: Group board scopes to its own competition
+
+- **WHEN** a friend group's mini-board renders
+- **THEN** it ranks members using only scores from the group's competition
+

@@ -6,6 +6,7 @@ import { footballDataProvider } from "@/lib/result-sync/providers/football-data"
 import { espnProvider } from "@/lib/result-sync/providers/espn";
 import type {
   LocalMatch,
+  ProviderConfig,
   RemoteMatch,
   ResultProvider,
   RunSummary,
@@ -25,6 +26,9 @@ export function availableProviders(
 export type RunSyncOptions = {
   providers?: ResultProvider[];
   now?: Date;
+  // Which competition to sync. Defaults to the active competition, so the cron
+  // route stays parameterless while admin can sync a non-active draft.
+  competitionId?: string;
 };
 
 // Per-day fallback sources cost one request per date; during a normal World
@@ -212,17 +216,33 @@ export async function runSync(opts: RunSyncOptions = {}): Promise<RunSummary> {
   };
 
   const admin = createAdminSupabaseClient();
-  const { data: localRows, error: loadErr } = await admin
+
+  // Resolve the competition to sync (default: the active one) and its provider
+  // config. Loading and the dedupe key are scoped to this competition so two
+  // competitions sharing a date/teams cannot collide.
+  const compQuery = admin.from("competitions").select("id, providers");
+  const { data: comp } = opts.competitionId
+    ? await compQuery.eq("id", opts.competitionId).maybeSingle()
+    : await compQuery.eq("is_active", true).maybeSingle();
+  const competitionId = comp?.id ?? opts.competitionId;
+  const providerConfig = (comp?.providers ?? undefined) as
+    | ProviderConfig
+    | undefined;
+
+  let matchesQuery = admin
     .from("matches")
     .select(
       "id, home_team, away_team, kickoff_at, home_score, away_score, status",
     );
+  if (competitionId) matchesQuery = matchesQuery.eq("competition_id", competitionId);
+  const { data: localRows, error: loadErr } = await matchesQuery;
   if (loadErr) {
     throw new Error(`Failed to load local matches: ${loadErr.message}`);
   }
   const locals = (localRows ?? []) as LocalMatch[];
 
-  // Index local matches by (home|away|YYYY-MM-DD) for O(1) lookup.
+  // Index local matches by (home|away|YYYY-MM-DD) for O(1) lookup. The set is
+  // already competition-scoped by the query above, so this key is unambiguous.
   const byKey = new Map<string, LocalMatch>();
   for (const m of locals) {
     byKey.set(`${m.home_team}|${m.away_team}|${m.kickoff_at.slice(0, 10)}`, m);
@@ -238,7 +258,7 @@ export async function runSync(opts: RunSyncOptions = {}): Promise<RunSummary> {
   let remote: RemoteMatch[] = [];
   if (primary) {
     try {
-      remote = await primary.fetchMatches(dates);
+      remote = await primary.fetchMatches(dates, providerConfig);
       if (remote.length > 0) {
         summary.source = primary.name;
       } else {
@@ -251,7 +271,7 @@ export async function runSync(opts: RunSyncOptions = {}): Promise<RunSummary> {
   }
   if (summary.source === "none" && fallback) {
     try {
-      remote = await fallback.fetchMatches(dates);
+      remote = await fallback.fetchMatches(dates, providerConfig);
       // `source` means "whose data was applied" — an empty fallback payload
       // applied nothing, so the run stays source: "none".
       if (remote.length > 0) {
@@ -280,7 +300,7 @@ export async function runSync(opts: RunSyncOptions = {}): Promise<RunSummary> {
         ...new Set(staleAfterMain.map((m) => m.kickoff_at.slice(0, 10))),
       ];
       try {
-        const extra = await fallback.fetchMatches(staleDates);
+        const extra = await fallback.fetchMatches(staleDates, providerConfig);
         summary.fetched += extra.length;
         const written = await applyRemote(
           admin,

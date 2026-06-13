@@ -1,11 +1,11 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
-import { getTranslations } from "next-intl/server";
 import { env } from "@/lib/env";
 import { flagSlug } from "@/lib/team-flag";
 import { clampGoals } from "@/lib/share";
 import { isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
 import type { Database } from "@/lib/database.types";
+import { getStageLabel, safeParseFormatConfig } from "@/lib/competition-schema";
 import { loadOgFonts, OG_FONT_FAMILY } from "@/lib/og-fonts";
 
 // Node runtime (no `runtime = "edge"`): lib/og-fonts.ts reads font binaries via
@@ -20,15 +20,6 @@ const PITCH = "#15714b";
 const PITCH_DARK = "#0e5238";
 const FG = "#fbfaf6";
 
-const STAGE_KEYS = {
-  group: "group",
-  r32: "r32",
-  r16: "r16",
-  qf: "qf",
-  sf: "sf",
-  third: "third",
-  final: "final",
-} as const;
 
 function initials(team: string): string {
   return team
@@ -133,15 +124,25 @@ export async function GET(request: Request) {
   const supabase = createClient<Database>(env.supabaseUrl, env.supabaseAnonKey);
   const { data: match } = await supabase
     .from("matches")
-    .select("home_team, away_team, stage, group_code, kickoff_at")
+    .select("home_team, away_team, stage, group_code, kickoff_at, competition_id")
     .eq("id", matchId)
     .maybeSingle();
   if (!match) return new Response("Match not found", { status: 404 });
 
-  const tStages = await getTranslations({ locale, namespace: "stages" });
-  const stageKey =
-    STAGE_KEYS[match.stage as keyof typeof STAGE_KEYS] ?? "group";
-  const stageLabel = `${tStages(stageKey)}${match.group_code ? ` · ${match.group_code}` : ""}`;
+  // Stage label comes from the match's competition format_config; fall back to
+  // the raw stage key if the competition or stage can't be resolved.
+  const { data: comp } = await supabase
+    .from("competitions")
+    .select("format_config, branding")
+    .eq("id", match.competition_id)
+    .maybeSingle();
+  const parsedFormat = comp ? safeParseFormatConfig(comp.format_config) : null;
+  const brandCode =
+    (comp?.branding as { brandCode?: string } | null)?.brandCode ?? "WC26";
+  const stageName = parsedFormat?.success
+    ? getStageLabel(parsedFormat.data, match.stage, locale)
+    : match.stage;
+  const stageLabel = `${stageName}${match.group_code ? ` · ${match.group_code}` : ""}`;
   const kickoff = new Date(match.kickoff_at).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
@@ -199,7 +200,7 @@ export async function GET(request: Request) {
               opacity: 0.85,
             }}
           >
-            WC26 POOL
+            {brandCode} POOL
           </div>
         </div>
 

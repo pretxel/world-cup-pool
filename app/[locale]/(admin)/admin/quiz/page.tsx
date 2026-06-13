@@ -51,6 +51,9 @@ export default async function AdminQuizPage({
           {t("adminTitle")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">{t("adminLede")}</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Note: the daily quiz applies to all competitions (not competition-scoped).
+        </p>
       </header>
 
       <form action={saveQuestion} className="mb-10 flex flex-col gap-4 rounded-xl border border-border bg-card p-5">

@@ -1,6 +1,7 @@
 import { getTranslations, getFormatter, getLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
+import { getActiveCompetition } from "@/lib/competition";
 import { TOURNAMENT_OPENING, TOURNAMENT_START_ISO } from "@/lib/tournament";
 import { flagSlug } from "@/lib/team-flag";
 
@@ -11,12 +12,16 @@ type OpeningMatch = {
   venue: string | null;
 };
 
-async function fetchOpeningMatch(): Promise<OpeningMatch | null> {
+async function fetchOpeningMatch(
+  competitionId?: string,
+): Promise<OpeningMatch | null> {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data } = await supabase
+    let query = supabase
       .from("matches")
-      .select("kickoff_at, home_team, away_team, venue")
+      .select("kickoff_at, home_team, away_team, venue");
+    if (competitionId) query = query.eq("competition_id", competitionId);
+    const { data } = await query
       .order("kickoff_at", { ascending: true })
       .limit(1)
       .maybeSingle();
@@ -38,9 +43,13 @@ export async function TournamentCountdown() {
   const format = await getFormatter();
   const locale = await getLocale();
 
-  const opening = await fetchOpeningMatch();
+  const competition = await getActiveCompetition();
+  const opening = await fetchOpeningMatch(competition?.id);
 
-  const iso = opening?.kickoff_at ?? TOURNAMENT_START_ISO;
+  const iso =
+    opening?.kickoff_at ??
+    competition?.tournament_start_at ??
+    TOURNAMENT_START_ISO;
   const targetMs = new Date(iso).getTime();
   // Request-time decision: do we render the live pill or the countdown tiles?
   // Date.now() is intentionally impure here — every server render checks the
@@ -56,8 +65,12 @@ export async function TournamentCountdown() {
   };
 
   const useDbFixture = opening && looksLikeRealFixture(opening);
-  const home = useDbFixture ? opening!.home_team : TOURNAMENT_OPENING.home;
-  const away = useDbFixture ? opening!.away_team : TOURNAMENT_OPENING.away;
+  const home = useDbFixture
+    ? opening!.home_team
+    : (competition?.opening_home ?? TOURNAMENT_OPENING.home);
+  const away = useDbFixture
+    ? opening!.away_team
+    : (competition?.opening_away ?? TOURNAMENT_OPENING.away);
   const dateLabel = format.dateTime(new Date(iso), {
     weekday: "short",
     day: "numeric",

@@ -1,8 +1,19 @@
 import { env } from "@/lib/env";
-import type { RemoteMatch, ResultProvider } from "@/lib/result-sync/types";
+import type {
+  ProviderConfig,
+  RemoteMatch,
+  ResultProvider,
+} from "@/lib/result-sync/types";
 
-const FOOTBALL_DATA_URL =
-  "https://api.football-data.org/v4/competitions/WC/matches?season=2026";
+// World Cup 2026 defaults; overridden per competition via ProviderConfig.
+const DEFAULT_CODE = "WC";
+const DEFAULT_SEASON = "2026";
+
+function footballDataUrl(config?: ProviderConfig): string {
+  const code = config?.footballData?.code ?? DEFAULT_CODE;
+  const season = config?.footballData?.season ?? DEFAULT_SEASON;
+  return `https://api.football-data.org/v4/competitions/${code}/matches?season=${season}`;
+}
 
 // Primary source. One request returns the whole competition, so the `dates`
 // hint is ignored — scoping happens in the matching pipeline.
@@ -13,9 +24,12 @@ export const footballDataProvider: ResultProvider = {
     return env.footballDataToken != null;
   },
 
-  async fetchMatches(): Promise<RemoteMatch[]> {
+  async fetchMatches(
+    _dates?: string[],
+    config?: ProviderConfig,
+  ): Promise<RemoteMatch[]> {
     if (!env.footballDataToken) return [];
-    const resp = await fetch(FOOTBALL_DATA_URL, {
+    const resp = await fetch(footballDataUrl(config), {
       headers: { "X-Auth-Token": env.footballDataToken },
       // No Next caching for sync sources.
       cache: "no-store",

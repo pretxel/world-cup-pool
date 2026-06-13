@@ -5,7 +5,18 @@ import type { Database, Tables } from "@/lib/database.types";
 
 export type { Database } from "@/lib/database.types";
 
-export type MatchStage = "group" | "r32" | "r16" | "qf" | "sf" | "third" | "final";
+// Stage keys are competition-defined (see each competition's format_config),
+// so this is an open string rather than a fixed union. The well-known World Cup
+// keys are kept here for autocomplete; any other string is also valid.
+export type MatchStage =
+  | "group"
+  | "r32"
+  | "r16"
+  | "qf"
+  | "sf"
+  | "third"
+  | "final"
+  | (string & {});
 export type MatchStatus = "scheduled" | "live" | "final" | "cancelled";
 export type HitType = "exact" | "winner_gd" | "winner" | "miss";
 
@@ -14,6 +25,7 @@ export type HitType = "exact" | "winner_gd" | "winner" | "miss";
 // app code keeps narrow types.
 type Narrow<T, K extends keyof T, V> = Omit<T, K> & { [P in K]: V };
 
+export type CompetitionRow = Tables<"competitions">;
 export type ProfileRow = Tables<"profiles">;
 export type MatchRow = Narrow<
   Narrow<Tables<"matches">, "stage", MatchStage>,

@@ -24,23 +24,15 @@ import {
   utcDateKey,
 } from "@/lib/match-utils";
 import { maybeScheduleOpportunisticSync } from "@/lib/result-sync/opportunistic";
-import type { MatchRow, MatchStage } from "@/lib/db";
+import { getActiveCompetition } from "@/lib/competition";
+import { getStageLabel } from "@/lib/competition-schema";
+import type { MatchRow } from "@/lib/db";
 import { CheckCircle2Icon, ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 const ROW_STAGGER_MS = 20;
 const ROW_STAGGER_CAP_MS = 800;
-
-const STAGE_KEYS: Record<MatchStage, keyof IntlMessages["stages"]> = {
-  group: "group",
-  r32: "r32",
-  r16: "r16",
-  qf: "qf",
-  sf: "sf",
-  third: "third",
-  final: "final",
-};
 
 export async function generateMetadata({
   params,
@@ -93,7 +85,8 @@ export default async function MatchesPage({
   } = await searchParams;
 
   const t = await getTranslations("matches");
-  const tStages = await getTranslations("stages");
+  const activeCompetition = await getActiveCompetition();
+  const format = activeCompetition?.format ?? null;
 
   const supabase = await createServerSupabaseClient();
   const { data: matches, error } = await supabase
@@ -275,7 +268,7 @@ export default async function MatchesPage({
                         match={m}
                         uiStatus={uiStatusFor(m)}
                         locale={locale}
-                        tStage={tStages(STAGE_KEYS[m.stage as MatchStage])}
+                        tStage={format ? getStageLabel(format, m.stage, locale) : m.stage}
                         tKickoff={t("rowKickoff")}
                         tFinal={t("rowFinal")}
                         tOnNow={t("rowOnNow")}

@@ -25,6 +25,13 @@ export type LocalMatch = {
 
 export type SyncSource = "football-data" | "espn";
 
+// Per-competition provider settings, sourced from competitions.providers JSONB.
+// Providers fall back to the World Cup 2026 defaults when a field is absent.
+export type ProviderConfig = {
+  footballData?: { code?: string; season?: string };
+  espn?: { leaguePath?: string };
+};
+
 export type RunSummary = {
   fetched: number;
   matched: number;
@@ -44,6 +51,11 @@ export interface ResultProvider {
   // skipped without counting as an error.
   available(): boolean;
   // `dates` (UTC YYYY-MM-DD) scopes the fetch when the provider supports it;
-  // providers that always return the full competition may ignore it.
-  fetchMatches(dates?: string[]): Promise<RemoteMatch[]>;
+  // providers that always return the full competition may ignore it. `config`
+  // carries the active competition's provider settings (endpoint codes/paths);
+  // providers fall back to the World Cup 2026 defaults when it is absent.
+  fetchMatches(
+    dates?: string[],
+    config?: ProviderConfig,
+  ): Promise<RemoteMatch[]>;
 }

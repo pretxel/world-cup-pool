@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { availableProviders, runSync } from "@/lib/result-sync/core";
 import { dispatchResultEmails } from "@/lib/notifications/result-emails";
+import { getActiveBranding } from "@/lib/competition";
 
 function unauthorized() {
   return new NextResponse("unauthorized", { status: 401 });
@@ -35,7 +36,8 @@ export async function GET(request: NextRequest) {
   // score/match writes have already committed by here.
   let emailed = 0;
   try {
-    const dispatch = await dispatchResultEmails();
+    const { emailFromName } = await getActiveBranding();
+    const dispatch = await dispatchResultEmails(emailFromName);
     emailed = dispatch.emailed;
   } catch (err) {
     console.error("[cron:sync-matches] result-email dispatch failed:", err);

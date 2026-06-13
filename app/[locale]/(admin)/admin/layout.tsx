@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 export default async function AdminLayout({
   children,
@@ -21,7 +22,7 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
   if (!user)
     redirect(
-      `${localePath(locale, "/sign-in")}?next=${encodeURIComponent(localePath(locale, "/admin/matches"))}`,
+      `${localePath(locale, "/sign-in")}?next=${encodeURIComponent(localePath(locale, "/admin"))}`,
     );
 
   const { data: profile } = await supabase
@@ -48,5 +49,5 @@ export default async function AdminLayout({
     );
   }
 
-  return <>{children}</>;
+  return <AdminShell locale={locale}>{children}</AdminShell>;
 }

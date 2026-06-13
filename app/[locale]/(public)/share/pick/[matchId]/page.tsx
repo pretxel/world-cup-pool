@@ -8,19 +8,9 @@ import { TeamFlag } from "@/components/team-flag";
 import { StageIcon } from "@/components/stage-icon";
 import { buttonVariants } from "@/components/ui/button";
 import { clampGoals } from "@/lib/share";
-import type { MatchStage } from "@/lib/db";
+import { getActiveStageLabel } from "@/lib/competition";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
-
-const STAGE_KEYS: Record<MatchStage, keyof IntlMessages["stages"]> = {
-  group: "group",
-  r32: "r32",
-  r16: "r16",
-  qf: "qf",
-  sf: "sf",
-  third: "third",
-  final: "final",
-};
 
 type ShareParams = Promise<{ locale: string; matchId: string }>;
 type ShareSearchParams = Promise<{ h?: string | string[]; a?: string | string[] }>;
@@ -112,7 +102,6 @@ export default async function SharePickPage({
 
   const { h: hParam, a: aParam } = await searchParams;
   const t = await getTranslations("sharePick");
-  const tStages = await getTranslations("stages");
 
   const supabase = await createServerSupabaseClient();
   const { data: match } = await supabase
@@ -121,6 +110,8 @@ export default async function SharePickPage({
     .eq("id", matchId)
     .maybeSingle();
   if (!match) notFound();
+
+  const stageLabel = await getActiveStageLabel(match.stage, locale);
 
   // Scores come from the URL the sharer published — never from anyone's
   // stored prediction. Invalid/missing values degrade to a scoreless card.
@@ -150,7 +141,7 @@ export default async function SharePickPage({
         <div className="relative px-6 pt-5 pb-2">
           <span className="inline-flex items-center gap-1.5 rounded-md bg-pitch-foreground/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/80 ring-1 ring-pitch-foreground/15">
             <StageIcon stage={match.stage} className="size-3" />
-            {tStages(STAGE_KEYS[match.stage as MatchStage])}
+            {stageLabel}
             {match.group_code ? ` · ${match.group_code}` : ""}
           </span>
         </div>

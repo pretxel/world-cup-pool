@@ -25,6 +25,18 @@ vi.mock("@/lib/notifications/result-emails", () => ({
   dispatchResultEmails: dispatchMock,
 }));
 
+// The route resolves the email from-name from active branding; stub it.
+vi.mock("@/lib/competition", () => ({
+  getActiveBranding: vi.fn(async () => ({
+    shortName: "World Cup 2026",
+    siteName: "World Cup 2026 Pool",
+    brandCode: "WC26",
+    ogAlt: "World Cup 2026 Pool",
+    emailFromName: "World Cup Pools",
+    newsQuery: '"World Cup 2026" OR "FIFA World Cup 2026"',
+  })),
+}));
+
 function makeRequest(headers: Record<string, string> = {}): Request {
   return new Request("http://localhost/api/cron/sync-matches", { headers });
 }
@@ -32,9 +44,25 @@ function makeRequest(headers: Record<string, string> = {}): Request {
 beforeEach(() => {
   fromMock.mockReset();
   // No local matches → sync completes cleanly with a zeroed summary.
-  fromMock.mockImplementation(() => ({
-    select: () => Promise.resolve({ data: [], error: null }),
-  }));
+  fromMock.mockImplementation((table: string) => {
+    if (table === "competitions") {
+      const c: Record<string, unknown> = {
+        select: () => c,
+        eq: () => c,
+        maybeSingle: () => Promise.resolve({ data: null, error: null }),
+      };
+      return c;
+    }
+    const chain: Record<string, unknown> = {
+      select: () => chain,
+      eq: () => chain,
+      then: (
+        onF: (v: { data: unknown[]; error: null }) => unknown,
+        onR?: (e: unknown) => unknown,
+      ) => Promise.resolve({ data: [], error: null }).then(onF, onR),
+    };
+    return chain;
+  });
   // Both upstreams return nothing so the run stays source: "none".
   vi.stubGlobal(
     "fetch",

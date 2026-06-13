@@ -15,6 +15,12 @@ import {
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { isConfirmedMatch } from "@/lib/match-utils";
 import { isStaleMatch } from "@/lib/result-sync/staleness";
+import { getManagedCompetition } from "@/lib/admin/managed-competition";
+import {
+  getStageLabel,
+  hasGroupStage,
+  sortedStages,
+} from "@/lib/competition-schema";
 
 export async function generateMetadata({
   params,
@@ -80,17 +86,31 @@ export default async function AdminMatchesPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("admin");
-  const tStages = await getTranslations("stages");
   const tStatus = await getTranslations("matchStatus");
 
   const syncSummary = parseSyncSummaryParams(await searchParams);
   const now = new Date();
 
+  // Everything on this page is scoped to the MANAGED competition (the admin's
+  // editing context), which may differ from the public active competition.
+  const managed = await getManagedCompetition();
+  const stageOptions = managed
+    ? sortedStages(managed.format).map((s) => ({
+        value: s.key,
+        label: getStageLabel(managed.format, s.key, locale),
+      }))
+    : [];
+  const showGroupCode = managed ? hasGroupStage(managed.format) : true;
+  const stageText = (stage: string) =>
+    managed ? getStageLabel(managed.format, stage, locale) : stage;
+
   const supabase = await createServerSupabaseClient();
-  const { data: matches } = await supabase
+  let matchesQuery = supabase
     .from("matches")
     .select("*")
     .order("kickoff_at", { ascending: true });
+  if (managed) matchesQuery = matchesQuery.eq("competition_id", managed.id);
+  const { data: matches } = await matchesQuery;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
@@ -160,19 +180,19 @@ export default async function AdminMatchesPage({
           <div className="space-y-1.5">
             <Label htmlFor="stage">{t("stage")}</Label>
             <select id="stage" name="stage" className="h-9 w-full rounded-md border px-3 text-sm">
-              <option value="group">{t("stageGroup")}</option>
-              <option value="r32">{t("stageR32")}</option>
-              <option value="r16">{t("stageR16")}</option>
-              <option value="qf">{t("stageQf")}</option>
-              <option value="sf">{t("stageSf")}</option>
-              <option value="third">{t("stageThird")}</option>
-              <option value="final">{t("stageFinal")}</option>
+              {stageOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="group_code">{t("groupCode")}</Label>
-            <Input id="group_code" name="group_code" maxLength={1} />
-          </div>
+          {showGroupCode ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="group_code">{t("groupCode")}</Label>
+              <Input id="group_code" name="group_code" maxLength={1} />
+            </div>
+          ) : null}
           <div className="space-y-1.5">
             <Label htmlFor="home_team">{t("homeTeam")}</Label>
             <Input id="home_team" name="home_team" required />
@@ -206,7 +226,7 @@ export default async function AdminMatchesPage({
             <article key={m.id} className="rounded-lg border p-4">
               <header className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline">
-                  {tStages(m.stage as keyof IntlMessages["stages"])}
+                  {stageText(m.stage)}
                   {m.group_code ? ` · ${m.group_code}` : ""}
                 </Badge>
                 <Badge variant={m.status === "final" ? "default" : "secondary"}>
@@ -297,24 +317,24 @@ export default async function AdminMatchesPage({
                       defaultValue={m.stage}
                       className="h-9 w-full rounded-md border px-3 text-sm"
                     >
-                      <option value="group">{t("stageGroup")}</option>
-                      <option value="r32">{t("stageR32")}</option>
-                      <option value="r16">{t("stageR16")}</option>
-                      <option value="qf">{t("stageQf")}</option>
-                      <option value="sf">{t("stageSf")}</option>
-                      <option value="third">{t("stageThird")}</option>
-                      <option value="final">{t("stageFinal")}</option>
+                      {stageOptions.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor={`gc-${m.id}`}>{t("groupCode")}</Label>
-                    <Input
-                      id={`gc-${m.id}`}
-                      name="group_code"
-                      maxLength={1}
-                      defaultValue={m.group_code ?? ""}
-                    />
-                  </div>
+                  {showGroupCode ? (
+                    <div className="space-y-1.5">
+                      <Label htmlFor={`gc-${m.id}`}>{t("groupCode")}</Label>
+                      <Input
+                        id={`gc-${m.id}`}
+                        name="group_code"
+                        maxLength={1}
+                        defaultValue={m.group_code ?? ""}
+                      />
+                    </div>
+                  ) : null}
                   <div className="space-y-1.5">
                     <Label htmlFor={`ht-${m.id}`}>{t("homeTeam")}</Label>
                     <Input

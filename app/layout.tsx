@@ -27,6 +27,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 const siteUrl = env.siteUrl;
+// Root metadata is the static English fallback (covers static routes like
+// /_not-found, so it must NOT touch the DB at build). Per-locale + competition
+// branding is applied request-side in [locale]/layout, OG routes, and nav.
 const siteName = "World Cup 2026 Pool";
 const defaultTitle =
   "World Cup 2026 Pool — Daily Predictions & Live Leaderboard";
