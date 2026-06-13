@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none" role="img" aria-label="Football">
+  <circle cx="64" cy="64" r="56" fill="#94a3b8" fill-opacity="0.08" stroke="#94a3b8" stroke-width="3"/>
+  <polygon points="64,40 81,52 75,72 53,72 47,52" fill="#475569" fill-opacity="0.9"/>
+  <path d="M64 40 64 16" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M81 52 102 41" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M75 72 90 92" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M53 72 38 92" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M47 52 26 41" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M64 16 86 24 102 41" stroke="#94a3b8" stroke-width="3" stroke-linejoin="round" fill="#475569" fill-opacity="0.18"/>
+  <path d="M102 41 110 66 90 92" stroke="#94a3b8" stroke-width="3" stroke-linejoin="round" fill="#475569" fill-opacity="0.18"/>
+  <path d="M90 92 64 108 38 92" stroke="#94a3b8" stroke-width="3" stroke-linejoin="round" fill="#475569" fill-opacity="0.18"/>
+  <path d="M38 92 18 66 26 41" stroke="#94a3b8" stroke-width="3" stroke-linejoin="round" fill="#475569" fill-opacity="0.18"/>
+  <path d="M26 41 42 24 64 16" stroke="#94a3b8" stroke-width="3" stroke-linejoin="round" fill="#475569" fill-opacity="0.18"/>
+</svg>

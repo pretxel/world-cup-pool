@@ -10,6 +10,15 @@ export default async function LocaleNotFound() {
 
   return (
     <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/football.svg"
+        alt=""
+        aria-hidden="true"
+        width={144}
+        height={144}
+        className="mb-4 h-28 w-28 sm:h-36 sm:w-36"
+      />
       <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
         {t("eyebrow")}
       </p>
