@@ -523,5 +523,30 @@
     "body": "Cette page n'est pas au calendrier. Retour sur la pelouse principale.",
     "backHome": "Retour à l'accueil",
     "browseMatches": "Voir les matchs"
+  },
+  "email": {
+    "subject": "+{points} pts dans votre pool Coupe du Monde",
+    "preheader": "Découvrez où les derniers résultats vous placent au classement.",
+    "eyebrow": "Résultats à l'instant",
+    "heading": "{name}, votre classement vient de changer",
+    "headingNoName": "Votre classement vient de changer",
+    "intro": "Voici comment les derniers résultats ont changé votre classement.",
+    "resultsLabel": "Ce qui vient de se terminer",
+    "standingLabel": "Votre classement",
+    "rankLabel": "Rang",
+    "playerLabel": "Joueur",
+    "pointsLabel": "Points",
+    "exactLabel": "Exact",
+    "winnerGdLabel": "Vainqueur/Diff",
+    "youLabel": "Vous",
+    "ptsSuffix": "pts",
+    "outcomes": {
+      "exact": "Exact",
+      "winner_gd": "Vainqueur + diff",
+      "winner": "Vainqueur",
+      "miss": "Manqué"
+    },
+    "ctaLabel": "Voir le classement complet",
+    "footer": "Vous recevez ceci car un match que vous avez pronostiqué vient de se terminer. Les points se mettent à jour automatiquement à chaque résultat."
   }
 }

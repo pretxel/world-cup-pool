@@ -523,5 +523,30 @@
     "body": "That page isn't on the fixture list. Head back to the home pitch.",
     "backHome": "Back home",
     "browseMatches": "Browse matches"
+  },
+  "email": {
+    "subject": "+{points} pts in your World Cup pool",
+    "preheader": "See where the latest results put you on the leaderboard.",
+    "eyebrow": "Match results in",
+    "heading": "{name}, your standing just changed",
+    "headingNoName": "Your standing just changed",
+    "intro": "Here's how the latest results moved your pool standing.",
+    "resultsLabel": "What just finished",
+    "standingLabel": "Your standing",
+    "rankLabel": "Rank",
+    "playerLabel": "Player",
+    "pointsLabel": "Points",
+    "exactLabel": "Exact",
+    "winnerGdLabel": "Winner/GD",
+    "youLabel": "You",
+    "ptsSuffix": "pts",
+    "outcomes": {
+      "exact": "Exact",
+      "winner_gd": "Winner + GD",
+      "winner": "Winner",
+      "miss": "Miss"
+    },
+    "ctaLabel": "View full leaderboard",
+    "footer": "You're getting this because a match you predicted just finished. Scores update automatically as results come in."
   }
 }
