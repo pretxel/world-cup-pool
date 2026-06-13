@@ -61,6 +61,71 @@ export function utcDateKey(iso: string): string {
   return iso.slice(0, 10);
 }
 
+// --- Local-day grouping (timezone-aware) ----------------------------------
+// The public /matches list groups fixtures into day sections. Times are shown
+// in the visitor's timezone, so the grouping calendar must match: a 02:00 UTC
+// kickoff is 19:00 the previous day in America/Los_Angeles and belongs under
+// that local day. The visitor's IANA timezone arrives via the `tz` cookie set
+// by <TimezoneSync/>; before it is known we fall back to UTC for a
+// deterministic render.
+
+export const TZ_COOKIE = "tz";
+
+// True when `tz` is an IANA name this runtime can resolve. Guards
+// cookie-sourced values before Intl, which throws on a bad timezone.
+export function isValidTimeZone(tz: string): boolean {
+  if (!tz) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// "YYYY-MM-DD" for the instant `iso` as it falls in `timeZone`. Built from
+// formatToParts (locale-proof) and sortable, so day order still follows the
+// source kickoff_at ascending. Assumes a valid `timeZone`; callers should
+// route through dayKeyForTimeZone, which validates first.
+export function localDateKey(iso: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(iso));
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+  return `${year}-${month}-${day}`;
+}
+
+// Pick the day-key function for a request: local-day grouping when we have a
+// valid timezone, else UTC. Never throws — an absent/invalid timezone yields
+// the UTC fallback so a garbage cookie can't break the list.
+export function dayKeyForTimeZone(
+  timeZone: string | null | undefined,
+): (iso: string) => string {
+  if (timeZone && isValidTimeZone(timeZone)) {
+    return (iso) => localDateKey(iso, timeZone);
+  }
+  return utcDateKey;
+}
+
+// Localized heading for a day section, e.g. "Fri, Jun 12, 2026". The key
+// already names the visitor's local calendar day, so a noon-UTC instant
+// formatted in UTC renders exactly that date with no timezone shift, in the
+// route's locale. Server-rendered (deterministic) — no client reformat needed.
+export function formatDayKeyLabel(dayKey: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: "UTC",
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${dayKey}T12:00:00Z`));
+}
+
 // --- Team filter (ephemeral, URL-driven) ---------------------------------
 // Teams are plain text on matches; there is no team entity. These helpers back
 // the `?team=` filter on the public /matches list. A "team" key is the team's

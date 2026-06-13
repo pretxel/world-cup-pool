@@ -11,7 +11,9 @@ import { MatchTeamFilter } from "@/components/match-team-filter";
 import { NeedsPickToggle } from "@/components/needs-pick-toggle";
 import { TeamFlag } from "@/components/team-flag";
 import {
+  dayKeyForTimeZone,
   filterableTeams,
+  formatDayKeyLabel,
   isConfirmedMatch,
   isLocked,
   matchInvolvesTeam,
@@ -21,8 +23,9 @@ import {
   parseTeamParam,
   reconcileSelectedTeams,
   statusBucket,
-  utcDateKey,
 } from "@/lib/match-utils";
+import { readTimeZoneCookie } from "@/lib/timezone";
+import { TimezoneSync } from "@/components/timezone-sync";
 import { maybeScheduleOpportunisticSync } from "@/lib/result-sync/opportunistic";
 import { getActiveCompetition } from "@/lib/competition";
 import { getStageLabel } from "@/lib/competition-schema";
@@ -168,9 +171,16 @@ export default async function MatchesPage({
   const isFiltered =
     selectedTeams.length > 0 || statusFilter !== null || picksNeeded;
 
+  // Group by the visitor's local calendar day so each match sits under the day
+  // its displayed local kickoff falls on. The timezone comes from the `tz`
+  // cookie (set client-side by <TimezoneSync/>); until it's known we key by UTC
+  // for a deterministic first render. Source order is kickoff_at ASC, so the
+  // Map's insertion order keeps the day sections chronological.
+  const timeZone = await readTimeZoneCookie();
+  const dayKey = dayKeyForTimeZone(timeZone);
   const byDay = new Map<string, MatchRow[]>();
   for (const m of filtered) {
-    const key = utcDateKey(m.kickoff_at);
+    const key = dayKey(m.kickoff_at);
     const arr = byDay.get(key) ?? [];
     arr.push(m);
     byDay.set(key, arr);
@@ -180,6 +190,7 @@ export default async function MatchesPage({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      <TimezoneSync />
       <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
@@ -247,7 +258,7 @@ export default async function MatchesPage({
               dayKey={day}
               defaultOpen={!dayDone}
               matchday={t("matchday", { n: String(idx + 1).padStart(2, "0") })}
-              dateNode={<LocalTime iso={`${day}T00:00:00Z`} format="date" />}
+              dateNode={formatDayKeyLabel(day, locale)}
               countLabel={t("matchCount", { count: dayMatches.length })}
               expandLabel={t("dayExpand")}
               collapseLabel={t("dayCollapse")}

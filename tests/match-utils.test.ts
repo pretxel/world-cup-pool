@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  dayKeyForTimeZone,
   filterableTeams,
+  formatDayKeyLabel,
   isConfirmedMatch,
   isLocked,
+  isValidTimeZone,
+  localDateKey,
   lockReason,
   matchInvolvesTeam,
   needsPick,
@@ -11,6 +15,7 @@ import {
   parseTeamParam,
   reconcileSelectedTeams,
   statusBucket,
+  utcDateKey,
 } from "@/lib/match-utils";
 
 const FIXED_NOW = new Date("2026-06-15T12:00:00.000Z").getTime();
@@ -245,5 +250,84 @@ describe("isConfirmedMatch", () => {
 
   it("is false when both sides are placeholders", () => {
     expect(isConfirmedMatch(team("2nd Group A", "2nd Group B"))).toBe(false);
+  });
+});
+
+describe("isValidTimeZone", () => {
+  it("accepts real IANA zones", () => {
+    expect(isValidTimeZone("America/Los_Angeles")).toBe(true);
+    expect(isValidTimeZone("UTC")).toBe(true);
+    expect(isValidTimeZone("Asia/Tokyo")).toBe(true);
+  });
+
+  it("rejects empty and garbage values", () => {
+    expect(isValidTimeZone("")).toBe(false);
+    expect(isValidTimeZone("not-a-zone")).toBe(false);
+    expect(isValidTimeZone("America/Atlantis")).toBe(false);
+  });
+});
+
+describe("localDateKey", () => {
+  it("buckets a late UTC instant to the previous local day for a negative-offset zone", () => {
+    // 02:00 UTC on the 13th = 19:00 on the 12th in Los Angeles (UTC-7 in June).
+    expect(localDateKey("2026-06-13T02:00:00Z", "America/Los_Angeles")).toBe(
+      "2026-06-12",
+    );
+  });
+
+  it("buckets an early UTC instant to the next local day for a positive-offset zone", () => {
+    // 22:00 UTC on the 12th = 07:00 on the 13th in Tokyo (UTC+9).
+    expect(localDateKey("2026-06-12T22:00:00Z", "Asia/Tokyo")).toBe(
+      "2026-06-13",
+    );
+  });
+
+  it("matches the UTC key when grouping in UTC", () => {
+    expect(localDateKey("2026-06-13T02:00:00Z", "UTC")).toBe(
+      utcDateKey("2026-06-13T02:00:00Z"),
+    );
+  });
+
+  it("handles a spring-forward DST boundary without shifting the wrong way", () => {
+    // US DST begins 2026-03-08 02:00 local. An instant just after midnight
+    // local that day stays on the 8th in Los Angeles.
+    expect(localDateKey("2026-03-08T09:30:00Z", "America/Los_Angeles")).toBe(
+      "2026-03-08",
+    );
+  });
+});
+
+describe("dayKeyForTimeZone", () => {
+  it("returns a local-day keyer for a valid timezone", () => {
+    const key = dayKeyForTimeZone("America/Los_Angeles");
+    expect(key("2026-06-13T02:00:00Z")).toBe("2026-06-12");
+  });
+
+  it("falls back to UTC for a missing timezone", () => {
+    const key = dayKeyForTimeZone(null);
+    expect(key("2026-06-13T02:00:00Z")).toBe("2026-06-13");
+    expect(key).toBe(utcDateKey);
+  });
+
+  it("falls back to UTC for an invalid timezone without throwing", () => {
+    const key = dayKeyForTimeZone("not-a-zone");
+    expect(key("2026-06-13T02:00:00Z")).toBe("2026-06-13");
+    expect(key).toBe(utcDateKey);
+  });
+});
+
+describe("formatDayKeyLabel", () => {
+  it("renders the day-key date with no timezone shift", () => {
+    // Must read 12, not 11 — i.e. the key's own calendar date, not a value
+    // pulled back across UTC midnight.
+    const label = formatDayKeyLabel("2026-06-12", "en");
+    expect(label).toContain("12");
+    expect(label).toContain("Jun");
+    expect(label).toContain("2026");
+    expect(label).not.toContain("11");
+  });
+
+  it("localizes the heading", () => {
+    expect(formatDayKeyLabel("2026-06-12", "es")).toContain("jun");
   });
 });
