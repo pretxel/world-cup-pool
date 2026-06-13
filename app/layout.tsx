@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getLocale } from "next-intl/server";
 import { env } from "@/lib/env";
-import { getActiveBranding } from "@/lib/competition";
 import { DEFAULT_LOCALE, isLocale } from "@/lib/i18n";
 
 const manrope = Manrope({
@@ -28,102 +27,100 @@ const jetbrains = JetBrains_Mono({
 });
 
 const siteUrl = env.siteUrl;
+// Root metadata is the static English fallback (covers static routes like
+// /_not-found, so it must NOT touch the DB at build). Per-locale + competition
+// branding is applied request-side in [locale]/layout, OG routes, and nav.
+const siteName = "World Cup 2026 Pool";
+const defaultTitle =
+  "World Cup 2026 Pool — Daily Predictions & Live Leaderboard";
+const defaultDescription =
+  "Predict every World Cup 2026 match. Submit scores before kickoff, earn points on results, and climb a daily and overall leaderboard.";
 
-// Root metadata is the English fallback; brand strings come from the active
-// competition (localized title/description live in [locale]/layout via siteMeta).
-export async function generateMetadata(): Promise<Metadata> {
-  const branding = await getActiveBranding();
-  const siteName = branding.siteName;
-  const defaultTitle = `${siteName} — Daily Predictions & Live Leaderboard`;
-  const defaultDescription = `Predict every ${branding.shortName} match. Submit scores before kickoff, earn points on results, and climb a daily and overall leaderboard.`;
-  return {
-    metadataBase: new URL(siteUrl),
-    title: {
-      default: defaultTitle,
-      template: `%s · ${branding.brandCode} Pool`,
-    },
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: defaultTitle,
+    template: "%s · WC26 Pool",
+  },
+  description: defaultDescription,
+  applicationName: siteName,
+  keywords: [
+    "World Cup 2026",
+    "World Cup pool",
+    "FIFA World Cup predictions",
+    "score prediction game",
+    "soccer pool",
+    "football predictor",
+    "World Cup leaderboard",
+    "daily predictions",
+    "WC26",
+  ],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  alternates: {
+    canonical: siteUrl,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    // Tells Facebook the page is also available in these languages.
+    alternateLocale: ["es_ES", "fr_FR"],
+    url: siteUrl,
+    siteName,
+    title: defaultTitle,
     description: defaultDescription,
-    applicationName: siteName,
-    keywords: [
-      branding.shortName,
-      `${branding.shortName} pool`,
-      "score prediction game",
-      "soccer pool",
-      "football predictor",
-      `${branding.shortName} leaderboard`,
-      "daily predictions",
-      branding.brandCode,
-    ],
-    authors: [{ name: siteName }],
-    creator: siteName,
-    publisher: siteName,
-    alternates: {
-      canonical: siteUrl,
-    },
-    openGraph: {
-      type: "website",
-      locale: "en_US",
-      // Tells Facebook the page is also available in these languages.
-      alternateLocale: ["es_ES", "fr_FR"],
-      url: siteUrl,
-      siteName,
-      title: defaultTitle,
-      description: defaultDescription,
-      // og:image is supplied by the file convention app/opengraph-image.tsx,
-      // which also emits og:image:width/height/type/alt. Defining images here
-      // too would produce a duplicate og:image with no og:image:type.
-    },
-    ...(env.facebookAppId ? { facebook: { appId: env.facebookAppId } } : {}),
-    twitter: {
-      card: "summary_large_image",
-      title: defaultTitle,
-      description: defaultDescription,
-      images: ["/opengraph-image.png"],
-    },
-    robots: {
+    // og:image is supplied by the file convention app/opengraph-image.tsx,
+    // which also emits og:image:width/height/type/alt. Defining images here
+    // too would produce a duplicate og:image with no og:image:type.
+  },
+  ...(env.facebookAppId ? { facebook: { appId: env.facebookAppId } } : {}),
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description: defaultDescription,
+    images: ["/opengraph-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
       index: true,
       follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-snippet": -1,
-        "max-image-preview": "large",
-        "max-video-preview": -1,
-      },
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
     },
-    manifest: "/site.webmanifest",
-  };
-}
+  },
+  manifest: "/site.webmanifest",
+};
 
 export const viewport: Viewport = {
   themeColor: "#0a0a0a",
   colorScheme: "dark light",
 };
 
-function buildJsonLd(siteName: string, description: string) {
-  return {
-    website: {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: siteName,
-      url: siteUrl,
-      description,
-      inLanguage: "en-US",
-      potentialAction: {
-        "@type": "SearchAction",
-        target: `${siteUrl}/matches?q={search_term_string}`,
-        "query-input": "required name=search_term_string",
-      },
-    },
-    organization: {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: siteName,
-      url: siteUrl,
-      logo: `${siteUrl}/opengraph-image`,
-    },
-  };
-}
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteName,
+  url: siteUrl,
+  description: defaultDescription,
+  inLanguage: "en-US",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${siteUrl}/matches?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: siteName,
+  url: siteUrl,
+  logo: `${siteUrl}/opengraph-image`,
+};
 
 export default async function RootLayout({
   children,
@@ -134,11 +131,6 @@ export default async function RootLayout({
   // pages aren't announced as English to assistive tech and search engines.
   const raw = await getLocale();
   const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
-  const branding = await getActiveBranding();
-  const jsonLd = buildJsonLd(
-    branding.siteName,
-    `Predict every ${branding.shortName} match. Submit scores before kickoff, earn points on results, and climb a daily and overall leaderboard.`,
-  );
   return (
     <html
       lang={locale}
@@ -160,14 +152,14 @@ export default async function RootLayout({
           id="ld-website"
           type="application/ld+json"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.website) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <Script
           id="ld-organization"
           type="application/ld+json"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd.organization),
+            __html: JSON.stringify(organizationJsonLd),
           }}
         />
         {env.gaMeasurementId ? (
