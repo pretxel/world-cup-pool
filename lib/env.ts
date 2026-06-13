@@ -17,7 +17,16 @@ function resolveSiteUrl(): string {
 }
 
 export const env = {
-  supabaseUrl: required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
+  // Browser code reads the build-time-inlined NEXT_PUBLIC_SUPABASE_URL (Next
+  // inlines NEXT_PUBLIC_* into BOTH client and server bundles at build). In
+  // Docker the browser and server need different origins (browser: host
+  // localhost:8000, server: in-network http://kong:8000), so server code
+  // prefers a non-public SUPABASE_URL that is read at RUNTIME (not inlined).
+  // On the client process.env.SUPABASE_URL is undefined → falls back to the
+  // inlined public URL. On Vercel SUPABASE_URL is unset → same value as before.
+  supabaseUrl:
+    process.env.SUPABASE_URL ||
+    required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL),
   supabaseAnonKey: required("NEXT_PUBLIC_SUPABASE_ANON_KEY", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
   siteUrl: resolveSiteUrl(),
   // Nullable on purpose — the cron route returns 204 with x-skipped: missing-env
