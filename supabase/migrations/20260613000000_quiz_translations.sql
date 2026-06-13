@@ -15,10 +15,12 @@ alter table public.quiz_questions
 
 -- Re-create the public view to expose translations. Still omits correct_index,
 -- and still runs with owner rights (security_invoker = off) so it reads past
--- the admin-only RLS on the base table.
+-- the admin-only RLS on the base table. `translations` is appended LAST:
+-- create-or-replace can only add columns at the end of the existing list,
+-- never reorder them (renaming a column raises SQLSTATE 42P16).
 create or replace view public.v_quiz_questions_public
   with (security_invoker = off) as
-select id, prompt, options, translations, active_on
+select id, prompt, options, active_on, translations
 from public.quiz_questions;
 
 -- create or replace view does not reset grants, but be explicit so a clean
