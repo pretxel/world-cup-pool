@@ -218,7 +218,16 @@
     "fieldDate": "Date active (UTC)",
     "create": "Créer la question",
     "scheduled": "Planifiées ({count})",
-    "deleteQ": "Supprimer"
+    "deleteQ": "Supprimer",
+    "adminTranslations": "Traductions (facultatif)",
+    "adminTranslationsHint": "Laissez une langue vide pour afficher l'anglais. Si remplie, indiquez l'énoncé et toutes les options — l'ordre doit correspondre aux options anglaises.",
+    "fieldPromptLocale": "Énoncé ({lang})",
+    "fieldOptionLocale": "Option {n} ({lang})",
+    "langEs": "Espagnol",
+    "langFr": "Français",
+    "badgeEs": "ES",
+    "badgeFr": "FR",
+    "badgeUntranslated": "EN seulement"
   },
   "matchDetail": {
     "metaTitleNotFound": "Match introuvable",

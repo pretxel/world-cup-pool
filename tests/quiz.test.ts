@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeStreak } from "@/lib/quiz";
+import { computeStreak, localizeQuizQuestion } from "@/lib/quiz";
 
 // Fixed "now": 2026-06-06T12:00:00Z
 const NOW = new Date("2026-06-06T12:00:00Z");
@@ -38,5 +38,87 @@ describe("computeStreak", () => {
   it("normalizes non-UTC offsets to the UTC day", () => {
     // 2026-06-07T01:00:00+03:00 === 2026-06-06T22:00:00Z → counts as today (06)
     expect(computeStreak(["2026-06-07T01:00:00+03:00", day("05")], NOW)).toBe(2);
+  });
+});
+
+describe("localizeQuizQuestion", () => {
+  const en = {
+    prompt: "Who won the 2022 World Cup?",
+    options: ["Argentina", "France", "Brazil"],
+  };
+  const withTranslations = {
+    ...en,
+    translations: {
+      es: {
+        prompt: "¿Quién ganó el Mundial 2022?",
+        options: ["Argentina", "Francia", "Brasil"],
+      },
+      fr: {
+        prompt: "Qui a gagné la Coupe du monde 2022 ?",
+        options: ["Argentine", "France", "Brésil"],
+      },
+    },
+  };
+
+  it("returns the English base columns for en", () => {
+    expect(localizeQuizQuestion(withTranslations, "en")).toEqual(en);
+  });
+
+  it("serves the Spanish translation for es", () => {
+    expect(localizeQuizQuestion(withTranslations, "es")).toEqual({
+      prompt: "¿Quién ganó el Mundial 2022?",
+      options: ["Argentina", "Francia", "Brasil"],
+    });
+  });
+
+  it("serves the French translation for fr", () => {
+    expect(localizeQuizQuestion(withTranslations, "fr").prompt).toBe(
+      "Qui a gagné la Coupe du monde 2022 ?",
+    );
+  });
+
+  it("falls back to English when the locale has no translation", () => {
+    expect(localizeQuizQuestion({ ...en, translations: {} }, "fr")).toEqual(en);
+    expect(localizeQuizQuestion(en, "es")).toEqual(en);
+  });
+
+  it("falls back fully when option count mismatches (index safety)", () => {
+    const bad = {
+      ...en,
+      translations: { es: { prompt: "P", options: ["uno", "dos"] } },
+    };
+    expect(localizeQuizQuestion(bad, "es")).toEqual(en);
+  });
+
+  it("falls back fully when a translated option is blank", () => {
+    const bad = {
+      ...en,
+      translations: { es: { prompt: "P", options: ["uno", "", "tres"] } },
+    };
+    expect(localizeQuizQuestion(bad, "es")).toEqual(en);
+  });
+
+  it("falls back when the translation prompt is blank", () => {
+    const bad = {
+      ...en,
+      translations: { es: { prompt: "  ", options: ["a", "b", "c"] } },
+    };
+    expect(localizeQuizQuestion(bad, "es")).toEqual(en);
+  });
+
+  it("falls back on malformed translations JSON shapes", () => {
+    expect(localizeQuizQuestion({ ...en, translations: null }, "es")).toEqual(en);
+    expect(
+      localizeQuizQuestion({ ...en, translations: "nope" }, "es"),
+    ).toEqual(en);
+    expect(
+      localizeQuizQuestion({ ...en, translations: { es: 42 } }, "es"),
+    ).toEqual(en);
+    expect(
+      localizeQuizQuestion(
+        { ...en, translations: { es: { prompt: "P" } } },
+        "es",
+      ),
+    ).toEqual(en);
   });
 });

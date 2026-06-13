@@ -218,7 +218,16 @@
     "fieldDate": "Active date (UTC)",
     "create": "Create question",
     "scheduled": "Scheduled ({count})",
-    "deleteQ": "Delete"
+    "deleteQ": "Delete",
+    "adminTranslations": "Translations (optional)",
+    "adminTranslationsHint": "Leave a language blank to serve English. If filled, provide a prompt and every option — order must match the English options.",
+    "fieldPromptLocale": "Prompt ({lang})",
+    "fieldOptionLocale": "Option {n} ({lang})",
+    "langEs": "Spanish",
+    "langFr": "French",
+    "badgeEs": "ES",
+    "badgeFr": "FR",
+    "badgeUntranslated": "EN only"
   },
   "matchDetail": {
     "metaTitleNotFound": "Match not found",

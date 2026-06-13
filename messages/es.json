@@ -218,7 +218,16 @@
     "fieldDate": "Fecha activa (UTC)",
     "create": "Crear pregunta",
     "scheduled": "Programadas ({count})",
-    "deleteQ": "Eliminar"
+    "deleteQ": "Eliminar",
+    "adminTranslations": "Traducciones (opcional)",
+    "adminTranslationsHint": "Deja un idioma en blanco para mostrar inglés. Si lo completas, indica el enunciado y todas las opciones — el orden debe coincidir con las opciones en inglés.",
+    "fieldPromptLocale": "Enunciado ({lang})",
+    "fieldOptionLocale": "Opción {n} ({lang})",
+    "langEs": "Español",
+    "langFr": "Francés",
+    "badgeEs": "ES",
+    "badgeFr": "FR",
+    "badgeUntranslated": "Solo EN"
   },
   "matchDetail": {
     "metaTitleNotFound": "Partido no encontrado",

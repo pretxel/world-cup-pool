@@ -118,6 +118,7 @@ export type Database = {
           id: string
           options: string[]
           prompt: string
+          translations: Json
           updated_at: string
         }
         Insert: {
@@ -127,6 +128,7 @@ export type Database = {
           id?: string
           options: string[]
           prompt: string
+          translations?: Json
           updated_at?: string
         }
         Update: {
@@ -136,6 +138,7 @@ export type Database = {
           id?: string
           options?: string[]
           prompt?: string
+          translations?: Json
           updated_at?: string
         }
         Relationships: []
@@ -403,6 +406,7 @@ export type Database = {
           id: string | null
           options: string[] | null
           prompt: string | null
+          translations: Json | null
         }
         Relationships: []
       }

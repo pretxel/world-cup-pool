@@ -3,8 +3,16 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { saveQuestion, deleteQuestion } from "./actions";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { localizeQuizQuestion } from "@/lib/quiz";
+
+// Translatable non-English locales, paired with their field-label language name.
+const TRANSLATION_LOCALES = [
+  { code: "es", langKey: "langEs" },
+  { code: "fr", langKey: "langFr" },
+] as const;
 
 export async function generateMetadata({
   params,
@@ -86,6 +94,43 @@ export default async function AdminQuizPage({
           </div>
         </div>
 
+        <div className="mt-2 flex flex-col gap-4 border-t border-border pt-4">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              {t("adminTranslations")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("adminTranslationsHint")}
+            </p>
+          </div>
+          {TRANSLATION_LOCALES.map(({ code, langKey }) => {
+            const lang = t(langKey);
+            return (
+              <fieldset key={code} className="flex flex-col gap-3 rounded-lg border border-border p-3">
+                <legend className="px-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {lang}
+                </legend>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor={`${code}_prompt`}>
+                    {t("fieldPromptLocale", { lang })}
+                  </Label>
+                  <Input id={`${code}_prompt`} name={`${code}_prompt`} />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="flex flex-col gap-1.5">
+                      <Label htmlFor={`${code}_option_${i}`}>
+                        {t("fieldOptionLocale", { n: i + 1, lang })}
+                      </Label>
+                      <Input id={`${code}_option_${i}`} name={`${code}_option_${i}`} />
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+            );
+          })}
+        </div>
+
         <Button type="submit" className="self-start">
           {t("create")}
         </Button>
@@ -101,9 +146,29 @@ export default async function AdminQuizPage({
             className="flex items-start justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3"
           >
             <div className="min-w-0">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                {q.active_on}
-              </p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  {q.active_on}
+                </p>
+                {(() => {
+                  // A locale is "translated" when localize actually returns
+                  // its translation rather than falling back to English — the
+                  // same usability rule the public page applies.
+                  const translated = TRANSLATION_LOCALES.filter(
+                    ({ code }) =>
+                      localizeQuizQuestion(q, code).prompt !== q.prompt,
+                  );
+                  return translated.length > 0 ? (
+                    translated.map(({ code }) => (
+                      <Badge key={code} variant="secondary">
+                        {t(code === "es" ? "badgeEs" : "badgeFr")}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline">{t("badgeUntranslated")}</Badge>
+                  );
+                })()}
+              </div>
               <p className="mt-0.5 truncate text-sm font-medium">{q.prompt}</p>
               <p className="mt-0.5 truncate text-xs text-muted-foreground">
                 {q.options

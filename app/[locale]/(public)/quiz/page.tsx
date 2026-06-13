@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { FlameIcon } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { QuizLeaderboardRow } from "@/lib/db";
-import { computeStreak } from "@/lib/quiz";
+import { computeStreak, localizeQuizQuestion } from "@/lib/quiz";
 import { cn } from "@/lib/utils";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { AnswerCard } from "./answer-card";
@@ -51,9 +51,24 @@ export default async function QuizPage({
 
   const { data: question } = await supabase
     .from("v_quiz_questions_public")
-    .select("id, prompt, options, active_on")
+    .select("id, prompt, options, translations, active_on")
     .eq("active_on", today)
     .maybeSingle();
+
+  // Serve the prompt/options in the request locale, falling back to English.
+  // Answer order is identical across locales, so grading (by index) is
+  // locale-independent.
+  const localized =
+    question?.prompt && question.options
+      ? localizeQuizQuestion(
+          {
+            prompt: question.prompt,
+            options: question.options,
+            translations: question.translations,
+          },
+          locale,
+        )
+      : null;
 
   // Signed-in: this question's existing answer (for the card) + all answers
   // (for streak + points). Anonymous: skip both.
@@ -118,17 +133,17 @@ export default async function QuizPage({
       ) : null}
 
       <section className="mb-12">
-        {question?.id && question.options ? (
+        {question?.id && localized ? (
           <div className="rounded-2xl border border-border bg-card p-5">
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
               {t("todayQuestion")}
             </p>
             <h2 className="mt-1 mb-4 font-heading text-xl font-semibold leading-snug tracking-tight">
-              {question.prompt}
+              {localized.prompt}
             </h2>
             <AnswerCard
               questionId={question.id}
-              options={question.options}
+              options={localized.options}
               signedIn={!!user}
               initialAnswer={myAnswer}
             />
