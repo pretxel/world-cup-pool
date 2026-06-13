@@ -153,6 +153,8 @@
     "filterNeedsPick": "À pronostiquer",
     "matchday": "Journée {n}",
     "matchCount": "{count, plural, =0 {0 match} one {# match} other {# matchs}}",
+    "dayExpand": "Afficher les matchs",
+    "dayCollapse": "Masquer les matchs",
     "rowKickoff": "Coup d'envoi",
     "rowVs": "vs",
     "rowFinal": "Final",
