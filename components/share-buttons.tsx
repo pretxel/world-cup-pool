@@ -6,10 +6,11 @@ import { CheckIcon, LinkIcon, Share2Icon } from "lucide-react";
 import { buildFacebookShareUrl, buildTweetIntentUrl } from "@/lib/share";
 import { cn } from "@/lib/utils";
 
-// Share actions for the viewer's saved pick. All data arrives via props; the
-// component only decides which affordances the browser supports. The native
-// share sheet is the Instagram path on mobile — IG has no web share URL.
-export function SharePickButtons({
+// Generic social share actions for any pre-built share URL + text. All data
+// arrives via props; the component only decides which affordances the browser
+// supports. The native share sheet is the Instagram path on mobile — IG has no
+// web share URL. Used by pick sharing and leaderboard-rank sharing alike.
+export function ShareButtons({
   shareUrl,
   shareText,
   labels,

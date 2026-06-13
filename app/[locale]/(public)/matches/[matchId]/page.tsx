@@ -14,7 +14,7 @@ import { isConfirmedMatch, lockReason } from "@/lib/match-utils";
 import type { MatchStage } from "@/lib/db";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
-import { SharePickButtons } from "@/components/share-pick-buttons";
+import { ShareButtons } from "@/components/share-buttons";
 import { buildPickSharePath } from "@/lib/share";
 import { env } from "@/lib/env";
 import { GroupStandingsTable } from "@/components/group-standings-table";
@@ -450,7 +450,7 @@ export default async function MatchDetailPage({
           <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
             {tShare("heading")}
           </p>
-          <SharePickButtons
+          <ShareButtons
             shareUrl={`${env.siteUrl}${buildPickSharePath(locale, match.id, myPrediction.home_goals, myPrediction.away_goals)}`}
             shareText={tShare("shareText", {
               home: match.home_team,

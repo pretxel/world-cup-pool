@@ -26,6 +26,12 @@ export function buildPickSharePath(
   return `${localePath(locale, `/share/pick/${matchId}`)}?h=${h}&a=${a}`;
 }
 
+export function buildRankSharePath(locale: Locale, userId: string): string {
+  // No score params: the landing page and OG card re-derive the standing live
+  // from v_leaderboard_overall, so the URL only needs to identify the user.
+  return localePath(locale, `/share/rank/${userId}`);
+}
+
 export function buildTweetIntentUrl(text: string, url: string): string {
   const params = new URLSearchParams({ text, url });
   return `https://twitter.com/intent/tweet?${params.toString()}`;

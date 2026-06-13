@@ -3,8 +3,11 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
+import { ShareButtons } from "@/components/share-buttons";
 import type { LeaderboardRow } from "@/lib/db";
 import { ArrowRightIcon } from "lucide-react";
+import { buildRankSharePath } from "@/lib/share";
+import { env } from "@/lib/env";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 export async function generateMetadata({
@@ -37,6 +40,7 @@ export default async function LeaderboardPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("leaderboard");
+  const tShare = await getTranslations("shareRank");
 
   const supabase = await createServerSupabaseClient();
   const {
@@ -125,6 +129,29 @@ export default async function LeaderboardPage({
           }}
         />
       )}
+
+      {myRow ? (
+        <section className="mt-6">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            {tShare("heading")}
+          </p>
+          <ShareButtons
+            shareUrl={`${env.siteUrl}${buildRankSharePath(locale, myRow.user_id)}`}
+            shareText={tShare("shareText", {
+              rank: myRow.rank ?? 0,
+              count: players,
+              points: myRow.total_points ?? 0,
+            })}
+            labels={{
+              x: tShare("shareOnX"),
+              facebook: tShare("shareOnFacebook"),
+              native: tShare("shareNative"),
+              copy: tShare("copyLink"),
+              copied: tShare("copied"),
+            }}
+          />
+        </section>
+      ) : null}
 
       {user && !myRow && rows.length > 0 ? (
         <div className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card p-5 text-sm sm:flex-row sm:items-center sm:justify-between">
