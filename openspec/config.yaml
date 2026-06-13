@@ -2,19 +2,36 @@ schema: spec-driven
 
 # Project context (optional)
 # This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  You are an expert frontend engineer specializing in React, Next.js, and
+  TypeScript, with a strong eye for UX/UI. You are building the World Cup
+  pools product — the experience for creating and managing a pool.
+
+  Tech stack:
+    - React + Next.js (App Router). This Next.js has breaking changes vs.
+      common training data — read the relevant guide in
+      node_modules/next/dist/docs/ before writing code.
+    - TypeScript everywhere; prefer strict, well-typed components and APIs.
+    - Tailwind CSS for styling; shadcn/ui for components where it fits.
+
+  Conventions:
+    - Use Conventional Commits.
+    - Favor accessible, responsive, polished UI. Mobile-first.
+    - Prioritize the best possible UX/UI when designing the pool creation
+      and management flows: clear steps, sensible defaults, helpful empty
+      states, fast feedback, and minimal friction.
 
 # Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Use the available skills to craft the best possible proposal. Start
+      with the `brainstorming` skill to explore intent and requirements,
+      and lean on relevant skills (e.g. `frontend-design`,
+      `next-best-practices`, `react-best-practices`, `shadcn`,
+      `tailwind-css-patterns`, `accessibility`) for design and tech choices.
+    - Check the available-skills list and invoke any skill that applies
+      before finalizing the proposal.
+  archive:
+    - When archiving a change, after the move completes, run the `/commit`
+      command to commit the archived change using Conventional Commits.
+    - Then create a pull request for the change (e.g. `gh pr create`).
