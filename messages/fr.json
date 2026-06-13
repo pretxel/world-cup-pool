@@ -294,6 +294,25 @@
     "cta": "Faites votre prono",
     "ogAlt": "Prono partagé Coupe du Monde 2026 : {home} {h}–{a} {away}"
   },
+  "shareRank": {
+    "heading": "Partagez votre classement",
+    "shareText": "Je suis #{rank} sur {count} dans le Pool Coupe du Monde 2026 — {points} pts. Essaie de me rattraper.",
+    "shareOnX": "Partager sur X",
+    "shareOnFacebook": "Partager sur Facebook",
+    "shareNative": "Partager…",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "pageEyebrow": "Classement partagé",
+    "pageHeading": "Pool Coupe du Monde 2026",
+    "pageTitle": "Classé #{rank} avec {points} pts — Pool Coupe du Monde 2026",
+    "pageDescription": "{name} est actuellement #{rank} sur {count} dans le Pool Coupe du Monde 2026. Faites vos pronos et grimpez au classement.",
+    "rankLabel": "Rang",
+    "pointsLabel": "Points",
+    "exactLabel": "Scores exacts",
+    "statPlayers": "sur {count, plural, one {# joueur} other {# joueurs}}",
+    "cta": "Voir le classement",
+    "ogAlt": "Classement Pool Coupe du Monde 2026 : rang #{rank}, {points} points"
+  },
   "myPicks": {
     "title": "Mes pronos — Pool Coupe du Monde 2026",
     "eyebrow": "Votre ticket",

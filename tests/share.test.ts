@@ -3,6 +3,7 @@ import {
   MAX_SHARE_GOALS,
   buildFacebookShareUrl,
   buildPickSharePath,
+  buildRankSharePath,
   buildTweetIntentUrl,
   clampGoals,
 } from "@/lib/share";
@@ -40,6 +41,17 @@ describe("buildPickSharePath", () => {
     );
     expect(buildPickSharePath("es", "abc-123", 999, -1)).toBe(
       `/es/share/pick/abc-123?h=${MAX_SHARE_GOALS}&a=0`,
+    );
+  });
+});
+
+describe("buildRankSharePath", () => {
+  it("builds a locale-prefixed path identifying the user, no score params", () => {
+    expect(buildRankSharePath("en", "user-abc")).toBe(
+      "/en/share/rank/user-abc",
+    );
+    expect(buildRankSharePath("fr", "user-abc")).toBe(
+      "/fr/share/rank/user-abc",
     );
   });
 });

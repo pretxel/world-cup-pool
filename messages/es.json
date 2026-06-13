@@ -294,6 +294,25 @@
     "cta": "Haz tu propio pronóstico",
     "ogAlt": "Pronóstico compartido del Mundial 2026: {home} {h}–{a} {away}"
   },
+  "shareRank": {
+    "heading": "Comparte tu posición",
+    "shareText": "Voy #{rank} de {count} en la Quiniela Mundial 2026 — {points} pts. A ver si me alcanzas.",
+    "shareOnX": "Compartir en X",
+    "shareOnFacebook": "Compartir en Facebook",
+    "shareNative": "Compartir…",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado",
+    "pageEyebrow": "Posición compartida",
+    "pageHeading": "Quiniela Mundial 2026",
+    "pageTitle": "Puesto #{rank} con {points} pts — Quiniela Mundial 2026",
+    "pageDescription": "{name} va actualmente #{rank} de {count} en la Quiniela Mundial 2026. Haz tus pronósticos y sube en la clasificación.",
+    "rankLabel": "Puesto",
+    "pointsLabel": "Puntos",
+    "exactLabel": "Aciertos exactos",
+    "statPlayers": "de {count, plural, one {# jugador} other {# jugadores}}",
+    "cta": "Ver la clasificación",
+    "ogAlt": "Posición en la Quiniela Mundial 2026: puesto #{rank}, {points} puntos"
+  },
   "myPicks": {
     "title": "Mis pronósticos — Pool Mundial 2026",
     "eyebrow": "Tu boleto",

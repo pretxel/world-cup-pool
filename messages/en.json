@@ -294,6 +294,25 @@
     "cta": "Make your own pick",
     "ogAlt": "Shared World Cup 2026 pick: {home} {h}–{a} {away}"
   },
+  "shareRank": {
+    "heading": "Share your standing",
+    "shareText": "I'm #{rank} of {count} in the World Cup 2026 Pool — {points} pts. Catch me if you can.",
+    "shareOnX": "Share on X",
+    "shareOnFacebook": "Share on Facebook",
+    "shareNative": "Share…",
+    "copyLink": "Copy link",
+    "copied": "Link copied",
+    "pageEyebrow": "Shared standing",
+    "pageHeading": "World Cup 2026 Pool",
+    "pageTitle": "Ranked #{rank} with {points} pts — World Cup 2026 Pool",
+    "pageDescription": "{name} is currently #{rank} of {count} in the World Cup 2026 Pool. Make your picks and climb the leaderboard.",
+    "rankLabel": "Rank",
+    "pointsLabel": "Points",
+    "exactLabel": "Exact hits",
+    "statPlayers": "of {count, plural, one {# player} other {# players}}",
+    "cta": "View the leaderboard",
+    "ogAlt": "World Cup 2026 Pool standing: rank #{rank}, {points} points"
+  },
   "myPicks": {
     "title": "My picks — World Cup 2026 Pool",
     "eyebrow": "Your ticket",
