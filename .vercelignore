@@ -1,4 +1,4 @@
-docker
-supabase
-Dockerfile
-.dockerignore
+/docker
+/supabase
+/Dockerfile
+/.dockerignore
