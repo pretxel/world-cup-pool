@@ -21,7 +21,15 @@ context: |
       and management flows: clear steps, sensible defaults, helpful empty
       states, fast feedback, and minimal friction.
 
+  Workflow:
+    - When archiving a change, after the move completes, run the `/commit`
+      command to commit the archived change using Conventional Commits,
+      then open a pull request for it (e.g. `gh pr create`).
+
 # Per-artifact rules (optional)
+# NOTE: keys here MUST be valid artifact IDs for the schema
+# (spec-driven: proposal, design, specs, tasks). Archive guidance lives in
+# `context` above and in the /opsx:archive command, not here.
 rules:
   proposal:
     - Use the available skills to craft the best possible proposal. Start
@@ -31,7 +39,3 @@ rules:
       `tailwind-css-patterns`, `accessibility`) for design and tech choices.
     - Check the available-skills list and invoke any skill that applies
       before finalizing the proposal.
-  archive:
-    - When archiving a change, after the move completes, run the `/commit`
-      command to commit the archived change using Conventional Commits.
-    - Then create a pull request for the change (e.g. `gh pr create`).

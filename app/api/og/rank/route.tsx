@@ -4,7 +4,20 @@ import { getTranslations } from "next-intl/server";
 import { env } from "@/lib/env";
 import { isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
 import type { Database } from "@/lib/database.types";
+import {
+  loadOgFonts,
+  loadDisplayNameFallback,
+  OG_FONT_FAMILY,
+} from "@/lib/og-fonts";
+import {
+  cardETag,
+  ifNoneMatchSatisfied,
+  notModified,
+  OG_CACHE_CONTROL,
+} from "@/lib/og-cache";
 
+// Node runtime (no `runtime = "edge"`): lib/og-fonts.ts reads font binaries via
+// node:fs/promises, and the @vercel/og Edge bundle cap does not apply.
 export const dynamic = "force-dynamic";
 
 const WIDTH = 1200;
@@ -19,19 +32,31 @@ function Stat({ value, label }: { value: string; label: string }) {
     <div
       style={{
         display: "flex",
+        flex: 1,
         flexDirection: "column",
         alignItems: "center",
-        gap: 8,
+        gap: 10,
+        padding: "10px 0",
       }}
     >
-      <div style={{ display: "flex", color: FG, fontSize: 96, fontWeight: 800 }}>
+      <div
+        style={{
+          display: "flex",
+          fontFamily: OG_FONT_FAMILY.mono,
+          color: FG,
+          fontSize: 92,
+          fontWeight: 700,
+          lineHeight: 1,
+        }}
+      >
         {value}
       </div>
       <div
         style={{
           display: "flex",
+          fontFamily: OG_FONT_FAMILY.mono,
           color: FG,
-          fontSize: 24,
+          fontSize: 22,
           fontWeight: 700,
           letterSpacing: 4,
           textTransform: "uppercase",
@@ -66,6 +91,8 @@ export async function GET(request: Request) {
       .from("v_leaderboard_overall")
       .select("*", { count: "exact", head: true }),
   ]);
+  // Validate inputs before any render or ETag work — an unknown user is a 404,
+  // never a half-rendered card.
   if (!row) return new Response("Standing not found", { status: 404 });
 
   const t = await getTranslations({ locale, namespace: "shareRank" });
@@ -76,10 +103,22 @@ export async function GET(request: Request) {
   const exact = row.exact_hits ?? 0;
   const players = count ?? 0;
 
+  // Conditional cache: the ETag covers every value the card draws, so an
+  // unchanged standing answers 304 without paying for a fresh raster.
+  const etag = cardETag([rank, name, points, exact, players, locale]);
+  if (ifNoneMatchSatisfied(request, etag)) return notModified(etag);
+
+  // Brand faces, plus a glyph-subset fallback only when the name needs it.
+  const [brandFonts, nameFallback] = await Promise.all([
+    loadOgFonts(),
+    loadDisplayNameFallback(name),
+  ]);
+
   return new ImageResponse(
     (
       <div
         style={{
+          position: "relative",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -88,6 +127,31 @@ export async function GET(request: Request) {
           padding: 56,
         }}
       >
+        {/* Soft spotlight behind the rank — Satori-supported radial gradient,
+            a texture cue toward the scoreboard look without CSS patterns. */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            backgroundImage:
+              "radial-gradient(circle at 50% 42%, rgba(251,250,246,0.16) 0%, rgba(251,250,246,0) 55%)",
+          }}
+        />
+        {/* Top hairline accent */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 6,
+            display: "flex",
+            backgroundColor: FG,
+            opacity: 0.5,
+          }}
+        />
+
         <div
           style={{
             display: "flex",
@@ -98,8 +162,9 @@ export async function GET(request: Request) {
           <div
             style={{
               display: "flex",
+              fontFamily: OG_FONT_FAMILY.mono,
               color: FG,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: 700,
               letterSpacing: 6,
               textTransform: "uppercase",
@@ -111,8 +176,9 @@ export async function GET(request: Request) {
           <div
             style={{
               display: "flex",
+              fontFamily: OG_FONT_FAMILY.mono,
               color: FG,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: 700,
               letterSpacing: 6,
               textTransform: "uppercase",
@@ -130,14 +196,15 @@ export async function GET(request: Request) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 8,
+            gap: 6,
           }}
         >
           <div
             style={{
               display: "flex",
+              fontFamily: OG_FONT_FAMILY.heading,
               color: FG,
-              fontSize: 200,
+              fontSize: 210,
               fontWeight: 800,
               lineHeight: 1,
             }}
@@ -147,11 +214,13 @@ export async function GET(request: Request) {
           <div
             style={{
               display: "flex",
+              fontFamily: OG_FONT_FAMILY.heading,
               color: FG,
-              fontSize: 56,
+              fontSize: 60,
               fontWeight: 700,
-              maxWidth: 1000,
+              maxWidth: 1040,
               textAlign: "center",
+              lineHeight: 1.05,
             }}
           >
             {name}
@@ -159,11 +228,14 @@ export async function GET(request: Request) {
           <div
             style={{
               display: "flex",
+              fontFamily: OG_FONT_FAMILY.mono,
               color: FG,
-              fontSize: 26,
+              fontSize: 24,
+              fontWeight: 700,
               letterSpacing: 4,
               textTransform: "uppercase",
               opacity: 0.7,
+              marginTop: 6,
             }}
           >
             {t("statPlayers", { count: players })}
@@ -173,11 +245,19 @@ export async function GET(request: Request) {
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
-            gap: 96,
+            alignItems: "stretch",
+            borderTop: `1px solid rgba(251,250,246,0.18)`,
+            paddingTop: 20,
           }}
         >
           <Stat value={String(points)} label={t("pointsLabel")} />
+          <div
+            style={{
+              display: "flex",
+              width: 1,
+              backgroundColor: "rgba(251,250,246,0.18)",
+            }}
+          />
           <Stat value={String(exact)} label={t("exactLabel")} />
         </div>
       </div>
@@ -185,10 +265,10 @@ export async function GET(request: Request) {
     {
       width: WIDTH,
       height: HEIGHT,
+      fonts: [...brandFonts, ...nameFallback],
       headers: {
-        // Finite, not immutable: the ranking changes as results land, so the
-        // card must refresh. Five minutes bounds scraper load.
-        "Cache-Control": "public, max-age=300, s-maxage=300",
+        "Cache-Control": OG_CACHE_CONTROL,
+        ETag: etag,
       },
     },
   );

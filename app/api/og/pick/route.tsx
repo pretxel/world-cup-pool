@@ -6,7 +6,11 @@ import { flagSlug } from "@/lib/team-flag";
 import { clampGoals } from "@/lib/share";
 import { isLocale, DEFAULT_LOCALE } from "@/lib/i18n";
 import type { Database } from "@/lib/database.types";
+import { loadOgFonts, OG_FONT_FAMILY } from "@/lib/og-fonts";
 
+// Node runtime (no `runtime = "edge"`): lib/og-fonts.ts reads font binaries via
+// node:fs/promises. The pick card is deterministic from its URL params, so its
+// cache stays immutable — unlike the rank card it does not use ETag/SWR.
 export const dynamic = "force-dynamic";
 
 const WIDTH = 1200;
@@ -88,6 +92,7 @@ function TeamBlock({
             borderRadius: 12,
             backgroundColor: "rgba(251,250,246,0.12)",
             color: FG,
+            fontFamily: OG_FONT_FAMILY.heading,
             fontSize: 44,
             fontWeight: 700,
           }}
@@ -99,6 +104,7 @@ function TeamBlock({
         style={{
           display: "flex",
           color: FG,
+          fontFamily: OG_FONT_FAMILY.heading,
           fontSize: 44,
           fontWeight: 700,
           textAlign: "center",
@@ -171,6 +177,7 @@ export async function GET(request: Request) {
             style={{
               display: "flex",
               color: FG,
+              fontFamily: OG_FONT_FAMILY.mono,
               fontSize: 28,
               fontWeight: 700,
               letterSpacing: 6,
@@ -184,6 +191,7 @@ export async function GET(request: Request) {
             style={{
               display: "flex",
               color: FG,
+              fontFamily: OG_FONT_FAMILY.mono,
               fontSize: 28,
               fontWeight: 700,
               letterSpacing: 6,
@@ -208,6 +216,7 @@ export async function GET(request: Request) {
             style={{
               display: "flex",
               color: FG,
+              fontFamily: OG_FONT_FAMILY.heading,
               fontSize: hasScores ? 150 : 72,
               fontWeight: 800,
             }}
@@ -222,7 +231,9 @@ export async function GET(request: Request) {
             display: "flex",
             justifyContent: "center",
             color: FG,
+            fontFamily: OG_FONT_FAMILY.mono,
             fontSize: 26,
+            fontWeight: 700,
             letterSpacing: 4,
             textTransform: "uppercase",
             opacity: 0.7,
@@ -235,6 +246,7 @@ export async function GET(request: Request) {
     {
       width: WIDTH,
       height: HEIGHT,
+      fonts: await loadOgFonts(),
       headers: {
         "Cache-Control": "public, max-age=31536000, immutable",
       },
