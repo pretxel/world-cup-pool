@@ -610,5 +610,18 @@
     "ctaLabel": "Répondre à la question du jour",
     "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde. Le quiz se réinitialise chaque jour à minuit UTC.",
     "unsubscribeLabel": "Se désabonner des rappels du quiz quotidien"
+  },
+  "predictionEmail": {
+    "subject": "Les matchs du jour — envoyez vos pronostics",
+    "preheader": "Il vous reste des pronostics à faire avant le coup d'envoi. Ne perdez pas de points.",
+    "eyebrow": "Matchs du jour",
+    "heading": "{name}, vous avez des pronostics à faire",
+    "headingNoName": "Vous avez des pronostics à faire",
+    "intro": "Ces matchs se jouent aujourd'hui et vous ne les avez pas encore pronostiqués. Enregistrez vos scores avant le coup d'envoi — une fois le match lancé, c'est trop tard.",
+    "listLabel": "À pronostiquer",
+    "vs": "vs",
+    "ctaLabel": "Faire mes pronostics",
+    "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde. Les pronostics se ferment au coup d'envoi de chaque match.",
+    "unsubscribeLabel": "Se désabonner des rappels de pronostics quotidiens"
   }
 }

@@ -610,5 +610,18 @@
     "ctaLabel": "Responder la pregunta de hoy",
     "footer": "Recibes esto porque participas en la quiniela del Mundial. El quiz se reinicia cada día a medianoche UTC.",
     "unsubscribeLabel": "Cancelar los recordatorios del quiz diario"
+  },
+  "predictionEmail": {
+    "subject": "Los partidos de hoy — envía tus pronósticos",
+    "preheader": "Aún te faltan pronósticos antes del inicio. No te pierdas los puntos.",
+    "eyebrow": "Partidos de hoy",
+    "heading": "{name}, tienes pronósticos pendientes",
+    "headingNoName": "Tienes pronósticos pendientes",
+    "intro": "Estos partidos se juegan hoy y aún no los has pronosticado. Registra tus marcadores antes del inicio — una vez que empieza un partido, ya es tarde.",
+    "listLabel": "Pendientes de pronosticar",
+    "vs": "vs",
+    "ctaLabel": "Hacer mis pronósticos",
+    "footer": "Recibes esto porque participas en la quiniela del Mundial. Los pronósticos se cierran al inicio de cada partido.",
+    "unsubscribeLabel": "Cancelar los recordatorios de pronósticos diarios"
   }
 }
