@@ -16,6 +16,7 @@ import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { isConfirmedMatch } from "@/lib/match-utils";
 import { isStaleMatch } from "@/lib/result-sync/staleness";
 import { getManagedCompetition } from "@/lib/admin/managed-competition";
+import { ResendResultEmailsButton } from "@/components/admin/resend-emails-button";
 import {
   getStageLabel,
   hasGroupStage,
@@ -74,6 +75,31 @@ function parseSyncSummaryParams(params: {
   };
 }
 
+// The resendResultEmails action reports back per-match via query params (same
+// server-rendered pattern as syncNow). Returns the target match id plus either
+// an error code or the emailed/failed/skipped counts.
+function parseResendSummaryParams(params: {
+  [key: string]: string | string[] | undefined;
+}):
+  | { matchId: string; error: string | null; emailed: number; failed: number; skipped: number }
+  | null {
+  const matchId = params.resendMatchId;
+  if (typeof matchId !== "string" || matchId.length === 0) return null;
+  const error = typeof params.resendError === "string" ? params.resendError : null;
+  const count = (key: string) => {
+    const raw = params[key];
+    const n = typeof raw === "string" ? Number(raw) : NaN;
+    return Number.isInteger(n) && n >= 0 ? n : 0;
+  };
+  return {
+    matchId,
+    error,
+    emailed: count("resendEmailed"),
+    failed: count("resendFailed"),
+    skipped: count("resendSkipped"),
+  };
+}
+
 export default async function AdminMatchesPage({
   params,
   searchParams,
@@ -88,7 +114,9 @@ export default async function AdminMatchesPage({
   const t = await getTranslations("admin");
   const tStatus = await getTranslations("matchStatus");
 
-  const syncSummary = parseSyncSummaryParams(await searchParams);
+  const sp = await searchParams;
+  const syncSummary = parseSyncSummaryParams(sp);
+  const resendSummary = parseResendSummaryParams(sp);
   const now = new Date();
 
   // Everything on this page is scoped to the MANAGED competition (the admin's
@@ -291,6 +319,31 @@ export default async function AdminMatchesPage({
                       {t("forceRecompute")}
                     </Button>
                   </form>
+                  {m.status === "final" ? (
+                    <div className="space-y-1.5">
+                      <ResendResultEmailsButton
+                        matchId={m.id}
+                        locale={locale}
+                        label={t("resendEmails")}
+                        confirmText={t("resendConfirm")}
+                      />
+                      {resendSummary?.matchId === m.id ? (
+                        resendSummary.error === "notFinal" ? (
+                          <p className="text-xs text-destructive">
+                            {t("resendNotFinal")}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            {t("resendSummary", {
+                              emailed: resendSummary.emailed,
+                              failed: resendSummary.failed,
+                              skipped: resendSummary.skipped,
+                            })}
+                          </p>
+                        )
+                      ) : null}
+                    </div>
+                  ) : null}
                   <form action={deleteMatch} className="flex items-center gap-2">
                     <input type="hidden" name="id" value={m.id} />
                     <Button type="submit" size="sm" variant="destructive">

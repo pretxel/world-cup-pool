@@ -246,6 +246,9 @@ let scoredData: unknown[] = [];
 let ledgerData: unknown[] = [];
 let boardData: unknown[] = [];
 let resendApiKey: string | null = "re_test";
+// Records the column/value of every `.eq()` applied to the scores query so
+// tests can assert the force path scopes by match_id at the data layer.
+let scoredEqCalls: { col: string; val: unknown }[] = [];
 
 vi.mock("@/lib/env", () => ({
   env: {
@@ -271,11 +274,21 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminSupabaseClient: vi.fn(() => ({
     from: (table: string) => {
       if (table === "scores") {
-        return {
-          select: () => ({
-            eq: () => Promise.resolve({ data: scoredData, error: null }),
-          }),
+        // Chainable + thenable so both `.select().eq()` (cron) and
+        // `.select().eq().eq()` (force, scoped by match_id) resolve.
+        const chain: {
+          select: () => typeof chain;
+          eq: (col: string, val: unknown) => typeof chain;
+          then: (resolve: (v: { data: unknown[]; error: null }) => unknown) => unknown;
+        } = {
+          select: () => chain,
+          eq: (col: string, val: unknown) => {
+            scoredEqCalls.push({ col, val });
+            return chain;
+          },
+          then: (resolve) => resolve({ data: scoredData, error: null }),
         };
+        return chain;
       }
       if (table === "result_email_log") {
         return {
@@ -318,6 +331,7 @@ beforeEach(() => {
     },
   ];
   ledgerData = [];
+  scoredEqCalls = [];
   boardData = [
     {
       user_id: "u1",
@@ -385,5 +399,98 @@ describe("dispatchResultEmails", () => {
     const summary = await dispatchResultEmails();
     expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
     expect(batchSendMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// forceDispatchResultEmails — admin force path (ledger ignored, match-scoped)
+// ---------------------------------------------------------------------------
+
+describe("forceDispatchResultEmails", () => {
+  it("re-emails pairs that already have a ledger row (ledger ignored)", async () => {
+    // The same pair the cron path would suppress.
+    ledgerData = [{ match_id: "m1", user_id: "u1" }];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { forceDispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    const summary = await forceDispatchResultEmails("m1");
+    expect(summary.emailed).toBe(1);
+    expect(batchSendMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("scopes the scored query to the target match_id at the data layer", async () => {
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { forceDispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    await forceDispatchResultEmails("m1");
+    expect(scoredEqCalls).toContainEqual({ col: "match_id", val: "m1" });
+    expect(scoredEqCalls).toContainEqual({ col: "matches.status", val: "final" });
+  });
+
+  it("re-stamps the ledger so a later cron run does not re-email the pair", async () => {
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const mod = await import("@/lib/notifications/result-emails");
+
+    // Force send: ledger starts empty for this match, pair is emailed + stamped.
+    await mod.forceDispatchResultEmails("m1");
+    expect(upsertMock).toHaveBeenCalledWith(
+      [{ match_id: "m1", user_id: "u1" }],
+      expect.objectContaining({ onConflict: "match_id,user_id", ignoreDuplicates: true }),
+    );
+
+    // Simulate the stamp landing, then the cron sees the pair as already sent.
+    ledgerData = [{ match_id: "m1", user_id: "u1" }];
+    batchSendMock.mockClear();
+    const cron = await mod.dispatchResultEmails();
+    expect(cron).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("no-ops without throwing when RESEND_API_KEY is unset", async () => {
+    resendApiKey = null;
+    const { forceDispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    const summary = await forceDispatchResultEmails("m1");
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("counts an unresolvable email as skipped, not failed", async () => {
+    getUserByIdMock.mockResolvedValue({ data: { user: null }, error: null });
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { forceDispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    const summary = await forceDispatchResultEmails("m1");
+    expect(summary.skipped).toBe(1);
+    expect(summary.emailed).toBe(0);
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("batches force recipients at the ≤100 Resend limit", async () => {
+    // 150 scored players on the one match → two batches (100 + 50).
+    scoredData = Array.from({ length: 150 }, (_, i) => ({
+      user_id: `u${i}`,
+      match_id: "m1",
+      points: 3,
+      hit_type: "winner",
+      matches: {
+        home_team: "Mexico",
+        away_team: "South Africa",
+        home_score: 2,
+        away_score: 1,
+        status: "final",
+      },
+    }));
+    boardData = scoredData.map((r) => ({
+      user_id: (r as { user_id: string }).user_id,
+      rank: 1,
+      total_points: 10,
+      exact_hits: 0,
+      winner_gd_hits: 0,
+      display_name: "Player",
+    }));
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { forceDispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    const summary = await forceDispatchResultEmails("m1");
+    expect(summary.emailed).toBe(150);
+    expect(batchSendMock).toHaveBeenCalledTimes(2);
+    expect(batchSendMock.mock.calls[0][0]).toHaveLength(100);
+    expect(batchSendMock.mock.calls[1][0]).toHaveLength(50);
   });
 });
