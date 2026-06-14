@@ -610,5 +610,18 @@
     "ctaLabel": "Answer today's question",
     "footer": "You're getting this because you're playing the World Cup pool. The quiz resets every day at midnight UTC.",
     "unsubscribeLabel": "Unsubscribe from daily quiz reminders"
+  },
+  "predictionEmail": {
+    "subject": "Today's matches — get your predictions in",
+    "preheader": "You still have picks to make before kickoff. Don't miss out on points.",
+    "eyebrow": "Today's matches",
+    "heading": "{name}, you've got picks to make",
+    "headingNoName": "You've got picks to make",
+    "intro": "These matches kick off today and you haven't predicted them yet. Lock in your scores before kickoff — once a match starts, it's too late.",
+    "listLabel": "Still to predict",
+    "vs": "vs",
+    "ctaLabel": "Make your predictions",
+    "footer": "You're getting this because you're playing the World Cup pool. Predictions lock at each match's kickoff.",
+    "unsubscribeLabel": "Unsubscribe from daily prediction reminders"
   }
 }

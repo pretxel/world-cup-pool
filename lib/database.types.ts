@@ -397,12 +397,39 @@ export type Database = {
           },
         ]
       }
+      prediction_reminder_log: {
+        Row: {
+          reminder_date: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          reminder_date: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          reminder_date?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_reminder_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           display_name: string | null
           id: string
           is_admin: boolean
+          prediction_reminder_opt_out: boolean
           quiz_reminder_opt_out: boolean
           unsubscribe_token: string
           updated_at: string
@@ -412,6 +439,7 @@ export type Database = {
           display_name?: string | null
           id: string
           is_admin?: boolean
+          prediction_reminder_opt_out?: boolean
           quiz_reminder_opt_out?: boolean
           unsubscribe_token?: string
           updated_at?: string
@@ -421,6 +449,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_admin?: boolean
+          prediction_reminder_opt_out?: boolean
           quiz_reminder_opt_out?: boolean
           unsubscribe_token?: string
           updated_at?: string
