@@ -189,7 +189,18 @@ interface PreparedMessage {
 // is no active question for the current UTC day. Per-recipient failures are
 // logged and counted, never aborting the rest; ledger rows are written only for
 // messages Resend accepted, so failures retry next run.
-export async function dispatchQuizReminders(fromName?: string): Promise<DispatchSummary> {
+//
+// `opts.force` (admin re-send path) bypasses the at-most-once ledger exclusion:
+// it re-emails opted-in, still-unanswered users even if they were already
+// reminded today. Every other rule still holds — opt-out and answered-today
+// filters, the no-active-question / no-API-key no-ops, batching, fault
+// isolation, and the ledger upsert (which stays idempotent so the cron never
+// double-sends afterward).
+export async function dispatchQuizReminders(
+  fromName?: string,
+  opts?: { force?: boolean },
+): Promise<DispatchSummary> {
+  const force = opts?.force ?? false;
   if (!env.resendApiKey) {
     console.log("[quiz-reminders] RESEND_API_KEY unset — skipping dispatch");
     return { ...ZERO };
@@ -215,11 +226,14 @@ export async function dispatchQuizReminders(fromName?: string): Promise<Dispatch
 
   // Opted-in users, the users who already answered, and the users already
   // reminded — each loaded in full (paginated), then combined into the pending
-  // set. Concurrent: independent reads.
+  // set. Concurrent: independent reads. On the force path the "already reminded"
+  // set is empty so the ledger no longer excludes anyone.
   const [profiles, answeredUserIds, sentUserIds] = await Promise.all([
     loadOptedInProfiles(admin),
     loadQuestionUserIds(admin, "quiz_answers", questionId),
-    loadQuestionUserIds(admin, "quiz_reminder_log", questionId),
+    force
+      ? Promise.resolve<string[]>([])
+      : loadQuestionUserIds(admin, "quiz_reminder_log", questionId),
   ]);
   const pending = computePendingReminders(profiles, answeredUserIds, sentUserIds);
   if (pending.length === 0) {

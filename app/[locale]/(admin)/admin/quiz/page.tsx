@@ -5,8 +5,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { saveQuestion, deleteQuestion } from "./actions";
+import { ResendQuizReminderButton } from "@/components/admin/resend-quiz-reminder-button";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { localizeQuizQuestion } from "@/lib/quiz";
+
+// The resendQuizReminder action reports back via query params (server-rendered
+// page, no client state). `resendQuiz=1` marks a completed run; `noQuestion`
+// distinguishes a true no-op from a run that emailed zero pending recipients.
+function parseQuizResendParams(params: {
+  [key: string]: string | string[] | undefined;
+}): { noQuestion: boolean; emailed: number; failed: number; skipped: number } | null {
+  if (params.resendQuiz !== "1") return null;
+  const count = (key: string) => {
+    const raw = params[key];
+    const n = typeof raw === "string" ? Number(raw) : NaN;
+    return Number.isInteger(n) && n >= 0 ? n : 0;
+  };
+  return {
+    noQuestion: params.resendQuizNoQuestion === "1",
+    emailed: count("resendQuizEmailed"),
+    failed: count("resendQuizFailed"),
+    skipped: count("resendQuizSkipped"),
+  };
+}
 
 // Translatable non-English locales, paired with their field-label language name.
 const TRANSLATION_LOCALES = [
@@ -26,14 +47,17 @@ export async function generateMetadata({
 
 export default async function AdminQuizPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
 
   const t = await getTranslations("quiz");
+  const resend = parseQuizResendParams(await searchParams);
 
   const supabase = await createServerSupabaseClient();
   // Admin RLS (quiz_questions_admin_all) lets an admin read the base table,
@@ -55,6 +79,37 @@ export default async function AdminQuizPage({
           Note: the daily quiz applies to all competitions (not competition-scoped).
         </p>
       </header>
+
+      <section className="mb-8 rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              {t("resendTitle")}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("resendLede")}</p>
+          </div>
+          <ResendQuizReminderButton
+            locale={locale}
+            label={t("resendButton")}
+            confirmText={t("resendConfirm")}
+          />
+        </div>
+        {resend ? (
+          resend.noQuestion ? (
+            <div className="mt-3 rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+              {t("resendNoQuestion")}
+            </div>
+          ) : (
+            <div className="mt-3 rounded-md border bg-muted/30 p-3 text-sm">
+              {t("resendSummary", {
+                emailed: resend.emailed,
+                failed: resend.failed,
+                skipped: resend.skipped,
+              })}
+            </div>
+          )
+        ) : null}
+      </section>
 
       <form action={saveQuestion} className="mb-10 flex flex-col gap-4 rounded-xl border border-border bg-card p-5">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">

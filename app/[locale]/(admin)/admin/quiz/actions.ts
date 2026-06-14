@@ -2,10 +2,18 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { dispatchQuizReminders } from "@/lib/notifications/quiz-reminder-emails";
+import { getActiveBranding } from "@/lib/competition";
 import type { QuizTranslations } from "@/lib/quiz";
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from "@/lib/i18n";
+import {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  isLocale,
+  localePath,
+} from "@/lib/i18n";
 
 // Non-default locales that can carry a quiz translation. The default locale is
 // canonical and lives in the base prompt/options columns. Derived from
@@ -122,6 +130,48 @@ export async function saveQuestion(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidateQuiz();
+}
+
+// Admin force re-send of the day's quiz reminder. Unlike the cron, this
+// bypasses the at-most-once ledger so it re-emails opted-in, still-unanswered
+// users who were already reminded today (opted-out / answered users stay
+// excluded). The dispatch summary travels back via query params after the
+// redirect, since the page is server-rendered. A missing active question is
+// surfaced explicitly so the UI can tell a true no-op apart from "0 pending".
+export async function resendQuizReminder(formData: FormData): Promise<void> {
+  await assertAdmin();
+
+  const rawLocale = formData.get("locale");
+  const locale =
+    typeof rawLocale === "string" && isLocale(rawLocale)
+      ? rawLocale
+      : DEFAULT_LOCALE;
+
+  // No active question for the current UTC day → nothing to send. Re-check here
+  // (the dispatcher would also no-op) so the UI can show a distinct message.
+  const admin = createAdminSupabaseClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: question, error } = await admin
+    .from("quiz_questions")
+    .select("id")
+    .eq("active_on", today)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+
+  if (!question) {
+    redirect(localePath(locale, "/admin/quiz?resendQuiz=1&resendQuizNoQuestion=1"));
+  }
+
+  const { emailFromName } = await getActiveBranding();
+  const summary = await dispatchQuizReminders(emailFromName, { force: true });
+
+  const params = new URLSearchParams({
+    resendQuiz: "1",
+    resendQuizEmailed: String(summary.emailed),
+    resendQuizFailed: String(summary.failed),
+    resendQuizSkipped: String(summary.skipped),
+  });
+  redirect(localePath(locale, `/admin/quiz?${params.toString()}`));
 }
 
 export async function deleteQuestion(formData: FormData) {

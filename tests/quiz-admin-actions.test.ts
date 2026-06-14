@@ -7,6 +7,20 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+// actions.ts now also exports resendQuizReminder, whose import chain
+// (quiz-reminder-emails → @/lib/env, @/lib/competition) reads env at module
+// load; stub it so this suite stays independent of real env vars.
+vi.mock("@/lib/env", () => ({
+  env: {
+    supabaseUrl: "https://example.supabase.co",
+    supabaseAnonKey: "anon",
+    siteUrl: "http://localhost:3000",
+    resendApiKey: null,
+    emailFrom: "World Cup Pools <test@example.com>",
+    cronSecret: "test-secret",
+  },
+}));
+
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn(async () => ({
     auth: {

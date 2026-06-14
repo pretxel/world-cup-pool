@@ -321,3 +321,43 @@ describe("dispatchQuizReminders", () => {
     expect(batchSendMock).toHaveBeenCalledTimes(15);
   });
 });
+
+describe("dispatchQuizReminders force re-send", () => {
+  it("re-emails an already-reminded but unanswered user and still upserts the ledger", async () => {
+    sentData = [{ user_id: "u1" }];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { dispatchQuizReminders } = await import("@/lib/notifications/quiz-reminder-emails");
+    const summary = await dispatchQuizReminders(undefined, { force: true });
+    expect(summary.emailed).toBe(1);
+    expect(batchSendMock).toHaveBeenCalledTimes(1);
+    expect(upsertMock).toHaveBeenCalledWith(
+      [{ user_id: "u1", question_id: "q1" }],
+      expect.objectContaining({ onConflict: "user_id,question_id", ignoreDuplicates: true }),
+    );
+  });
+
+  it("without force, still excludes an already-reminded user (regression)", async () => {
+    sentData = [{ user_id: "u1" }];
+    const { dispatchQuizReminders } = await import("@/lib/notifications/quiz-reminder-emails");
+    const summary = await dispatchQuizReminders();
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("still excludes a user who already answered, even with force", async () => {
+    answeredData = [{ user_id: "u1" }];
+    sentData = [{ user_id: "u1" }];
+    const { dispatchQuizReminders } = await import("@/lib/notifications/quiz-reminder-emails");
+    const summary = await dispatchQuizReminders(undefined, { force: true });
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("no-ops with force when there is no active question", async () => {
+    questionData = null;
+    const { dispatchQuizReminders } = await import("@/lib/notifications/quiz-reminder-emails");
+    const summary = await dispatchQuizReminders(undefined, { force: true });
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+});
