@@ -58,6 +58,7 @@ export default async function LeaderboardPage({
   const myRow = user ? rows.find((r) => r.user_id === user.id) : undefined;
   const players = rows.length;
   const leader = rows[0];
+  const topRows = rows.slice(0, 10);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
@@ -116,7 +117,7 @@ export default async function LeaderboardPage({
         </div>
       ) : (
         <LeaderboardTable
-          rows={rows}
+          rows={topRows}
           currentUserId={user?.id}
           labels={{
             rank: t("headerRank"),
