@@ -234,7 +234,13 @@
     "langFr": "Francés",
     "badgeEs": "ES",
     "badgeFr": "FR",
-    "badgeUntranslated": "Solo EN"
+    "badgeUntranslated": "Solo EN",
+    "resendTitle": "Correo recordatorio del quiz",
+    "resendLede": "Reenvía ahora el recordatorio del quiz de hoy a los jugadores suscritos que aún no han respondido, incluso a quienes ya recibieron el recordatorio hoy. En condiciones normales se envía una vez al día de forma automática.",
+    "resendButton": "Reenviar recordatorio del quiz",
+    "resendConfirm": "¿Reenviar el recordatorio del quiz de hoy? Los jugadores suscritos que aún no han respondido lo recibirán de nuevo, aunque ya se les haya recordado hoy.",
+    "resendSummary": "Reenvío: enviados {emailed}, fallidos {failed}, omitidos {skipped}.",
+    "resendNoQuestion": "No hay pregunta de quiz activa para hoy: no se envió nada."
   },
   "matchDetail": {
     "metaTitleNotFound": "Partido no encontrado",

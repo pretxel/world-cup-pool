@@ -234,7 +234,13 @@
     "langFr": "French",
     "badgeEs": "ES",
     "badgeFr": "FR",
-    "badgeUntranslated": "EN only"
+    "badgeUntranslated": "EN only",
+    "resendTitle": "Quiz reminder email",
+    "resendLede": "Re-send today's quiz reminder now to opted-in players who haven't answered yet — even those already reminded today. It otherwise goes out once a day automatically.",
+    "resendButton": "Resend quiz reminder",
+    "resendConfirm": "Resend today's quiz reminder? Opted-in players who haven't answered yet will get it again, even if they were already reminded today.",
+    "resendSummary": "Resend: emailed {emailed}, failed {failed}, skipped {skipped}.",
+    "resendNoQuestion": "No active quiz question for today — nothing was sent."
   },
   "matchDetail": {
     "metaTitleNotFound": "Match not found",

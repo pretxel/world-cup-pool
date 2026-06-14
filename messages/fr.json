@@ -234,7 +234,13 @@
     "langFr": "Français",
     "badgeEs": "ES",
     "badgeFr": "FR",
-    "badgeUntranslated": "EN seulement"
+    "badgeUntranslated": "EN seulement",
+    "resendTitle": "E-mail de rappel du quiz",
+    "resendLede": "Renvoyer maintenant le rappel du quiz du jour aux joueurs abonnés qui n'ont pas encore répondu, même ceux déjà relancés aujourd'hui. Sinon, il part une fois par jour automatiquement.",
+    "resendButton": "Renvoyer le rappel du quiz",
+    "resendConfirm": "Renvoyer le rappel du quiz du jour ? Les joueurs abonnés qui n'ont pas encore répondu le recevront à nouveau, même s'ils ont déjà été relancés aujourd'hui.",
+    "resendSummary": "Renvoi : envoyés {emailed}, échoués {failed}, ignorés {skipped}.",
+    "resendNoQuestion": "Aucune question de quiz active aujourd'hui — rien n'a été envoyé."
   },
   "matchDetail": {
     "metaTitleNotFound": "Match introuvable",
