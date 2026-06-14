@@ -1,0 +1,75 @@
+<!--
+  Branded magic-link email for Supabase Auth (GoTrue) hosted template.
+  Mirrors the app + the Resend renderer (lib/notifications/magic-link-email-template.ts):
+  pitch-green header, cream body, WC·26·POOL wordmark, mono labels. Email-safe:
+  table layout, inline styles, fixed hex (no oklch / var() / stylesheets).
+  {{ .ConfirmationURL }} is the only GoTrue substitution (the verify link).
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Your sign-in link</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#FAF9F4;">
+    <span style="display:none;max-height:0;overflow:hidden;opacity:0;">Your secure sign-in link for the World Cup pool.</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF9F4;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border:1px solid #E5E2D7;border-radius:16px;overflow:hidden;background-color:#FAF9F4;">
+            <!-- header -->
+            <tr>
+              <td style="background-color:#1B7A4D;padding:22px 28px;">
+                <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#FAF9F4;">WC</span>
+                <span style="display:inline-block;margin:0 6px;padding:2px 8px;border-radius:7px;background-color:#FAF9F4;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:16px;font-weight:800;letter-spacing:-1px;color:#1B7A4D;vertical-align:middle;">26</span>
+                <span style="font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:600;letter-spacing:0.3em;color:#FAF9F4;vertical-align:middle;">POOL</span>
+              </td>
+            </tr>
+            <!-- intro -->
+            <tr>
+              <td style="padding:28px 28px 8px 28px;">
+                <span style="font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#6B7280;">Secure sign-in</span>
+                <h1 style="margin:6px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:24px;line-height:1.2;font-weight:700;color:#1B2330;">Sign in to your pool</h1>
+                <p style="margin:8px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#6B7280;">Tap the button below to sign in &mdash; no password needed.</p>
+              </td>
+            </tr>
+            <!-- cta -->
+            <tr>
+              <td style="padding:20px 28px 8px 28px;text-align:center;">
+                <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:13px 26px;border-radius:8px;background-color:#1B7A4D;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#FAF9F4;text-decoration:none;">Sign in</a>
+              </td>
+            </tr>
+            <!-- fallback link -->
+            <tr>
+              <td style="padding:14px 28px 4px 28px;">
+                <p style="margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;">Button not working? Copy and paste this link into your browser:</p>
+                <p style="margin:0;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;word-break:break-all;color:#1B7A4D;">
+                  <a href="{{ .ConfirmationURL }}" style="color:#1B7A4D;text-decoration:underline;">{{ .ConfirmationURL }}</a>
+                </p>
+              </td>
+            </tr>
+            <!-- notice -->
+            <tr>
+              <td style="padding:16px 28px 4px 28px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E5E2D7;border-radius:10px;background-color:#F0EEE6;">
+                  <tr>
+                    <td style="padding:12px 14px;">
+                      <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;">This link expires in 1 hour and can be used once. If you didn't request it, you can safely ignore this email.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- footer -->
+            <tr>
+              <td style="padding:18px 28px 28px 28px;border-top:1px solid #E5E2D7;">
+                <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#6B7280;">You're receiving this because someone entered this address to sign in to the World Cup pool.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

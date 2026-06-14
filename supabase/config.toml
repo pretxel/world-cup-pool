@@ -241,6 +241,14 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Branded magic-link sign-in email. Sent by Supabase's own mailer (GoTrue),
+# styled to match the app. {{ .ConfirmationURL }} is substituted with the verify
+# link. Apply to a linked cloud project with `supabase config push`, or paste
+# the HTML into Dashboard → Authentication → Email Templates → Magic Link.
+[auth.email.template.magic_link]
+subject = "Your sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
@@ -273,13 +281,17 @@ max_frequency = "5s"
 # Force log out if the user has been inactive longer than the specified duration.
 # inactivity_timeout = "8h"
 
-# Route all auth emails (magic link, etc.) through our app's Send Email Hook,
-# which renders the branded template and delivers via Resend instead of SMTP.
-# uri must be reachable from the Auth container — use host.docker.internal for
-# the local Next.js dev server. The secret signs hook requests (Standard
-# Webhooks) and must match SEND_EMAIL_HOOK_SECRET used by the route handler.
+# OPTIONAL alternative delivery path: route auth emails through our app's Send
+# Email Hook, which renders the branded template and sends via Resend instead of
+# Supabase's mailer. DISABLED by default — the active path is the branded
+# [auth.email.template.magic_link] above, sent by Supabase's own mailer (no
+# extra infra). Enabling this needs: enabled = true, a PUBLIC uri reachable from
+# the Auth service (use http://host.docker.internal:3000/... only for the local
+# dev server), and SEND_EMAIL_HOOK_SECRET set. Do NOT `config push` this enabled
+# with the localhost uri — it would point cloud Auth at an unreachable URL and
+# break every auth email.
 [auth.hook.send_email]
-enabled = true
+enabled = false
 uri = "http://host.docker.internal:3000/api/auth/send-email"
 secrets = "env(SEND_EMAIL_HOOK_SECRET)"
 
