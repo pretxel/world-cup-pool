@@ -732,7 +732,47 @@
       "miss": "Fallo"
     },
     "ctaLabel": "Ver tabla completa",
-    "footer": "Recibes esto porque acaba de terminar un partido que pronosticaste. Los puntos se actualizan automáticamente con cada resultado."
+    "footer": "Recibes esto porque acaba de terminar un partido que pronosticaste. Los puntos se actualizan automáticamente con cada resultado.",
+    "magicLink": {
+      "preheader": "Tu enlace seguro para entrar a la quiniela del Mundial.",
+      "eyebrow": "Inicio de sesión seguro",
+      "fallbackLabel": "¿El botón no funciona? Copia y pega este enlace en tu navegador:",
+      "expiryNote": "Este enlace caduca en 1 hora y se puede usar una sola vez.",
+      "ignoreNote": "Si no lo solicitaste, puedes ignorar este correo.",
+      "footer": "Recibes este correo porque alguien introdujo esta dirección para entrar a la quiniela del Mundial.",
+      "actions": {
+        "magiclink": {
+          "subject": "Tu enlace de acceso",
+          "heading": "Entra a tu quiniela",
+          "intro": "Toca el botón de abajo para iniciar sesión, sin contraseña.",
+          "ctaLabel": "Iniciar sesión"
+        },
+        "signup": {
+          "subject": "Confirma tu correo",
+          "heading": "Confirma tu correo",
+          "intro": "Confirma esta dirección para terminar de crear tu cuenta.",
+          "ctaLabel": "Confirmar correo"
+        },
+        "recovery": {
+          "subject": "Restablece tu contraseña",
+          "heading": "Restablece tu contraseña",
+          "intro": "Toca el botón de abajo para elegir una nueva contraseña.",
+          "ctaLabel": "Restablecer contraseña"
+        },
+        "invite": {
+          "subject": "Tienes una invitación a la quiniela",
+          "heading": "Te invitaron a la quiniela",
+          "intro": "Toca el botón de abajo para aceptar la invitación y unirte.",
+          "ctaLabel": "Aceptar invitación"
+        },
+        "email_change": {
+          "subject": "Confirma tu nuevo correo",
+          "heading": "Confirma tu nuevo correo",
+          "intro": "Toca el botón de abajo para confirmar tu nueva dirección de correo.",
+          "ctaLabel": "Confirmar correo"
+        }
+      }
+    }
   },
   "quizEmail": {
     "subject": "El quiz de hoy ya está — mantén tu racha",

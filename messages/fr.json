@@ -732,7 +732,47 @@
       "miss": "Manqué"
     },
     "ctaLabel": "Voir le classement complet",
-    "footer": "Vous recevez ceci car un match que vous avez pronostiqué vient de se terminer. Les points se mettent à jour automatiquement à chaque résultat."
+    "footer": "Vous recevez ceci car un match que vous avez pronostiqué vient de se terminer. Les points se mettent à jour automatiquement à chaque résultat.",
+    "magicLink": {
+      "preheader": "Votre lien de connexion sécurisé pour le pool de la Coupe du monde.",
+      "eyebrow": "Connexion sécurisée",
+      "fallbackLabel": "Le bouton ne fonctionne pas ? Copiez-collez ce lien dans votre navigateur :",
+      "expiryNote": "Ce lien expire dans 1 heure et ne peut être utilisé qu'une seule fois.",
+      "ignoreNote": "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.",
+      "footer": "Vous recevez cet e-mail car cette adresse a été saisie pour se connecter au pool de la Coupe du monde.",
+      "actions": {
+        "magiclink": {
+          "subject": "Votre lien de connexion",
+          "heading": "Connectez-vous à votre pool",
+          "intro": "Appuyez sur le bouton ci-dessous pour vous connecter, sans mot de passe.",
+          "ctaLabel": "Se connecter"
+        },
+        "signup": {
+          "subject": "Confirmez votre e-mail",
+          "heading": "Confirmez votre e-mail",
+          "intro": "Confirmez cette adresse pour terminer la création de votre compte.",
+          "ctaLabel": "Confirmer l'e-mail"
+        },
+        "recovery": {
+          "subject": "Réinitialisez votre mot de passe",
+          "heading": "Réinitialisez votre mot de passe",
+          "intro": "Appuyez sur le bouton ci-dessous pour choisir un nouveau mot de passe.",
+          "ctaLabel": "Réinitialiser"
+        },
+        "invite": {
+          "subject": "Vous êtes invité au pool",
+          "heading": "Vous êtes invité au pool",
+          "intro": "Appuyez sur le bouton ci-dessous pour accepter l'invitation et nous rejoindre.",
+          "ctaLabel": "Accepter l'invitation"
+        },
+        "email_change": {
+          "subject": "Confirmez votre nouvel e-mail",
+          "heading": "Confirmez votre nouvel e-mail",
+          "intro": "Appuyez sur le bouton ci-dessous pour confirmer votre nouvelle adresse e-mail.",
+          "ctaLabel": "Confirmer l'e-mail"
+        }
+      }
+    }
   },
   "quizEmail": {
     "subject": "Le quiz du jour est là — gardez votre série",
