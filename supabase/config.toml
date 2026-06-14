@@ -273,6 +273,16 @@ max_frequency = "5s"
 # Force log out if the user has been inactive longer than the specified duration.
 # inactivity_timeout = "8h"
 
+# Route all auth emails (magic link, etc.) through our app's Send Email Hook,
+# which renders the branded template and delivers via Resend instead of SMTP.
+# uri must be reachable from the Auth container — use host.docker.internal for
+# the local Next.js dev server. The secret signs hook requests (Standard
+# Webhooks) and must match SEND_EMAIL_HOOK_SECRET used by the route handler.
+[auth.hook.send_email]
+enabled = true
+uri = "http://host.docker.internal:3000/api/auth/send-email"
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"
+
 # This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
 # [auth.hook.before_user_created]
 # enabled = true

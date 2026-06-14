@@ -44,6 +44,11 @@ export const env = {
   // production; the default is dev-only.
   resendApiKey: process.env.RESEND_API_KEY ?? null,
   emailFrom: process.env.EMAIL_FROM ?? "World Cup Pools <onboarding@resend.dev>",
+  // Shared secret for the Supabase Auth "Send Email Hook" (Standard Webhooks
+  // format: "v1,whsec_<base64>"). The send-email route verifies every hook
+  // request against this. Nullable so the route returns 401 (not a crash) when
+  // unset, and so cold/dev envs don't fail the build.
+  sendEmailHookSecret: process.env.SEND_EMAIL_HOOK_SECRET ?? null,
   // Optional — when set, emits <meta property="fb:app_id"> so the page can be
   // tied to a Facebook app (Insights, Domain Insights, Comments moderation).
   facebookAppId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ?? null,

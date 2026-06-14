@@ -206,6 +206,13 @@ services:
       GOTRUE_MAILER_URLPATHS_RECOVERY: ${MAILER_URLPATHS_RECOVERY}
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${MAILER_URLPATHS_EMAIL_CHANGE}
 
+      # Send Email Hook: route auth emails to the app, which renders the branded
+      # template and sends via Resend. URI must be the app's public origin; the
+      # secret signs requests (must match the app's SEND_EMAIL_HOOK_SECRET).
+      GOTRUE_HOOK_SEND_EMAIL_ENABLED: ${GOTRUE_HOOK_SEND_EMAIL_ENABLED}
+      GOTRUE_HOOK_SEND_EMAIL_URI: ${GOTRUE_HOOK_SEND_EMAIL_URI}
+      GOTRUE_HOOK_SEND_EMAIL_SECRETS: ${GOTRUE_HOOK_SEND_EMAIL_SECRETS}
+
       GOTRUE_EXTERNAL_PHONE_ENABLED: ${ENABLE_PHONE_SIGNUP}
       GOTRUE_SMS_AUTOCONFIRM: ${ENABLE_PHONE_AUTOCONFIRM}
 

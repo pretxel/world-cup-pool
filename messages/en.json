@@ -732,7 +732,47 @@
       "miss": "Miss"
     },
     "ctaLabel": "View full leaderboard",
-    "footer": "You're getting this because a match you predicted just finished. Scores update automatically as results come in."
+    "footer": "You're getting this because a match you predicted just finished. Scores update automatically as results come in.",
+    "magicLink": {
+      "preheader": "Your secure sign-in link for the World Cup pool.",
+      "eyebrow": "Secure sign-in",
+      "fallbackLabel": "Button not working? Copy and paste this link into your browser:",
+      "expiryNote": "This link expires in 1 hour and can be used once.",
+      "ignoreNote": "If you didn't request it, you can safely ignore this email.",
+      "footer": "You're receiving this because someone entered this address to sign in to the World Cup pool.",
+      "actions": {
+        "magiclink": {
+          "subject": "Your sign-in link",
+          "heading": "Sign in to your pool",
+          "intro": "Tap the button below to sign in — no password needed.",
+          "ctaLabel": "Sign in"
+        },
+        "signup": {
+          "subject": "Confirm your email",
+          "heading": "Confirm your email",
+          "intro": "Confirm this address to finish setting up your pool account.",
+          "ctaLabel": "Confirm email"
+        },
+        "recovery": {
+          "subject": "Reset your password",
+          "heading": "Reset your password",
+          "intro": "Tap the button below to choose a new password.",
+          "ctaLabel": "Reset password"
+        },
+        "invite": {
+          "subject": "You're invited to the pool",
+          "heading": "You're invited to the pool",
+          "intro": "Tap the button below to accept your invitation and join.",
+          "ctaLabel": "Accept invitation"
+        },
+        "email_change": {
+          "subject": "Confirm your new email",
+          "heading": "Confirm your new email",
+          "intro": "Tap the button below to confirm your new email address.",
+          "ctaLabel": "Confirm email"
+        }
+      }
+    }
   },
   "quizEmail": {
     "subject": "Today's quiz is live — keep your streak going",
