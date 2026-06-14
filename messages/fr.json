@@ -301,6 +301,26 @@
     "cta": "Faites votre prono",
     "ogAlt": "Prono partagé Coupe du Monde 2026 : {home} {h}–{a} {away}"
   },
+  "shareQuiz":   {
+    "heading": "Partagez votre série",
+    "shareText": "Je suis #{rank} sur {count} au quiz quotidien de la Coupe du Monde 2026 — {points} pts et une série de {streak} jours. Essaie de me rattraper.",
+    "shareOnX": "Partager sur X",
+    "shareOnFacebook": "Partager sur Facebook",
+    "shareNative": "Partager…",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "pageEyebrow": "Série partagée",
+    "pageHeading": "Quiz quotidien Coupe du Monde 2026",
+    "pageTitle": "Série de {streak} jours, {points} pts — Pool Coupe du Monde 2026",
+    "pageDescription": "{name} tient une série de {streak} jours au quiz quotidien de la Coupe du Monde 2026 — {points} pts, classé #{rank} sur {count}. Répondez à la question du jour et lancez votre propre série.",
+    "streakLabel": "Série",
+    "pointsLabel": "Points",
+    "rankLabel": "Rang",
+    "answeredLabel": "Répondues",
+    "statPlayers": "sur {count, plural, one {# joueur} other {# joueurs}}",
+    "cta": "Jouer au quiz du jour",
+    "ogAlt": "Quiz quotidien Coupe du Monde 2026 : série de {streak} jours, {points} points, rang #{rank}"
+  },
   "shareRank": {
     "heading": "Partagez votre classement",
     "shareText": "Je suis #{rank} sur {count} dans le Pool Coupe du Monde 2026 — {points} pts. Essaie de me rattraper.",

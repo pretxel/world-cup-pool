@@ -301,6 +301,26 @@
     "cta": "Make your own pick",
     "ogAlt": "Shared World Cup 2026 pick: {home} {h}–{a} {away}"
   },
+  "shareQuiz":   {
+    "heading": "Share your quiz streak",
+    "shareText": "I'm #{rank} of {count} in the World Cup 2026 daily quiz — {points} pts and a {streak}-day streak. Catch me if you can.",
+    "shareOnX": "Share on X",
+    "shareOnFacebook": "Share on Facebook",
+    "shareNative": "Share…",
+    "copyLink": "Copy link",
+    "copied": "Link copied",
+    "pageEyebrow": "Shared quiz streak",
+    "pageHeading": "World Cup 2026 daily quiz",
+    "pageTitle": "{streak}-day quiz streak, {points} pts — World Cup 2026 Pool",
+    "pageDescription": "{name} is on a {streak}-day streak in the World Cup 2026 daily quiz — {points} pts, ranked #{rank} of {count}. Answer today's question and start your own streak.",
+    "streakLabel": "Streak",
+    "pointsLabel": "Points",
+    "rankLabel": "Rank",
+    "answeredLabel": "Answered",
+    "statPlayers": "of {count, plural, one {# player} other {# players}}",
+    "cta": "Play today's quiz",
+    "ogAlt": "World Cup 2026 daily quiz: {streak}-day streak, {points} points, rank #{rank}"
+  },
   "shareRank": {
     "heading": "Share your standing",
     "shareText": "I'm #{rank} of {count} in the World Cup 2026 Pool — {points} pts. Catch me if you can.",

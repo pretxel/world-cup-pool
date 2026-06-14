@@ -545,6 +545,25 @@ export type Database = {
           },
         ]
       }
+      v_quiz_standing: {
+        Row: {
+          display_name: string | null
+          rank: number | null
+          streak: number | null
+          total_answered: number | null
+          total_points: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       answer_quiz: {
