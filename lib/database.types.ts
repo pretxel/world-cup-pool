@@ -403,6 +403,8 @@ export type Database = {
           display_name: string | null
           id: string
           is_admin: boolean
+          quiz_reminder_opt_out: boolean
+          unsubscribe_token: string
           updated_at: string
         }
         Insert: {
@@ -410,6 +412,8 @@ export type Database = {
           display_name?: string | null
           id: string
           is_admin?: boolean
+          quiz_reminder_opt_out?: boolean
+          unsubscribe_token?: string
           updated_at?: string
         }
         Update: {
@@ -417,9 +421,44 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_admin?: boolean
+          quiz_reminder_opt_out?: boolean
+          unsubscribe_token?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      quiz_reminder_log: {
+        Row: {
+          question_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          question_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          question_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_reminder_log_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_reminder_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       result_email_log: {
         Row: {

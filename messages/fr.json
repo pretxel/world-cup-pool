@@ -301,7 +301,7 @@
     "cta": "Faites votre prono",
     "ogAlt": "Prono partagé Coupe du Monde 2026 : {home} {h}–{a} {away}"
   },
-  "shareQuiz":   {
+  "shareQuiz": {
     "heading": "Partagez votre série",
     "shareText": "Je suis #{rank} sur {count} au quiz quotidien de la Coupe du Monde 2026 — {points} pts et une série de {streak} jours. Essaie de me rattraper.",
     "shareOnX": "Partager sur X",
@@ -598,5 +598,17 @@
     },
     "ctaLabel": "Voir le classement complet",
     "footer": "Vous recevez ceci car un match que vous avez pronostiqué vient de se terminer. Les points se mettent à jour automatiquement à chaque résultat."
+  },
+  "quizEmail": {
+    "subject": "Le quiz du jour est là — gardez votre série",
+    "preheader": "Une question, dix secondes. Ne cassez pas votre série.",
+    "eyebrow": "Quiz quotidien",
+    "heading": "{name}, la question du jour est disponible",
+    "headingNoName": "La question du jour est disponible",
+    "intro": "Une nouvelle question de quiz sur la Coupe du monde vous attend. Répondez avant la fin de la journée pour gagner des points et garder votre série.",
+    "streakLine": "Vous êtes sur une série de {days} jours — ne la laissez pas filer.",
+    "ctaLabel": "Répondre à la question du jour",
+    "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde. Le quiz se réinitialise chaque jour à minuit UTC.",
+    "unsubscribeLabel": "Se désabonner des rappels du quiz quotidien"
   }
 }

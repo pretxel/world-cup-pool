@@ -39,6 +39,7 @@ export type QuizQuestionPublicRow = Tables<"v_quiz_questions_public">;
 export type QuizAnswerRow = Tables<"quiz_answers">;
 export type QuizLeaderboardRow = Tables<"v_quiz_leaderboard">;
 export type QuizStandingRow = Tables<"v_quiz_standing">;
+export type QuizReminderLogRow = Tables<"quiz_reminder_log">;
 
 export type LeaderboardRow =
   Database["public"]["Functions"]["leaderboard_for_day"]["Returns"][number];

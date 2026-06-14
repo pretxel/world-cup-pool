@@ -301,7 +301,7 @@
     "cta": "Make your own pick",
     "ogAlt": "Shared World Cup 2026 pick: {home} {h}–{a} {away}"
   },
-  "shareQuiz":   {
+  "shareQuiz": {
     "heading": "Share your quiz streak",
     "shareText": "I'm #{rank} of {count} in the World Cup 2026 daily quiz — {points} pts and a {streak}-day streak. Catch me if you can.",
     "shareOnX": "Share on X",
@@ -598,5 +598,17 @@
     },
     "ctaLabel": "View full leaderboard",
     "footer": "You're getting this because a match you predicted just finished. Scores update automatically as results come in."
+  },
+  "quizEmail": {
+    "subject": "Today's quiz is live — keep your streak going",
+    "preheader": "One question, ten seconds. Don't break your streak.",
+    "eyebrow": "Daily quiz",
+    "heading": "{name}, today's question is up",
+    "headingNoName": "Today's question is up",
+    "intro": "A fresh World Cup trivia question is waiting. Answer it before the day ends to earn points and keep your streak alive.",
+    "streakLine": "You're on a {days}-day streak — don't let it slip.",
+    "ctaLabel": "Answer today's question",
+    "footer": "You're getting this because you're playing the World Cup pool. The quiz resets every day at midnight UTC.",
+    "unsubscribeLabel": "Unsubscribe from daily quiz reminders"
   }
 }
