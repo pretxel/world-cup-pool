@@ -1,9 +1,12 @@
 import { getTranslations, getFormatter, getLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
+import { LiveMatchList } from "@/components/live-match-list";
 import { getActiveCompetition } from "@/lib/competition";
+import { getLiveAndNextUp } from "@/lib/matches/live";
 import { TOURNAMENT_OPENING, TOURNAMENT_START_ISO } from "@/lib/tournament";
 import { flagSlug } from "@/lib/team-flag";
+import type { Locale } from "@/lib/i18n";
 
 type OpeningMatch = {
   kickoff_at: string;
@@ -64,6 +67,17 @@ export async function TournamentCountdown() {
     secs: t("countdownSec"),
   };
 
+  // Only the live branch shows the fixtures list, so only fetch then.
+  const liveData = isLive ? await getLiveAndNextUp(competition?.id) : null;
+  const liveLabels = {
+    onNow: t("liveOnNow"),
+    nextUp: t("liveNextUp"),
+    vs: t("liveVs"),
+    viewAll: t("liveViewAll"),
+    kickoffSoon: t("liveKickoffSoon"),
+    countdown: labels,
+  };
+
   const useDbFixture = opening && looksLikeRealFixture(opening);
   const home = useDbFixture
     ? opening!.home_team
@@ -100,6 +114,13 @@ export async function TournamentCountdown() {
             <p className="max-w-xl text-sm text-muted-foreground">
               {t("countdownLiveSubhead")}
             </p>
+            {liveData ? (
+              <LiveMatchList
+                initialData={liveData}
+                locale={locale as Locale}
+                labels={liveLabels}
+              />
+            ) : null}
           </>
         ) : (
           <>
