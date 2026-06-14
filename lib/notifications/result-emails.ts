@@ -134,29 +134,27 @@ function withFromName(emailFrom: string, name?: string): string {
   return m ? `${name} <${m[1]}>` : emailFrom;
 }
 
-export async function dispatchResultEmails(
-  fromName?: string,
-): Promise<DispatchSummary> {
-  if (!env.resendApiKey) {
-    console.log("[result-emails] RESEND_API_KEY unset — skipping dispatch");
-    return { ...ZERO };
-  }
-  const fromAddress = withFromName(env.emailFrom, fromName);
-
-  const admin = createAdminSupabaseClient();
-
-  // Scored rows on matches that are currently final, with the match details.
-  const { data: scoredData, error: scoredErr } = await admin
+// Loads scored rows on matches that are currently final, flattened with the
+// match details. When `matchId` is given the query is filtered to that one
+// match at the data layer, so the force path can never widen beyond it.
+async function loadScoredFinals(
+  admin: AdminClient,
+  matchId?: string,
+): Promise<ScoredFinalRow[]> {
+  let query = admin
     .from("scores")
     .select(
       "user_id, match_id, points, hit_type, matches!inner(home_team, away_team, home_score, away_score, status)",
     )
     .eq("matches.status", "final");
-  if (scoredErr) {
-    throw new Error(`[result-emails] load scored finals: ${scoredErr.message}`);
+  if (matchId) query = query.eq("match_id", matchId);
+
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`[result-emails] load scored finals: ${error.message}`);
   }
 
-  const scored: ScoredFinalRow[] = (scoredData ?? []).map((r) => {
+  return (data ?? []).map((r) => {
     const m = (r as { matches: Record<string, unknown> }).matches;
     return {
       user_id: r.user_id as string,
@@ -169,16 +167,22 @@ export async function dispatchResultEmails(
       away_score: (m.away_score as number | null) ?? 0,
     };
   });
+}
 
-  const { data: ledgerData, error: ledgerErr } = await admin
-    .from("result_email_log")
-    .select("match_id, user_id");
-  if (ledgerErr) {
-    throw new Error(`[result-emails] load ledger: ${ledgerErr.message}`);
-  }
-
-  const pending = computePendingByUser(scored, ledgerData ?? []);
+// Shared send tail: resolve email → render → batch-send → stamp ledger for a
+// set of already-computed pending recipients. Both the cron path (ledger
+// respected) and the admin force path (ledger ignored) funnel through here, so
+// env-gating, batching, the dedupe stamp, and the summary shape live in one
+// place. Per-recipient failures are logged and counted, never aborting the
+// rest; ledger rows are written only for batches Resend accepted.
+async function dispatchPending(
+  admin: AdminClient,
+  pending: PendingRecipient[],
+  fromName?: string,
+): Promise<DispatchSummary> {
   if (pending.length === 0) return { ...ZERO };
+
+  const fromAddress = withFromName(env.emailFrom, fromName);
 
   // Standings + display names for affected users, one query off the board view.
   const userIds = pending.map((p) => p.userId);
@@ -197,7 +201,8 @@ export async function dispatchResultEmails(
   })) as Translator;
   const leaderboardUrl = `${env.siteUrl}${localePath(DEFAULT_LOCALE, "/leaderboard")}`;
 
-  const resend = new Resend(env.resendApiKey);
+  // Both entry points gate on env.resendApiKey before calling this tail.
+  const resend = new Resend(env.resendApiKey!);
   let skipped = 0;
 
   // Resolve email + render per recipient. Recipients without a resolvable email
@@ -261,6 +266,52 @@ export async function dispatchResultEmails(
 
   console.log(`[result-emails] emailed=${emailed} failed=${failed} skipped=${skipped}`);
   return { emailed, failed, skipped };
+}
+
+// Cron path: emails every player whose standing changed on a now-final match
+// not yet emailed. Idempotent across runs via the result_email_log ledger.
+export async function dispatchResultEmails(
+  fromName?: string,
+): Promise<DispatchSummary> {
+  if (!env.resendApiKey) {
+    console.log("[result-emails] RESEND_API_KEY unset — skipping dispatch");
+    return { ...ZERO };
+  }
+
+  const admin = createAdminSupabaseClient();
+  const scored = await loadScoredFinals(admin);
+
+  const { data: ledgerData, error: ledgerErr } = await admin
+    .from("result_email_log")
+    .select("match_id, user_id");
+  if (ledgerErr) {
+    throw new Error(`[result-emails] load ledger: ${ledgerErr.message}`);
+  }
+
+  const pending = computePendingByUser(scored, ledgerData ?? []);
+  return dispatchPending(admin, pending, fromName);
+}
+
+// Admin force path: re-emails every scored player of ONE final match,
+// intentionally ignoring the dedupe ledger (ledger treated as empty) so an
+// admin can repair a bad or missing send. Scoped to `matchId` at the query
+// layer; re-stamps the ledger after a successful send so the cron stays
+// at-most-once afterward. Shares all env-gating/batching/summary behavior with
+// the cron path.
+export async function forceDispatchResultEmails(
+  matchId: string,
+  fromName?: string,
+): Promise<DispatchSummary> {
+  if (!env.resendApiKey) {
+    console.log("[result-emails] RESEND_API_KEY unset — skipping force dispatch");
+    return { ...ZERO };
+  }
+
+  const admin = createAdminSupabaseClient();
+  const scored = await loadScoredFinals(admin, matchId);
+  // Empty ledger → every scored recipient of this match is pending.
+  const pending = computePendingByUser(scored, []);
+  return dispatchPending(admin, pending, fromName);
 }
 
 // Player emails live only in auth.users — reachable via the service-role admin

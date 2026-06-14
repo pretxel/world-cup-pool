@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { runSync } from "@/lib/result-sync/core";
+import { forceDispatchResultEmails } from "@/lib/notifications/result-emails";
 import {
   getManagedCompetition,
   assertMatchInManaged,
@@ -219,6 +220,50 @@ export async function syncNow(formData: FormData): Promise<void> {
     syncStaleResolved: String(summary.staleResolved),
     syncErrors: String(summary.errors),
   });
+  redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+}
+
+// Admin force-resend of result emails for one final match. Re-emails the
+// match's scored players regardless of the dedupe ledger (force path). Like
+// syncNow, the dispatch summary travels back through query params after the
+// redirect since the page is server-rendered.
+export async function resendResultEmails(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const match_id = z.string().uuid().parse(formData.get("match_id"));
+
+  const rawLocale = formData.get("locale");
+  const locale =
+    typeof rawLocale === "string" && isLocale(rawLocale)
+      ? rawLocale
+      : DEFAULT_LOCALE;
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, match_id, managed.id);
+
+  // Recipients only exist for final matches; re-check server-side even though
+  // the UI only offers the control for finals.
+  const { data: match, error } = await admin
+    .from("matches")
+    .select("status")
+    .eq("id", match_id)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const params = new URLSearchParams({ resendMatchId: match_id });
+  if (match?.status !== "final") {
+    params.set("resendError", "notFinal");
+    redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+  }
+
+  const summary = await forceDispatchResultEmails(match_id);
+
+  revalidateAfterMutation(managed.is_active);
+
+  params.set("resendEmailed", String(summary.emailed));
+  params.set("resendFailed", String(summary.failed));
+  params.set("resendSkipped", String(summary.skipped));
   redirect(localePath(locale, `/admin/matches?${params.toString()}`));
 }
 
