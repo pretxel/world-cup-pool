@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ArrowLeftIcon } from "lucide-react";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { resolveCompetition } from "@/lib/competition";
 import { CompetitionForm } from "@/components/admin/competition-form";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { SetActiveDialog } from "@/components/admin/set-active-dialog";
 import { updateCompetition } from "../actions";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +19,8 @@ export default async function EditCompetitionPage({
   const { locale: raw, id } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
+
+  const t = await getTranslations("admin");
 
   const admin = createAdminSupabaseClient();
   const { data: row } = await admin
@@ -45,52 +49,54 @@ export default async function EditCompetitionPage({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
-      <div className="mb-6 border-b border-border pb-4">
-        <Link
-          href={localePath(locale, "/admin/competitions")}
-          className="text-sm text-muted-foreground underline"
-        >
-          ← Competitions
-        </Link>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            {row.name}
-          </h1>
-          {row.is_active ? <Badge>Active</Badge> : null}
+      <div className="admin-reveal space-y-8">
+        <div className="space-y-3">
+          <Link
+            href={localePath(locale, "/admin/competitions")}
+            className="inline-flex items-center gap-1 rounded-md text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <ArrowLeftIcon className="size-4" aria-hidden />
+            {t("form.backToCompetitions")}
+          </Link>
+          <AdminPageHeader
+            title={row.name}
+            actions={
+              row.is_active ? (
+                <Badge>{t("competitions.badgeActive")}</Badge>
+              ) : (
+                <SetActiveDialog
+                  id={row.id}
+                  name={row.name}
+                  currentActiveName={activeName}
+                  hasFixtures={hasFixtures}
+                />
+              )
+            }
+          />
         </div>
-        <div className="mt-3 flex items-center gap-2">
-          {!row.is_active ? (
-            <SetActiveDialog
-              id={row.id}
-              name={row.name}
-              currentActiveName={activeName}
-              hasFixtures={hasFixtures}
-            />
-          ) : null}
-        </div>
-      </div>
 
-      <CompetitionForm
-        action={updateCompetition}
-        locale={locale}
-        slugLocked={hasFixtures}
-        initial={{
-          id: row.id,
-          slug: row.slug,
-          kind: row.kind,
-          name: row.name,
-          short_name: row.short_name,
-          season: row.season ?? undefined,
-          tournament_start_at: row.tournament_start_at,
-          tournament_end_at: row.tournament_end_at ?? undefined,
-          opening_home: row.opening_home ?? undefined,
-          opening_away: row.opening_away ?? undefined,
-          opening_venue: row.opening_venue ?? undefined,
-          format: resolved.format,
-          providers: resolved.providersConfig,
-          branding: resolved.brandingConfig,
-        }}
-      />
+        <CompetitionForm
+          action={updateCompetition}
+          locale={locale}
+          slugLocked={hasFixtures}
+          initial={{
+            id: row.id,
+            slug: row.slug,
+            kind: row.kind,
+            name: row.name,
+            short_name: row.short_name,
+            season: row.season ?? undefined,
+            tournament_start_at: row.tournament_start_at,
+            tournament_end_at: row.tournament_end_at ?? undefined,
+            opening_home: row.opening_home ?? undefined,
+            opening_away: row.opening_away ?? undefined,
+            opening_venue: row.opening_venue ?? undefined,
+            format: resolved.format,
+            providers: resolved.providersConfig,
+            branding: resolved.brandingConfig,
+          }}
+        />
+      </div>
     </main>
   );
 }

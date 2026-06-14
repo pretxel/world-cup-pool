@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,11 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ActionStatus } from "@/components/admin/action-status";
+import { SubmitButton } from "@/components/admin/submit-button";
 import { setActiveCompetition } from "@/app/[locale]/(admin)/admin/competitions/actions";
 
 // Confirmation-gated activation — the ONLY path that flips the public flag.
 // Names the outgoing/incoming competition, lists consequences, and warns when
-// the target has no fixtures. The confirm control is not auto-focused.
+// the target has no fixtures. Base UI Dialog handles focus trap + restore; the
+// confirm control is not auto-focused (Cancel is).
 export function SetActiveDialog({
   id,
   name,
@@ -27,40 +31,38 @@ export function SetActiveDialog({
   currentActiveName: string | null;
   hasFixtures: boolean;
 }) {
+  const t = useTranslations("admin");
   return (
     <Dialog>
       <DialogTrigger render={<Button size="sm" variant="outline" />}>
-        Set active
+        {t("setActive.trigger")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Make “{name}” the live competition?</DialogTitle>
+          <DialogTitle>{t("setActive.title", { name })}</DialogTitle>
           <DialogDescription>
             {currentActiveName
-              ? `This replaces “${currentActiveName}” as the active competition.`
-              : "This becomes the active competition."}{" "}
-            Public pages, leaderboards, emails, result sync, and RLS all
-            re-point to it. In-progress predictions on the previous competition
-            become locked.
+              ? t("setActive.replaceBody", { current: currentActiveName })
+              : t("setActive.freshBody")}{" "}
+            {t("setActive.consequences")}
           </DialogDescription>
         </DialogHeader>
 
         {!hasFixtures ? (
-          <p className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-            Warning: this competition has no fixtures yet. Visitors will see an
-            empty schedule and leaderboard.
-          </p>
+          <ActionStatus variant="error">
+            {t("setActive.noFixturesWarning")}
+          </ActionStatus>
         ) : null}
 
         <DialogFooter>
           <DialogClose render={<Button variant="ghost" autoFocus />}>
-            Cancel
+            {t("setActive.cancel")}
           </DialogClose>
           <form action={setActiveCompetition}>
             <input type="hidden" name="id" value={id} />
-            <Button type="submit" variant="destructive">
-              Set active
-            </Button>
+            <SubmitButton variant="destructive">
+              {t("setActive.confirm")}
+            </SubmitButton>
           </form>
         </DialogFooter>
       </DialogContent>
