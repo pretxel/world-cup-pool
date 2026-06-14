@@ -193,6 +193,7 @@
     "loadFailed": "Failed to load news: {message}"
   },
   "quiz": {
+    "adminBlocked": "Admin accounts don't compete in the pool.",
     "title": "Daily Call",
     "description": "One World Cup question a day. Answer before the day's out, keep your streak, climb the quiz board.",
     "ogTitle": "Daily Call · WC26 Pool",
@@ -270,6 +271,7 @@
     "missingPickKickoff": "Predictions are locked — kickoff has passed and you didn't submit one for this match."
   },
   "predictionForm": {
+    "adminBlocked": "Admin accounts don't compete in the pool.",
     "homeAria": "{team} score",
     "errorNotConfirmed": "This match's teams aren't confirmed yet.",
     "awayAria": "{team} score",

@@ -17,11 +17,13 @@ export function AnswerCard({
   questionId,
   options,
   signedIn,
+  isAdmin = false,
   initialAnswer,
 }: {
   questionId: string;
   options: string[];
   signedIn: boolean;
+  isAdmin?: boolean;
   initialAnswer: { choiceIndex: number; isCorrect: boolean } | null;
 }) {
   const t = useTranslations("quiz");
@@ -34,7 +36,7 @@ export function AnswerCard({
   const [error, setError] = useState<string | null>(null);
 
   function choose(i: number) {
-    if (answered || isPending) return;
+    if (answered || isPending || isAdmin) return;
     setError(null);
     if (!signedIn) {
       setError(t("signInToAnswer"));
@@ -48,6 +50,8 @@ export function AnswerCard({
         setError(t("alreadyAnswered"));
       } else if (res.error === "not-signed-in") {
         setError(t("signInToAnswer"));
+      } else if (res.error === "blocked") {
+        setError(t("adminBlocked"));
       } else {
         setError(t("answerFailed"));
       }
@@ -58,7 +62,9 @@ export function AnswerCard({
 
   return (
     <div className="flex flex-col gap-3">
-      {!signedIn && !locked ? (
+      {isAdmin ? (
+        <p className="text-sm text-muted-foreground">{t("adminBlocked")}</p>
+      ) : !signedIn && !locked ? (
         <p className="text-sm text-muted-foreground">{t("signInToAnswer")}</p>
       ) : null}
       <ul className="flex flex-col gap-2">
@@ -74,7 +80,7 @@ export function AnswerCard({
             <li key={i}>
               <button
                 type="button"
-                disabled={locked || isPending}
+                disabled={locked || isPending || isAdmin}
                 onClick={() => choose(i)}
                 className={cn(
                   "flex w-full items-center justify-between gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors",

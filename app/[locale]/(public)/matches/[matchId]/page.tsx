@@ -11,6 +11,7 @@ import { TeamFlag } from "@/components/team-flag";
 import { StageIcon } from "@/components/stage-icon";
 import { VenueImage } from "@/components/venue-image";
 import { isConfirmedMatch, lockReason } from "@/lib/match-utils";
+import { isCurrentUserAdmin } from "@/lib/admin/current-user";
 import { getActiveStageLabel, getActiveCompetition } from "@/lib/competition";
 import { groupStageKey } from "@/lib/competition-schema";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
@@ -110,6 +111,10 @@ export default async function MatchDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Admins are operators, not contestants — the form renders but its submit is
+  // blocked (and the server action rejects them too).
+  const isAdmin = user ? await isCurrentUserAdmin(supabase) : false;
 
   let myPrediction: { home_goals: number; away_goals: number } | null = null;
   if (user) {
@@ -434,6 +439,7 @@ export default async function MatchDetailPage({
             awayTeam={match.away_team}
             kickoffAt={match.kickoff_at}
             initial={myPrediction}
+            isAdmin={isAdmin}
           />
         )}
       </section>
