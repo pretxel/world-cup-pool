@@ -94,7 +94,8 @@
   --pitch-foreground: oklch(0.985 0.006 92);
   --flag: oklch(0.82 0.17 82);
   --flag-foreground: oklch(0.24 0.05 60);
-  --live: oklch(0.6 0.22 27);
+  /* Darkened slightly (was 0.6 L) so on-surface `text-live` clears WCAG AA. */
+  --live: oklch(0.58 0.22 27);
 }
 
 .dark {
@@ -227,5 +228,31 @@
   }
   @keyframes rise {
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Admin "control room": one orchestrated staggered reveal per screen.
+     Wrap a screen's top-level sections in `.admin-reveal`; direct children
+     rise in sequence on load. Capped so deep lists don't drift in late. */
+  .admin-reveal > * {
+    opacity: 0;
+    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.1, 1) forwards;
+  }
+  .admin-reveal > *:nth-child(1) { animation-delay: 0.02s; }
+  .admin-reveal > *:nth-child(2) { animation-delay: 0.07s; }
+  .admin-reveal > *:nth-child(3) { animation-delay: 0.12s; }
+  .admin-reveal > *:nth-child(4) { animation-delay: 0.17s; }
+  .admin-reveal > *:nth-child(n + 5) { animation-delay: 0.22s; }
+
+  /* Reduced motion: no decorative motion anywhere, content fully visible. */
+  @media (prefers-reduced-motion: reduce) {
+    .rise,
+    .admin-reveal > * {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+    .live-pulse::before {
+      animation: none;
+    }
   }
 }
