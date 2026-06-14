@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/competitions", key: "competitions" },
   { href: "/admin/matches", key: "fixtures" },
   { href: "/admin/quiz", key: "quiz" },
+  { href: "/admin/operations", key: "operations" },
 ] as const;
 
 // Persistent command bar for the admin "control room": a branded wordmark plus

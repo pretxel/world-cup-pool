@@ -583,7 +583,8 @@
       "competitions": "Competiciones",
       "fixtures": "Partidos",
       "quiz": "Quiz",
-      "sectionLabel": "Admin"
+      "sectionLabel": "Admin",
+      "operations": "Operaciones"
     },
     "context": {
       "divergedTitle": "Editando un borrador",
@@ -692,6 +693,102 @@
       "save": "Guardar competición",
       "creating": "Creando…",
       "saving": "Guardando…"
+    },
+    "operations": {
+      "eyebrow": "Sala de control",
+      "title": "Operaciones",
+      "description": "Observa los trabajos en segundo plano, el envío de correos y la actividad de los jugadores, y ejecuta trabajos cuando quieras.",
+      "tabs": {
+        "overview": "Resumen",
+        "runs": "Historial",
+        "emails": "Registro de correos",
+        "activity": "Actividad"
+      },
+      "jobs": {
+        "sync_matches": "Sincronización de resultados",
+        "sync_news": "Sincronización de noticias",
+        "prediction_reminders": "Recordatorios de pronósticos",
+        "quiz_reminders": "Recordatorios del quiz"
+      },
+      "jobsDesc": {
+        "sync_matches": "Obtiene resultados y recalcula la tabla",
+        "sync_news": "Actualiza las noticias del Mundial",
+        "prediction_reminders": "Avisa a quienes tienen pronósticos abiertos",
+        "quiz_reminders": "Avisa a quienes no han respondido"
+      },
+      "status": {
+        "success": "Éxito",
+        "partial": "Parcial",
+        "error": "Error",
+        "never": "Sin ejecutar"
+      },
+      "trigger": {
+        "cron": "Programado",
+        "manual": "Manual"
+      },
+      "overview": {
+        "lastRun": "Última ejecución",
+        "never": "Sin ejecutar",
+        "nextRun": "Próxima ejecución",
+        "runNow": "Ejecutar ahora",
+        "running": "Ejecutando…",
+        "ranError": "La ejecución falló"
+      },
+      "runs": {
+        "title": "Historial de ejecuciones",
+        "colWhen": "Cuándo",
+        "colKind": "Trabajo",
+        "colTrigger": "Origen",
+        "colStatus": "Estado",
+        "colSummary": "Resumen",
+        "colDuration": "Duración",
+        "filterKind": "Trabajo",
+        "filterStatus": "Estado",
+        "all": "Todos",
+        "emptyTitle": "Aún no hay ejecuciones",
+        "emptyBody": "Ninguna ejecución coincide con este filtro. Aparecerán aquí tras la próxima ejecución programada o manual.",
+        "prev": "Anterior",
+        "next": "Siguiente",
+        "page": "Página {page} de {total}",
+        "errorLabel": "Error",
+        "seconds": "{s}s",
+        "millis": "{ms} ms"
+      },
+      "emails": {
+        "title": "Registro de correos",
+        "recipient": "Destinatario",
+        "sent": "Enviado",
+        "type": {
+          "result": "Resultado",
+          "prediction_reminder": "Recordatorio de pronóstico",
+          "quiz_reminder": "Recordatorio de quiz"
+        },
+        "totals": "Últimos 7 días",
+        "emptyTitle": "No se han enviado correos",
+        "emptyBody": "Los correos enviados aparecerán aquí cuando los trabajos despachen resultados o recordatorios.",
+        "noEmail": "(sin dirección)",
+        "unknownUser": "Jugador desconocido"
+      },
+      "activity": {
+        "title": "Actividad de usuarios",
+        "feedTitle": "Actividad reciente",
+        "type": {
+          "signup": "Se registró",
+          "prediction": "Envió un pronóstico",
+          "quiz_answer": "Respondió el quiz",
+          "group_join": "Se unió a un grupo"
+        },
+        "stat": {
+          "totalPlayers": "Jugadores",
+          "active": "Activos (7d)",
+          "predictionOptOut": "Bajas de pronósticos",
+          "quizOptOut": "Bajas del quiz"
+        },
+        "ofPlayers": "de {total}",
+        "emptyTitle": "Aún no hay actividad",
+        "emptyBody": "Aquí aparecen registros, pronósticos, respuestas del quiz y uniones a grupos.",
+        "unknownUser": "Jugador desconocido"
+      }
     }
   },
   "error": {
