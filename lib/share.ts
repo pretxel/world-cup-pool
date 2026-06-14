@@ -32,6 +32,12 @@ export function buildRankSharePath(locale: Locale, userId: string): string {
   return localePath(locale, `/share/rank/${userId}`);
 }
 
+export function buildQuizSharePath(locale: Locale, userId: string): string {
+  // Like rank sharing: the landing page and OG card re-derive the quiz standing
+  // live from v_quiz_standing, so the URL only identifies the user.
+  return localePath(locale, `/share/quiz/${userId}`);
+}
+
 export function buildTweetIntentUrl(text: string, url: string): string {
   const params = new URLSearchParams({ text, url });
   return `https://twitter.com/intent/tweet?${params.toString()}`;

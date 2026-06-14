@@ -301,6 +301,26 @@
     "cta": "Haz tu propio pronóstico",
     "ogAlt": "Pronóstico compartido del Mundial 2026: {home} {h}–{a} {away}"
   },
+  "shareQuiz":   {
+    "heading": "Comparte tu racha",
+    "shareText": "Voy #{rank} de {count} en el quiz diario del Mundial 2026 — {points} pts y una racha de {streak} días. A ver si me alcanzas.",
+    "shareOnX": "Compartir en X",
+    "shareOnFacebook": "Compartir en Facebook",
+    "shareNative": "Compartir…",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado",
+    "pageEyebrow": "Racha compartida",
+    "pageHeading": "Quiz diario del Mundial 2026",
+    "pageTitle": "Racha de {streak} días, {points} pts — Quiniela Mundial 2026",
+    "pageDescription": "{name} lleva una racha de {streak} días en el quiz diario del Mundial 2026 — {points} pts, puesto #{rank} de {count}. Responde la pregunta de hoy y empieza tu propia racha.",
+    "streakLabel": "Racha",
+    "pointsLabel": "Puntos",
+    "rankLabel": "Puesto",
+    "answeredLabel": "Respondidas",
+    "statPlayers": "de {count, plural, one {# jugador} other {# jugadores}}",
+    "cta": "Jugar el quiz de hoy",
+    "ogAlt": "Quiz diario del Mundial 2026: racha de {streak} días, {points} puntos, puesto #{rank}"
+  },
   "shareRank": {
     "heading": "Comparte tu posición",
     "shareText": "Voy #{rank} de {count} en la Quiniela Mundial 2026 — {points} pts. A ver si me alcanzas.",

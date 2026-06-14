@@ -4,6 +4,10 @@ import { FlameIcon } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { QuizLeaderboardRow } from "@/lib/db";
 import { computeStreak, localizeQuizQuestion } from "@/lib/quiz";
+import { loadQuizStanding } from "@/lib/quiz-standing";
+import { ShareButtons } from "@/components/share-buttons";
+import { buildQuizSharePath } from "@/lib/share";
+import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { AnswerCard } from "./answer-card";
@@ -42,6 +46,7 @@ export default async function QuizPage({
   setRequestLocale(locale);
 
   const t = await getTranslations("quiz");
+  const tShare = await getTranslations("shareQuiz");
   const today = todayUtc();
 
   const supabase = await createServerSupabaseClient();
@@ -98,6 +103,11 @@ export default async function QuizPage({
     .limit(10);
   const rows = (board ?? []) as QuizLeaderboardRow[];
 
+  // Share standing for the signed-in viewer's own quiz streak. Read from the
+  // same public view the share card uses, so the share text matches the card.
+  const quizShare =
+    user && answeredCount > 0 ? await loadQuizStanding(supabase, user.id) : null;
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <header className="mb-8 border-b border-border pb-6">
@@ -130,6 +140,30 @@ export default async function QuizPage({
           <Stat label={t("pointsLabel")} value={points} />
           <Stat label={t("answeredLabel")} value={answeredCount} />
         </dl>
+      ) : null}
+
+      {user && quizShare ? (
+        <section className="mb-8 rounded-xl border border-border bg-card p-4">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            {tShare("heading")}
+          </p>
+          <ShareButtons
+            shareUrl={`${env.siteUrl}${buildQuizSharePath(locale, user.id)}`}
+            shareText={tShare("shareText", {
+              rank: quizShare.row.rank ?? 0,
+              count: quizShare.players,
+              points: quizShare.row.total_points ?? 0,
+              streak: quizShare.row.streak ?? 0,
+            })}
+            labels={{
+              x: tShare("shareOnX"),
+              facebook: tShare("shareOnFacebook"),
+              native: tShare("shareNative"),
+              copy: tShare("copyLink"),
+              copied: tShare("copied"),
+            }}
+          />
+        </section>
       ) : null}
 
       <section className="mb-12">
