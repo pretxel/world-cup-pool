@@ -134,6 +134,31 @@ function withFromName(emailFrom: string, name?: string): string {
   return m ? `${name} <${m[1]}>` : emailFrom;
 }
 
+// RFC 2606 / RFC 6761 reserved domains plus obviously-undeliverable ones. Resend
+// rejects these synchronously ("use our testing email address instead of domains
+// like example.com") and a single bad address fails the whole all-or-nothing
+// batch — so drop them before send. There's nothing to retry, so callers count
+// these as skipped, exactly like a missing address.
+const UNDELIVERABLE_DOMAINS = new Set([
+  "example.com",
+  "example.org",
+  "example.net",
+]);
+const UNDELIVERABLE_TLDS = new Set(["test", "example", "invalid", "localhost"]);
+
+export function isSendableEmail(email: string): boolean {
+  const at = email.indexOf("@");
+  // Need exactly one @ with a local part and a domain on either side.
+  if (at <= 0 || at === email.length - 1) return false;
+  if (email.indexOf("@", at + 1) !== -1) return false;
+  const domain = email.slice(at + 1).toLowerCase();
+  if (!domain.includes(".") || domain.includes("..")) return false;
+  if (UNDELIVERABLE_DOMAINS.has(domain)) return false;
+  const tld = domain.slice(domain.lastIndexOf(".") + 1);
+  if (UNDELIVERABLE_TLDS.has(tld)) return false;
+  return true;
+}
+
 // Loads scored rows on matches that are currently final, flattened with the
 // match details. When `matchId` is given the query is filtered to that one
 // match at the data layer, so the force path can never widen beyond it.
@@ -210,7 +235,9 @@ async function dispatchPending(
   const prepared: PreparedMessage[] = [];
   for (const p of pending) {
     const email = await resolveEmail(admin, p.userId);
-    if (!email) {
+    // Skip missing or undeliverable (reserved-domain) addresses — both have
+    // nothing to retry, and a reserved domain would fail the whole batch.
+    if (!email || !isSendableEmail(email)) {
       skipped++;
       continue;
     }

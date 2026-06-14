@@ -314,7 +314,7 @@ beforeEach(() => {
   upsertMock.mockReset().mockResolvedValue({ error: null });
   getUserByIdMock
     .mockReset()
-    .mockResolvedValue({ data: { user: { email: "player@example.com" } }, error: null });
+    .mockResolvedValue({ data: { user: { email: "player@wc26pool.com" } }, error: null });
   scoredData = [
     {
       user_id: "u1",
