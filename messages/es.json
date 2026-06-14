@@ -301,7 +301,7 @@
     "cta": "Haz tu propio pronóstico",
     "ogAlt": "Pronóstico compartido del Mundial 2026: {home} {h}–{a} {away}"
   },
-  "shareQuiz":   {
+  "shareQuiz": {
     "heading": "Comparte tu racha",
     "shareText": "Voy #{rank} de {count} en el quiz diario del Mundial 2026 — {points} pts y una racha de {streak} días. A ver si me alcanzas.",
     "shareOnX": "Compartir en X",
@@ -598,5 +598,17 @@
     },
     "ctaLabel": "Ver tabla completa",
     "footer": "Recibes esto porque acaba de terminar un partido que pronosticaste. Los puntos se actualizan automáticamente con cada resultado."
+  },
+  "quizEmail": {
+    "subject": "El quiz de hoy ya está — mantén tu racha",
+    "preheader": "Una pregunta, diez segundos. No rompas tu racha.",
+    "eyebrow": "Quiz diario",
+    "heading": "{name}, la pregunta de hoy ya está disponible",
+    "headingNoName": "La pregunta de hoy ya está disponible",
+    "intro": "Te espera una nueva pregunta de trivia del Mundial. Respóndela antes de que acabe el día para ganar puntos y mantener tu racha.",
+    "streakLine": "Llevas una racha de {days} días — no la dejes escapar.",
+    "ctaLabel": "Responder la pregunta de hoy",
+    "footer": "Recibes esto porque participas en la quiniela del Mundial. El quiz se reinicia cada día a medianoche UTC.",
+    "unsubscribeLabel": "Cancelar los recordatorios del quiz diario"
   }
 }
