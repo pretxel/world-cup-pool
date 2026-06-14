@@ -38,5 +38,5 @@
 ## 7. Verification
 
 - [x] 7.1 `openspec validate add-quiz-social-sharing`, `pnpm typecheck`, `pnpm lint` (0 errors), `pnpm test` (299 passing) all clean.
-- [ ] 7.2 Runtime check against the local stack (apply the migration, then verify quiz share section, `/share/quiz/{id}`, OG 1200×630, 404 for unknown user, es/fr) — pending Docker stack up.
-- [ ] 7.3 Verify OG caching live: matching `If-None-Match` → `304`; `ETag` changes after standing changes — pending Docker stack up.
+- [x] 7.2 Runtime check on the local PG17 stack: migration applied + `v_quiz_standing` queryable; `/share/quiz/{id}` 200 in en/es/fr with correct values + localized labels; null-display-name user renders (fallback); unknown user → 404; `/api/og/quiz` → 200 `image/png` exactly 1200×630; OG unknown user → 404; anon `/quiz` renders no share section (0 rendered share links).
+- [x] 7.3 OG caching verified: `Cache-Control: public, max-age=300, s-maxage=300, stale-while-revalidate=600`; stable strong `ETag`; matching `If-None-Match` → `304`; flipping a user's answer changed the `ETag` and reverting restored it (data restored).
