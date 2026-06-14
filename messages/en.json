@@ -583,7 +583,8 @@
       "competitions": "Competitions",
       "fixtures": "Fixtures",
       "quiz": "Quiz",
-      "sectionLabel": "Admin"
+      "sectionLabel": "Admin",
+      "operations": "Operations"
     },
     "context": {
       "divergedTitle": "Editing a draft",
@@ -692,6 +693,102 @@
       "save": "Save competition",
       "creating": "Creating…",
       "saving": "Saving…"
+    },
+    "operations": {
+      "eyebrow": "Control room",
+      "title": "Operations",
+      "description": "Observe background jobs, email delivery, and player activity — and run jobs on demand.",
+      "tabs": {
+        "overview": "Overview",
+        "runs": "Run history",
+        "emails": "Email logs",
+        "activity": "User activity"
+      },
+      "jobs": {
+        "sync_matches": "Score sync",
+        "sync_news": "News sync",
+        "prediction_reminders": "Prediction reminders",
+        "quiz_reminders": "Quiz reminders"
+      },
+      "jobsDesc": {
+        "sync_matches": "Pulls results and recomputes standings",
+        "sync_news": "Refreshes the World Cup news feed",
+        "prediction_reminders": "Nudges players with open picks",
+        "quiz_reminders": "Nudges players who haven't answered"
+      },
+      "status": {
+        "success": "Success",
+        "partial": "Partial",
+        "error": "Error",
+        "never": "Never run"
+      },
+      "trigger": {
+        "cron": "Scheduled",
+        "manual": "Manual"
+      },
+      "overview": {
+        "lastRun": "Last run",
+        "never": "Never run",
+        "nextRun": "Next run",
+        "runNow": "Run now",
+        "running": "Running…",
+        "ranError": "Run failed"
+      },
+      "runs": {
+        "title": "Run history",
+        "colWhen": "When",
+        "colKind": "Job",
+        "colTrigger": "Trigger",
+        "colStatus": "Status",
+        "colSummary": "Summary",
+        "colDuration": "Duration",
+        "filterKind": "Job",
+        "filterStatus": "Status",
+        "all": "All",
+        "emptyTitle": "No runs yet",
+        "emptyBody": "No job runs match this filter. Runs appear here after the next scheduled or manual execution.",
+        "prev": "Previous",
+        "next": "Next",
+        "page": "Page {page} of {total}",
+        "errorLabel": "Error",
+        "seconds": "{s}s",
+        "millis": "{ms} ms"
+      },
+      "emails": {
+        "title": "Email logs",
+        "recipient": "Recipient",
+        "sent": "Sent",
+        "type": {
+          "result": "Result",
+          "prediction_reminder": "Prediction reminder",
+          "quiz_reminder": "Quiz reminder"
+        },
+        "totals": "Last 7 days",
+        "emptyTitle": "No emails sent",
+        "emptyBody": "Sent emails appear here once the jobs dispatch result or reminder messages.",
+        "noEmail": "(no address)",
+        "unknownUser": "Unknown player"
+      },
+      "activity": {
+        "title": "User activity",
+        "feedTitle": "Recent activity",
+        "type": {
+          "signup": "Signed up",
+          "prediction": "Submitted a prediction",
+          "quiz_answer": "Answered the quiz",
+          "group_join": "Joined a group"
+        },
+        "stat": {
+          "totalPlayers": "Players",
+          "active": "Active (7d)",
+          "predictionOptOut": "Prediction opt-outs",
+          "quizOptOut": "Quiz opt-outs"
+        },
+        "ofPlayers": "of {total}",
+        "emptyTitle": "No activity yet",
+        "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
+        "unknownUser": "Unknown player"
+      }
     }
   },
   "error": {

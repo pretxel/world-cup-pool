@@ -583,7 +583,8 @@
       "competitions": "Compétitions",
       "fixtures": "Matchs",
       "quiz": "Quiz",
-      "sectionLabel": "Admin"
+      "sectionLabel": "Admin",
+      "operations": "Opérations"
     },
     "context": {
       "divergedTitle": "Édition d'un brouillon",
@@ -692,6 +693,102 @@
       "save": "Enregistrer la compétition",
       "creating": "Création…",
       "saving": "Enregistrement…"
+    },
+    "operations": {
+      "eyebrow": "Salle de contrôle",
+      "title": "Opérations",
+      "description": "Surveillez les tâches planifiées, l'envoi d'e-mails et l'activité des joueurs, et lancez les tâches à la demande.",
+      "tabs": {
+        "overview": "Aperçu",
+        "runs": "Historique",
+        "emails": "Journal des e-mails",
+        "activity": "Activité"
+      },
+      "jobs": {
+        "sync_matches": "Synchro des scores",
+        "sync_news": "Synchro des actus",
+        "prediction_reminders": "Rappels de pronostics",
+        "quiz_reminders": "Rappels du quiz"
+      },
+      "jobsDesc": {
+        "sync_matches": "Récupère les résultats et recalcule le classement",
+        "sync_news": "Actualise le fil d'actus de la Coupe du monde",
+        "prediction_reminders": "Relance les joueurs aux pronostics ouverts",
+        "quiz_reminders": "Relance les joueurs sans réponse"
+      },
+      "status": {
+        "success": "Succès",
+        "partial": "Partiel",
+        "error": "Erreur",
+        "never": "Jamais exécuté"
+      },
+      "trigger": {
+        "cron": "Planifié",
+        "manual": "Manuel"
+      },
+      "overview": {
+        "lastRun": "Dernière exécution",
+        "never": "Jamais exécuté",
+        "nextRun": "Prochaine exécution",
+        "runNow": "Lancer",
+        "running": "En cours…",
+        "ranError": "Échec de l'exécution"
+      },
+      "runs": {
+        "title": "Historique des exécutions",
+        "colWhen": "Quand",
+        "colKind": "Tâche",
+        "colTrigger": "Origine",
+        "colStatus": "Statut",
+        "colSummary": "Résumé",
+        "colDuration": "Durée",
+        "filterKind": "Tâche",
+        "filterStatus": "Statut",
+        "all": "Toutes",
+        "emptyTitle": "Aucune exécution",
+        "emptyBody": "Aucune exécution ne correspond à ce filtre. Elles apparaîtront ici après la prochaine exécution planifiée ou manuelle.",
+        "prev": "Précédent",
+        "next": "Suivant",
+        "page": "Page {page} sur {total}",
+        "errorLabel": "Erreur",
+        "seconds": "{s}s",
+        "millis": "{ms} ms"
+      },
+      "emails": {
+        "title": "Journal des e-mails",
+        "recipient": "Destinataire",
+        "sent": "Envoyé",
+        "type": {
+          "result": "Résultat",
+          "prediction_reminder": "Rappel de pronostic",
+          "quiz_reminder": "Rappel de quiz"
+        },
+        "totals": "7 derniers jours",
+        "emptyTitle": "Aucun e-mail envoyé",
+        "emptyBody": "Les e-mails envoyés apparaîtront ici lorsque les tâches enverront des résultats ou des rappels.",
+        "noEmail": "(pas d'adresse)",
+        "unknownUser": "Joueur inconnu"
+      },
+      "activity": {
+        "title": "Activité des utilisateurs",
+        "feedTitle": "Activité récente",
+        "type": {
+          "signup": "Inscription",
+          "prediction": "A envoyé un pronostic",
+          "quiz_answer": "A répondu au quiz",
+          "group_join": "A rejoint un groupe"
+        },
+        "stat": {
+          "totalPlayers": "Joueurs",
+          "active": "Actifs (7 j)",
+          "predictionOptOut": "Désabonnés pronostics",
+          "quizOptOut": "Désabonnés quiz"
+        },
+        "ofPlayers": "sur {total}",
+        "emptyTitle": "Aucune activité",
+        "emptyBody": "Les inscriptions, pronostics, réponses au quiz et adhésions aux groupes apparaissent ici.",
+        "unknownUser": "Joueur inconnu"
+      }
     }
   },
   "error": {

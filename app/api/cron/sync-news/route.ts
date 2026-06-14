@@ -1,16 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { fetchNewsFeed, type NewsArticle } from "@/lib/news";
-import { getActiveBranding } from "@/lib/competition";
-
-type Summary = {
-  fetched: number;
-  inserted: number;
-  updated: number;
-  skipped: number;
-  errors: number;
-};
+import { runNewsSync } from "@/lib/news-sync";
+import { recordRun } from "@/lib/operations/record-run";
 
 function unauthorized() {
   return new NextResponse("unauthorized", { status: 401 });
@@ -23,19 +14,6 @@ function skipped(reason: string) {
   });
 }
 
-function toRow(a: NewsArticle) {
-  return {
-    dedup_key: a.dedupKey,
-    external_id: a.externalId,
-    source_url: a.sourceUrl,
-    title: a.title,
-    summary: a.summary,
-    image_url: a.imageUrl,
-    source: a.source,
-    published_at: a.publishedAt,
-  };
-}
-
 export async function GET(request: NextRequest) {
   // 1. Auth: require Bearer ${CRON_SECRET}. In non-prod with no secret, allow.
   const auth = request.headers.get("authorization");
@@ -46,60 +24,13 @@ export async function GET(request: NextRequest) {
     return skipped("missing-env");
   }
 
-  // 2. Token gate.
+  // 2. Token gate. Skip (not error) when the upstream token is absent.
   if (!env.newsApiToken) return skipped("missing-env");
 
-  // 3. Fetch + normalize (throws on non-OK upstream → leaves cache untouched).
-  // The search query comes from the active competition's branding.
-  const { newsQuery } = await getActiveBranding();
-  const { articles, rawCount } = await fetchNewsFeed(
-    env.newsApiToken,
-    env.newsApiUrl ?? undefined,
-    newsQuery,
-  );
-
-  const summary: Summary = {
-    // fetched = raw upstream count; skipped = items dropped for invalid
-    // fields / non-http scheme / in-batch dedup. inserted+updated+skipped
-    // === fetched (absent an upsert error).
-    fetched: rawCount,
-    inserted: 0,
-    updated: 0,
-    skipped: rawCount - articles.length,
-    errors: 0,
-  };
-
-  if (articles.length === 0) {
-    console.log(`[cron:sync-news] summary:`, JSON.stringify(summary));
-    return NextResponse.json(summary);
-  }
-
-  const admin = createAdminSupabaseClient();
-
-  // 4. Partition into new vs existing for an accurate summary.
-  const keys = articles.map((a) => a.dedupKey);
-  const { data: existingRows, error: loadErr } = await admin
-    .from("news_articles")
-    .select("dedup_key")
-    .in("dedup_key", keys);
-  if (loadErr) {
-    throw new Error(`Failed to load existing news: ${loadErr.message}`);
-  }
-  const existing = new Set((existingRows ?? []).map((r) => r.dedup_key));
-  summary.updated = articles.filter((a) => existing.has(a.dedupKey)).length;
-  summary.inserted = articles.length - summary.updated;
-
-  // 5. Upsert. onConflict=dedup_key makes repeated runs idempotent — existing
-  //    rows refresh their mutable fields instead of duplicating.
-  const { error: upsertErr } = await admin
-    .from("news_articles")
-    .upsert(articles.map(toRow), { onConflict: "dedup_key" });
-  if (upsertErr) {
-    summary.errors++;
-    summary.inserted = 0;
-    summary.updated = 0;
-    console.error(`[cron:sync-news] upsert failed:`, upsertErr.message);
-  }
+  // 3. Sync + record. A thrown step (upstream fetch / existing-news load) is
+  //    recorded (status='error') and RE-THROWN, so the route still 500s as
+  //    before. The recorded summary is what we return.
+  const { summary } = await recordRun("sync_news", "cron", runNewsSync);
 
   console.log(`[cron:sync-news] summary:`, JSON.stringify(summary));
   return NextResponse.json(summary);

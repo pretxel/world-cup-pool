@@ -8,15 +8,7 @@ export type { Database } from "@/lib/database.types";
 // Stage keys are competition-defined (see each competition's format_config),
 // so this is an open string rather than a fixed union. The well-known World Cup
 // keys are kept here for autocomplete; any other string is also valid.
-export type MatchStage =
-  | "group"
-  | "r32"
-  | "r16"
-  | "qf"
-  | "sf"
-  | "third"
-  | "final"
-  | (string & {});
+export type MatchStage = "group" | "r32" | "r16" | "qf" | "sf" | "third" | "final" | (string & {});
 export type MatchStatus = "scheduled" | "live" | "final" | "cancelled";
 export type HitType = "exact" | "winner_gd" | "winner" | "miss";
 
@@ -40,6 +32,11 @@ export type QuizAnswerRow = Tables<"quiz_answers">;
 export type QuizLeaderboardRow = Tables<"v_quiz_leaderboard">;
 export type QuizStandingRow = Tables<"v_quiz_standing">;
 export type QuizReminderLogRow = Tables<"quiz_reminder_log">;
+
+// One recorded background-job run. `kind`/`trigger`/`status` are CHECK-narrowed
+// in the schema but render as plain `string`; the operations module re-narrows
+// them to its own unions (see lib/operations/record-run.ts).
+export type OperationRunRow = Tables<"operation_runs">;
 
 export type LeaderboardRow =
   Database["public"]["Functions"]["leaderboard_for_day"]["Returns"][number];
