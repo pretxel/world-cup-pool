@@ -193,6 +193,7 @@
     "loadFailed": "No se pudieron cargar las noticias: {message}"
   },
   "quiz": {
+    "adminBlocked": "Las cuentas de administrador no participan en la quiniela.",
     "title": "Reto Diario",
     "description": "Una pregunta del Mundial al día. Responde antes de que acabe el día, mantén tu racha y sube en la clasificación del reto.",
     "ogTitle": "Reto Diario · WC26 Pool",
@@ -270,6 +271,7 @@
     "missingPickKickoff": "Los pronósticos están cerrados — el inicio ya pasó y no enviaste uno para este partido."
   },
   "predictionForm": {
+    "adminBlocked": "Las cuentas de administrador no participan en la quiniela.",
     "homeAria": "Marcador de {team}",
     "errorNotConfirmed": "Los equipos de este partido aún no están confirmados.",
     "awayAria": "Marcador de {team}",

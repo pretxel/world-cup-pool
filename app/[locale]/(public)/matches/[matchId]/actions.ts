@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isConfirmedMatch } from "@/lib/match-utils";
+import { isCurrentUserAdmin } from "@/lib/admin/current-user";
 
 const schema = z.object({
   matchId: z.string().uuid(),
@@ -28,6 +29,12 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
   } = await supabase.auth.getUser();
   if (!user) {
     return { ok: false, error: t("errorNotSignedIn") };
+  }
+
+  // Admins are operators, not contestants — reject server-side regardless of
+  // the (disabled) client button.
+  if (await isCurrentUserAdmin(supabase)) {
+    return { ok: false, error: t("adminBlocked") };
   }
 
   const { data: match, error: matchError } = await supabase

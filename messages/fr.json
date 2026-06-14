@@ -193,6 +193,7 @@
     "loadFailed": "Échec du chargement des actualités : {message}"
   },
   "quiz": {
+    "adminBlocked": "Les comptes administrateur ne participent pas au pool.",
     "title": "Défi du Jour",
     "description": "Une question Coupe du monde par jour. Répondez avant la fin de la journée, gardez votre série et grimpez au classement du quiz.",
     "ogTitle": "Défi du Jour · WC26 Pool",
@@ -270,6 +271,7 @@
     "missingPickKickoff": "Pronos verrouillés — le coup d'envoi est passé et vous n'en avez pas envoyé pour ce match."
   },
   "predictionForm": {
+    "adminBlocked": "Les comptes administrateur ne participent pas au pool.",
     "homeAria": "Score de {team}",
     "errorNotConfirmed": "Les équipes de ce match ne sont pas encore confirmées.",
     "awayAria": "Score de {team}",

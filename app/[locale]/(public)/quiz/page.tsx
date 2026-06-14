@@ -10,6 +10,7 @@ import { buildQuizSharePath } from "@/lib/share";
 import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { isCurrentUserAdmin } from "@/lib/admin/current-user";
 import { AnswerCard } from "./answer-card";
 
 function todayUtc(): string {
@@ -53,6 +54,10 @@ export default async function QuizPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Admins are operators, not contestants — the question shows but answering is
+  // blocked (and the server action rejects them too).
+  const isAdmin = user ? await isCurrentUserAdmin(supabase) : false;
 
   const { data: question } = await supabase
     .from("v_quiz_questions_public")
@@ -179,6 +184,7 @@ export default async function QuizPage({
               questionId={question.id}
               options={localized.options}
               signedIn={!!user}
+              isAdmin={isAdmin}
               initialAnswer={myAnswer}
             />
           </div>

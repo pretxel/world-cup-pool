@@ -17,12 +17,14 @@ export function PredictionForm({
   awayTeam,
   kickoffAt,
   initial,
+  isAdmin = false,
 }: {
   matchId: string;
   homeTeam: string;
   awayTeam: string;
   kickoffAt: string;
   initial: { home_goals: number; away_goals: number } | null;
+  isAdmin?: boolean;
 }) {
   const t = useTranslations("predictionForm");
   const [home, setHome] = useState<number>(initial?.home_goals ?? 0);
@@ -49,6 +51,7 @@ export function PredictionForm({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isAdmin) return;
     if (home < 0 || away < 0 || home > MAX_GOALS || away > MAX_GOALS) {
       toast.error(t("scoresOutOfRange", { max: MAX_GOALS }));
       return;
@@ -82,7 +85,7 @@ export function PredictionForm({
             setHome(v);
             setTouched(true);
           }}
-          disabled={lockedNow || isPending}
+          disabled={lockedNow || isPending || isAdmin}
           tDecrease={t("decreaseAria", { team: homeTeam })}
           tIncrease={t("increaseAria", { team: homeTeam })}
           tInputAria={t("homeAria", { team: homeTeam })}
@@ -105,7 +108,7 @@ export function PredictionForm({
             setAway(v);
             setTouched(true);
           }}
-          disabled={lockedNow || isPending}
+          disabled={lockedNow || isPending || isAdmin}
           align="end"
           tDecrease={t("decreaseAria", { team: awayTeam })}
           tIncrease={t("increaseAria", { team: awayTeam })}
@@ -115,7 +118,11 @@ export function PredictionForm({
 
       <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
-          {lockedNow ? (
+          {isAdmin ? (
+            <span className="font-mono uppercase tracking-[0.2em]">
+              {t("adminBlocked")}
+            </span>
+          ) : lockedNow ? (
             <span className="font-mono uppercase tracking-[0.2em]">
               {t("lockedAtKickoff")}
             </span>
@@ -132,7 +139,7 @@ export function PredictionForm({
 
         <Button
           type="submit"
-          disabled={lockedNow || isPending || (initialPick && !isDirty)}
+          disabled={lockedNow || isPending || isAdmin || (initialPick && !isDirty)}
           className={cn(
             "h-10 gap-2 px-5 text-sm font-semibold uppercase tracking-[0.16em]",
           )}

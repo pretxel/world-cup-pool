@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isCurrentUserAdmin } from "@/lib/admin/current-user";
 
 const schema = z.object({
   questionId: z.string().uuid(),
@@ -11,7 +12,7 @@ const schema = z.object({
 
 export type AnswerResult =
   | { ok: true; isCorrect: boolean; correctIndex: number }
-  | { ok: false; error: "invalid" | "not-signed-in" | "already-answered" | "failed" };
+  | { ok: false; error: "invalid" | "not-signed-in" | "already-answered" | "blocked" | "failed" };
 
 /**
  * Submit an answer to today's question. Grading happens entirely in the
@@ -28,6 +29,10 @@ export async function submitQuizAnswer(input: unknown): Promise<AnswerResult> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "not-signed-in" };
+
+  // Admins are operators, not contestants — reject server-side regardless of
+  // the (disabled) client options.
+  if (await isCurrentUserAdmin(supabase)) return { ok: false, error: "blocked" };
 
   const { data, error } = await supabase.rpc("answer_quiz", {
     p_question_id: parsed.data.questionId,
