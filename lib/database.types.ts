@@ -297,6 +297,65 @@ export type Database = {
         }
         Relationships: []
       }
+      match_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          extra_minute: number | null
+          id: string
+          match_id: string
+          minute: number | null
+          payload: Json | null
+          player: string | null
+          provider: string
+          provider_event_id: string | null
+          sequence: number
+          team: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          extra_minute?: number | null
+          id?: string
+          match_id: string
+          minute?: number | null
+          payload?: Json | null
+          player?: string | null
+          provider?: string
+          provider_event_id?: string | null
+          sequence?: number
+          team?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          extra_minute?: number | null
+          id?: string
+          match_id?: string
+          minute?: number | null
+          payload?: Json | null
+          player?: string | null
+          provider?: string
+          provider_event_id?: string | null
+          sequence?: number
+          team?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_events_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_score: number | null

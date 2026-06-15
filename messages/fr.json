@@ -247,6 +247,26 @@
     "scheduledEmptyBody": "Ajoutez une question ci-dessus pour programmer le quiz quotidien.",
     "deleteConfirm": "Supprimer cette question programmée ?"
   },
+  "liveFeed": {
+    "heading": "Fil du match",
+    "live": "En direct",
+    "updatesLabel": "Mises à jour du match en direct",
+    "empty": "Aucun événement pour le moment.",
+    "eventTypes": {
+      "goal": "But",
+      "own_goal": "But contre son camp",
+      "penalty_goal": "But sur penalty",
+      "penalty_missed": "Penalty manqué",
+      "yellow": "Carton jaune",
+      "red": "Carton rouge",
+      "yellow_red": "Deuxième jaune — expulsé",
+      "substitution": "Remplacement",
+      "period_start": "Début de période",
+      "period_end": "Fin de période",
+      "var": "Vérification VAR",
+      "other": "Mise à jour"
+    }
+  },
   "matchDetail": {
     "metaTitleNotFound": "Match introuvable",
     "metaDescriptionNotFound": "Ce match n'est pas dans le calendrier du Pool Coupe du Monde 2026.",

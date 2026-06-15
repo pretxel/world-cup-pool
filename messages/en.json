@@ -247,6 +247,26 @@
     "scheduledEmptyBody": "Add a question above to schedule the daily quiz.",
     "deleteConfirm": "Delete this scheduled question?"
   },
+  "liveFeed": {
+    "heading": "Match feed",
+    "live": "Live",
+    "updatesLabel": "Live match updates",
+    "empty": "No events yet.",
+    "eventTypes": {
+      "goal": "Goal",
+      "own_goal": "Own goal",
+      "penalty_goal": "Penalty goal",
+      "penalty_missed": "Penalty missed",
+      "yellow": "Yellow card",
+      "red": "Red card",
+      "yellow_red": "Second yellow — sent off",
+      "substitution": "Substitution",
+      "period_start": "Period start",
+      "period_end": "Period end",
+      "var": "VAR review",
+      "other": "Update"
+    }
+  },
   "matchDetail": {
     "metaTitleNotFound": "Match not found",
     "metaDescriptionNotFound": "This match is not in the World Cup 2026 Pool fixture list.",

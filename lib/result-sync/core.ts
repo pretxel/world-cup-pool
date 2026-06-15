@@ -4,6 +4,7 @@ import { isConfirmedMatch } from "@/lib/match-utils";
 import { findStaleMatches, isStaleMatch } from "@/lib/result-sync/staleness";
 import { footballDataProvider } from "@/lib/result-sync/providers/football-data";
 import { espnProvider } from "@/lib/result-sync/providers/espn";
+import { syncMatchEvents } from "@/lib/result-sync/events";
 import type {
   LocalMatch,
   ProviderConfig,
@@ -326,4 +327,119 @@ export async function runSync(opts: RunSyncOptions = {}): Promise<RunSummary> {
   ).length;
 
   return summary;
+}
+
+export type MatchSyncSummary = {
+  matchId: string;
+  // score/status flipped to live/final this run
+  applied: boolean;
+  // resulting status after the run
+  status: string;
+  // match_events rows upserted
+  events: number;
+  // match was final/cancelled (or missing) → nothing fetched
+  skipped: boolean;
+  errors: number;
+};
+
+// Per-match sync scoped to a single match id, distinct from the full runSync.
+// Applies that match's ESPN score/status (keyless scoreboard) AND its
+// play-by-play events. Both steps are isolated: an event-ingestion failure
+// never blocks or rolls back the score write, and vice versa. Never runs for
+// final/cancelled matches. Used by the live API's opportunistic refresh.
+export async function runMatchSync(
+  matchId: string,
+  opts: { now?: Date } = {},
+): Promise<MatchSyncSummary> {
+  void opts;
+  const admin = createAdminSupabaseClient();
+  const out: MatchSyncSummary = {
+    matchId,
+    applied: false,
+    status: "",
+    events: 0,
+    skipped: false,
+    errors: 0,
+  };
+
+  const { data: row, error } = await admin
+    .from("matches")
+    .select(
+      "id, home_team, away_team, kickoff_at, home_score, away_score, status, competition_id",
+    )
+    .eq("id", matchId)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`Failed to load match ${matchId}: ${error.message}`);
+  }
+  if (!row) {
+    out.skipped = true;
+    return out;
+  }
+
+  const local = row as LocalMatch & { competition_id: string };
+  out.status = local.status;
+  if (local.status === "final" || local.status === "cancelled") {
+    out.skipped = true;
+    return out;
+  }
+
+  // Provider config from the match's own competition (not necessarily active).
+  const { data: comp } = await admin
+    .from("competitions")
+    .select("providers")
+    .eq("id", local.competition_id)
+    .maybeSingle();
+  const providerConfig = (comp?.providers ?? undefined) as
+    | ProviderConfig
+    | undefined;
+
+  const byKey = new Map<string, LocalMatch>();
+  byKey.set(
+    `${local.home_team}|${local.away_team}|${local.kickoff_at.slice(0, 10)}`,
+    local,
+  );
+
+  // 1) Score/status via ESPN scoreboard. Isolated.
+  const scoreSummary: RunSummary = {
+    fetched: 0,
+    matched: 0,
+    live: 0,
+    final: 0,
+    recomputed: 0,
+    unmatched: 0,
+    errors: 0,
+    source: "espn",
+    stale: 0,
+    staleResolved: 0,
+  };
+  try {
+    const date = local.kickoff_at.slice(0, 10);
+    const remote = await espnProvider.fetchMatches([date], providerConfig);
+    await applyRemote(admin, byKey, remote, "espn", scoreSummary);
+    out.applied = scoreSummary.live > 0 || scoreSummary.final > 0;
+    out.status = local.status; // applyRemote mutated `local` in place
+  } catch (err) {
+    out.errors++;
+    console.error(`[match-sync] score sync failed for ${matchId}:`, err);
+  }
+
+  // 2) Play-by-play events. Isolated: never blocks the score write above.
+  try {
+    out.events = await syncMatchEvents(
+      admin,
+      {
+        id: local.id,
+        home_team: local.home_team,
+        away_team: local.away_team,
+        kickoff_at: local.kickoff_at,
+      },
+      providerConfig,
+    );
+  } catch (err) {
+    out.errors++;
+    console.error(`[match-sync] event sync failed for ${matchId}:`, err);
+  }
+
+  return out;
 }

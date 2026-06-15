@@ -16,6 +16,14 @@ import { getActiveStageLabel, getActiveCompetition } from "@/lib/competition";
 import { groupStageKey } from "@/lib/competition-schema";
 import { ArrowLeftIcon, LockIcon, MapPinIcon } from "lucide-react";
 import { PredictionForm } from "./prediction-form";
+import { LiveEventsFeed, type LiveFeedLabels } from "@/components/live-events-feed";
+import { isLiveNow } from "@/lib/matches/live";
+import type {
+  LiveFeedPayload,
+  MatchEvent,
+  MatchEventTeam,
+  MatchEventType,
+} from "@/lib/matches/match-events";
 import { ShareButtons } from "@/components/share-buttons";
 import { buildPickSharePath } from "@/lib/share";
 import { env } from "@/lib/env";
@@ -187,6 +195,61 @@ export default async function MatchDetailPage({
 
   const stageLabelLocalized = await getActiveStageLabel(match.stage, locale);
 
+  // Live feed: mounted for non-terminal matches, seeded with the current
+  // score/status + any already-ingested events. Final/cancelled matches render
+  // the result statically with no feed/poll.
+  const isTerminalMatch =
+    match.status === "final" || match.status === "cancelled";
+  let liveFeedData: LiveFeedPayload | null = null;
+  if (!isTerminalMatch) {
+    const { data: eventRows } = await supabase
+      .from("match_events")
+      .select("id, type, team, minute, extra_minute, sequence, player, detail")
+      .eq("match_id", match.id)
+      .order("sequence", { ascending: true });
+    const events: MatchEvent[] = (eventRows ?? []).map((r) => ({
+      id: r.id,
+      type: r.type as MatchEventType,
+      team: r.team as MatchEventTeam,
+      minute: r.minute,
+      extraMinute: r.extra_minute,
+      player: r.player,
+      detail: r.detail,
+      sequence: r.sequence,
+    }));
+    liveFeedData = {
+      matchId: match.id,
+      status: match.status,
+      homeScore: match.home_score,
+      awayScore: match.away_score,
+      kickoffAt: match.kickoff_at,
+      isLive: isLiveNow(match),
+      updatedAt: new Date().toISOString(),
+      events,
+    };
+  }
+  const tLiveFeed = await getTranslations("liveFeed");
+  const liveFeedLabels: LiveFeedLabels = {
+    heading: tLiveFeed("heading"),
+    live: tLiveFeed("live"),
+    updatesLabel: tLiveFeed("updatesLabel"),
+    empty: tLiveFeed("empty"),
+    eventTypes: {
+      goal: tLiveFeed("eventTypes.goal"),
+      own_goal: tLiveFeed("eventTypes.own_goal"),
+      penalty_goal: tLiveFeed("eventTypes.penalty_goal"),
+      penalty_missed: tLiveFeed("eventTypes.penalty_missed"),
+      yellow: tLiveFeed("eventTypes.yellow"),
+      red: tLiveFeed("eventTypes.red"),
+      yellow_red: tLiveFeed("eventTypes.yellow_red"),
+      substitution: tLiveFeed("eventTypes.substitution"),
+      period_start: tLiveFeed("eventTypes.period_start"),
+      period_end: tLiveFeed("eventTypes.period_end"),
+      var: tLiveFeed("eventTypes.var"),
+      other: tLiveFeed("eventTypes.other"),
+    },
+  };
+
   const sportsEventJsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
@@ -336,6 +399,16 @@ export default async function MatchDetailPage({
           ) : null}
         </div>
       </section>
+
+      {liveFeedData ? (
+        <LiveEventsFeed
+          matchId={match.id}
+          homeTeam={match.home_team}
+          awayTeam={match.away_team}
+          initialData={liveFeedData}
+          labels={liveFeedLabels}
+        />
+      ) : null}
 
       <section className="mt-8">
         <div className="mb-3 flex items-baseline justify-between">

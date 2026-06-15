@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { TeamFlag } from "@/components/team-flag";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
+import { useLivePolling } from "@/hooks/use-live-polling";
 import { localePath, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { LiveFixture, LiveMatchesPayload } from "@/lib/matches/live";
@@ -31,80 +31,20 @@ export function LiveMatchList({
   locale: Locale;
   labels: LiveMatchLabels;
 }) {
-  const [data, setData] = React.useState<LiveMatchesPayload>(initialData);
-  // Latest payload for the scheduler, which lives in a once-created effect and
-  // would otherwise close over stale state.
-  const latest = React.useRef<LiveMatchesPayload>(initialData);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let controller: AbortController | null = null;
-
-    // Stop polling once nothing is live and the next kickoff is not imminent
-    // (more than one interval away). Re-armed when the tab regains focus.
-    const idle = (p: LiveMatchesPayload): boolean => {
+  // Stop polling once nothing is live and the next kickoff is not imminent
+  // (more than one interval away). Re-armed when the tab regains focus.
+  const data = useLivePolling<LiveMatchesPayload>({
+    initialData,
+    url: "/api/live-matches",
+    intervalMs: POLL_MS,
+    stopWhen: (p) => {
       if (p.live.length > 0) return false;
       const nextMs = p.nextUp
         ? new Date(p.nextUp.kickoff_at).getTime() - Date.now()
         : Infinity;
       return nextMs > POLL_MS;
-    };
-
-    const schedule = (p: LiveMatchesPayload) => {
-      if (timer) clearTimeout(timer);
-      timer = null;
-      if (cancelled) return;
-      if (document.visibilityState === "hidden") return;
-      if (idle(p)) return;
-      timer = setTimeout(fetchOnce, POLL_MS);
-    };
-
-    const fetchOnce = async () => {
-      controller?.abort();
-      controller = new AbortController();
-      try {
-        const res = await fetch("/api/live-matches", {
-          signal: controller.signal,
-          cache: "no-store",
-        });
-        if (cancelled) return;
-        if (!res.ok) {
-          schedule(latest.current);
-          return;
-        }
-        const payload = (await res.json()) as LiveMatchesPayload;
-        if (cancelled) return;
-        latest.current = payload;
-        setData(payload);
-        schedule(payload);
-      } catch {
-        // Aborts land here too; only reschedule when still mounted.
-        if (!cancelled) schedule(latest.current);
-      }
-    };
-
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") {
-        void fetchOnce();
-      } else if (timer) {
-        clearTimeout(timer);
-        timer = null;
-      }
-    };
-
-    schedule(initialData);
-    document.addEventListener("visibilitychange", onVisibility);
-
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-      controller?.abort();
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-    // Run once; the scheduler reads fresh data via `latest`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    },
+  });
 
   const visible = data.live.slice(0, MAX_VISIBLE);
   const overflow = data.live.length - visible.length;
