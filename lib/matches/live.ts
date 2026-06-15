@@ -24,7 +24,7 @@ export type LiveMatchesPayload = {
 // A fixture is "live now" when the DB marks it live, or it has kicked off and is
 // not yet final/cancelled — mirroring the kickoff rule in `lockReason` so the
 // landing page agrees with match locking.
-function isLiveNow(m: { status: string; kickoff_at: string }): boolean {
+export function isLiveNow(m: { status: string; kickoff_at: string }): boolean {
   if (m.status === "final" || m.status === "cancelled") return false;
   if (m.status === "live") return true;
   return new Date(m.kickoff_at).getTime() <= Date.now();

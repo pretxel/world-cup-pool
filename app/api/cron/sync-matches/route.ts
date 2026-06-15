@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { availableProviders, runSync } from "@/lib/result-sync/core";
+import { syncLiveEvents } from "@/lib/result-sync/events";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { dispatchResultEmails } from "@/lib/notifications/result-emails";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
@@ -36,6 +38,16 @@ export async function GET(request: NextRequest) {
   const { summary: response } = await recordRun("sync_matches", "cron", async () => {
     const summary = await runSync();
 
+    // Ingest ESPN play-by-play for any match the sync left live. Isolated:
+    // event ingestion is additive to the score/status writes, which have
+    // already committed by here, and any failure is logged, never thrown.
+    let events = 0;
+    try {
+      events = await syncLiveEvents(createAdminSupabaseClient());
+    } catch (err) {
+      console.error("[cron:sync-matches] event ingestion failed:", err);
+    }
+
     // Email players whose standing changed on a match that just finalized.
     // Isolated: any failure is logged and never fails the sync — the sync's
     // score/match writes have already committed by here.
@@ -48,7 +60,7 @@ export async function GET(request: NextRequest) {
       console.error("[cron:sync-matches] result-email dispatch failed:", err);
     }
 
-    return { ...summary, emailed };
+    return { ...summary, events, emailed };
   });
 
   console.log(`[cron:sync-matches] summary:`, JSON.stringify(response));
