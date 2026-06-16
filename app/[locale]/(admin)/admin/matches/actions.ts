@@ -7,6 +7,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { runSync } from "@/lib/result-sync/core";
 import { forceDispatchResultEmails } from "@/lib/notifications/result-emails";
+import { generateMatchSummary } from "@/lib/matches/match-summary";
 import {
   getManagedCompetition,
   assertMatchInManaged,
@@ -264,6 +265,44 @@ export async function resendResultEmails(formData: FormData): Promise<void> {
   params.set("resendEmailed", String(summary.emailed));
   params.set("resendFailed", String(summary.failed));
   params.set("resendSkipped", String(summary.skipped));
+  redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+}
+
+// Admin on-demand AI recap for one match. Validates admin + managed scope, then
+// runs the shared generator (which itself requires `final` status and at least
+// one match_event, and short-circuits when the OpenRouter key is unset). The
+// outcome travels back per-match via query params after the redirect, mirroring
+// resendResultEmails. The generator is idempotent, so a duplicate click reports
+// "exists" rather than creating a second recap.
+export async function summarizeMatch(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const match_id = z.string().uuid().parse(formData.get("match_id"));
+
+  const rawLocale = formData.get("locale");
+  const locale =
+    typeof rawLocale === "string" && isLocale(rawLocale)
+      ? rawLocale
+      : DEFAULT_LOCALE;
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, match_id, managed.id);
+
+  const params = new URLSearchParams({ summaryMatchId: match_id });
+  try {
+    const result = await generateMatchSummary(admin, match_id);
+    // "generated" on success, else the generator's skip reason (exists,
+    // not-final, no-events, no-key, missing).
+    params.set("summaryReason", result.generated ? "generated" : (result.reason ?? "error"));
+  } catch (err) {
+    // Never surface a server-error page for a recap failure — report inline.
+    console.error("[admin:summarizeMatch] generation failed:", err);
+    params.set("summaryReason", "error");
+  }
+
+  // A fresh recap surfaces on the public match page when the managed comp is active.
+  revalidateAfterMutation(managed.is_active, `/matches/${match_id}`);
   redirect(localePath(locale, `/admin/matches?${params.toString()}`));
 }
 
