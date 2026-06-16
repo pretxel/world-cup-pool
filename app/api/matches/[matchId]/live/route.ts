@@ -50,10 +50,12 @@ export async function GET(
   }));
 
   // AI recap, if one has been generated (final matches only). Absent otherwise.
+  // Only the ACTIVE (published) version is exposed; drafts stay admin-only.
   const { data: summaryRow } = await supabase
     .from("match_summaries")
     .select("content, model, locale, generated_at")
     .eq("match_id", matchId)
+    .eq("is_active", true)
     .maybeSingle();
   const summary: MatchSummary | undefined = summaryRow
     ? {
