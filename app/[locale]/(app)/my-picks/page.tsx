@@ -11,6 +11,7 @@ import { simulateAllGroups } from "@/lib/group-standings";
 import { getActiveCompetition } from "@/lib/competition";
 import { groupStageKey } from "@/lib/competition-schema";
 import { paginate, parsePageParam } from "@/lib/pagination";
+import { sortPicksByKickoff } from "@/lib/picks-order";
 import { isLocked } from "@/lib/match-utils";
 import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -53,8 +54,7 @@ export default async function MyPicksPage({
   const { data: picks, error } = await supabase
     .from("predictions")
     .select("match_id, home_goals, away_goals, submitted_at, matches!inner(*)")
-    .eq("user_id", user.id)
-    .order("kickoff_at", { foreignTable: "matches", ascending: true });
+    .eq("user_id", user.id);
 
   if (error) {
     return (
@@ -103,10 +103,13 @@ export default async function MyPicksPage({
     predictionsByMatchId,
   );
 
-  // Paginate the picks list (5 per page) from the `?page=` param. Stats above
-  // and the group simulation below intentionally read the full set — only the
-  // rendered list is windowed. The page value is clamped, so any URL renders.
-  const allPicks = picks ?? [];
+  // Order the full pick set by match kickoff (earliest first) BEFORE paging, so
+  // the pages partition one global kickoff order. The DB does not sort this for
+  // us — the query's embedded match cannot order the parent predictions — so it
+  // is done in memory here. Stats above and the group simulation below read the
+  // same full set; only the rendered list is windowed. Page is clamped, so any
+  // URL renders.
+  const allPicks = sortPicksByKickoff(picks ?? []);
   const pageInfo = paginate(allPicks.length, parsePageParam(pageParam));
   const pagePicks = allPicks.slice(pageInfo.start, pageInfo.end);
 
