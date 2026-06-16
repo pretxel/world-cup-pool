@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Unit tests for the AI match-summary generator: idempotency, status gating,
-// key short-circuit, prompt shape, and persistence on success.
+// key short-circuit, prompt shape, versioned persistence (auto = active, drafts
+// inactive), and styled regeneration.
 
 const envMock = vi.hoisted(
   () =>
@@ -25,6 +26,7 @@ import {
   generateMatchSummary,
   generatePendingSummaries,
   type SummaryMatch,
+  type SummaryEvent,
 } from "@/lib/matches/match-summary";
 
 const chatMock = vi.mocked(createChatCompletion);
@@ -40,20 +42,39 @@ const FINAL_MATCH: SummaryMatch & { status: string } = {
 };
 
 type AdminOpts = {
-  existing?: { id: string } | null;
+  // Rows the existence check (auto mode) sees; an existing recap means "skip".
+  existing?: { id: string } | { id: string }[] | null;
   match?: Record<string, unknown> | null;
   events?: unknown[];
   insertError?: { code?: string; message?: string } | null;
+  insertedId?: string;
 };
 
 function makeAdmin(opts: AdminOpts) {
-  const insert = vi.fn(async () => ({ error: opts.insertError ?? null }));
+  const insertPayloads: Record<string, unknown>[] = [];
+  const insert = vi.fn((payload: Record<string, unknown>) => {
+    insertPayloads.push(payload);
+    return {
+      select: () => ({
+        single: async () => ({
+          data: opts.insertError ? null : { id: opts.insertedId ?? "s-new" },
+          error: opts.insertError ?? null,
+        }),
+      }),
+    };
+  });
+  const existenceRows = opts.existing
+    ? Array.isArray(opts.existing)
+      ? opts.existing
+      : [opts.existing]
+    : [];
   const from = vi.fn((table: string) => {
     if (table === "match_summaries") {
       return {
+        // Auto-mode existence check: .select("id").eq("match_id", id).limit(1)
         select: () => ({
           eq: () => ({
-            maybeSingle: async () => ({ data: opts.existing ?? null, error: null }),
+            limit: async () => ({ data: existenceRows, error: null }),
           }),
         }),
         insert,
@@ -79,15 +100,24 @@ function makeAdmin(opts: AdminOpts) {
     }
     throw new Error(`unexpected from(${table})`);
   });
-  return { from, insert };
+  return { from, insert, insertPayloads };
 }
+
+const GOAL: SummaryEvent = {
+  type: "goal",
+  team: "home",
+  minute: 12,
+  extra_minute: null,
+  player: "Lozano",
+  detail: null,
+};
 
 beforeEach(() => {
   envMock.openrouterApiKey = "test-key";
   chatMock.mockReset();
 });
 
-describe("generateMatchSummary", () => {
+describe("generateMatchSummary (auto mode)", () => {
   it("short-circuits without DB or network when the key is unset", async () => {
     envMock.openrouterApiKey = null;
     const admin = makeAdmin({});
@@ -97,11 +127,18 @@ describe("generateMatchSummary", () => {
     expect(chatMock).not.toHaveBeenCalled();
   });
 
-  it("skips when a summary already exists", async () => {
+  it("skips when any version already exists", async () => {
     const admin = makeAdmin({ existing: { id: "s1" } });
     const result = await generateMatchSummary(admin as never, "m1");
     expect(result).toEqual({ generated: false, reason: "exists" });
     expect(chatMock).not.toHaveBeenCalled();
+    expect(admin.insert).not.toHaveBeenCalled();
+  });
+
+  it("skips when multiple versions already exist (multi-row tolerant)", async () => {
+    const admin = makeAdmin({ existing: [{ id: "s1" }, { id: "s2" }] });
+    const result = await generateMatchSummary(admin as never, "m1");
+    expect(result).toEqual({ generated: false, reason: "exists" });
     expect(admin.insert).not.toHaveBeenCalled();
   });
 
@@ -123,7 +160,7 @@ describe("generateMatchSummary", () => {
     expect(chatMock).not.toHaveBeenCalled();
   });
 
-  it("generates and persists a recap on success", async () => {
+  it("generates and persists an ACTIVE neutral version on success", async () => {
     chatMock.mockResolvedValue({
       content: "Mexico edged Canada 2-1.",
       model: "test/model",
@@ -133,14 +170,12 @@ describe("generateMatchSummary", () => {
     const admin = makeAdmin({
       existing: null,
       match: FINAL_MATCH,
-      events: [
-        { type: "goal", team: "home", minute: 12, extra_minute: null, player: "Lozano", detail: null },
-      ],
+      events: [GOAL],
+      insertedId: "s-auto",
     });
     const result = await generateMatchSummary(admin as never, "m1");
-    expect(result).toEqual({ generated: true });
+    expect(result).toEqual({ generated: true, summaryId: "s-auto" });
     expect(chatMock).toHaveBeenCalledTimes(1);
-    expect(admin.insert).toHaveBeenCalledTimes(1);
     expect(admin.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         match_id: "m1",
@@ -150,6 +185,9 @@ describe("generateMatchSummary", () => {
         prompt_tokens: 11,
         completion_tokens: 22,
         locale: "en",
+        style_key: "neutral",
+        style_instruction: null,
+        is_active: true,
       }),
     );
   });
@@ -164,9 +202,7 @@ describe("generateMatchSummary", () => {
     const admin = makeAdmin({
       existing: null,
       match: FINAL_MATCH,
-      events: [
-        { type: "goal", team: "home", minute: 12, extra_minute: null, player: "Lozano", detail: null },
-      ],
+      events: [GOAL],
       insertError: { code: "23505", message: "duplicate key" },
     });
     const result = await generateMatchSummary(admin as never, "m1");
@@ -174,11 +210,7 @@ describe("generateMatchSummary", () => {
   });
 
   it("skips a final match with no recorded events (no network, no insert)", async () => {
-    const admin = makeAdmin({
-      existing: null,
-      match: FINAL_MATCH,
-      events: [],
-    });
+    const admin = makeAdmin({ existing: null, match: FINAL_MATCH, events: [] });
     const result = await generateMatchSummary(admin as never, "m1");
     expect(result).toEqual({ generated: false, reason: "no-events" });
     expect(chatMock).not.toHaveBeenCalled();
@@ -186,11 +218,80 @@ describe("generateMatchSummary", () => {
   });
 });
 
+describe("generateMatchSummary (regenerate mode)", () => {
+  it("always inserts a NEW non-active draft even when a version exists", async () => {
+    chatMock.mockResolvedValue({
+      content: "Dramatic recap.",
+      model: "test/model",
+      promptTokens: 5,
+      completionTokens: 6,
+    });
+    const admin = makeAdmin({
+      existing: { id: "s1" }, // a version already exists — must NOT block
+      match: FINAL_MATCH,
+      events: [GOAL],
+      insertedId: "s-draft",
+    });
+    const result = await generateMatchSummary(admin as never, "m1", {
+      mode: "regenerate",
+      style: { key: "dramatic", instruction: "Lean into the drama." },
+    });
+    expect(result).toEqual({ generated: true, summaryId: "s-draft" });
+    expect(admin.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        match_id: "m1",
+        style_key: "dramatic",
+        style_instruction: "Lean into the drama.",
+        is_active: false,
+      }),
+    );
+  });
+
+  it("does not run the existence check at all in regenerate mode", async () => {
+    chatMock.mockResolvedValue({
+      content: "Recap.",
+      model: "test/model",
+      promptTokens: null,
+      completionTokens: null,
+    });
+    const admin = makeAdmin({
+      existing: [{ id: "s1" }, { id: "s2" }],
+      match: FINAL_MATCH,
+      events: [GOAL],
+    });
+    const result = await generateMatchSummary(admin as never, "m1", {
+      mode: "regenerate",
+      style: { key: "custom", instruction: "Focus on the keeper." },
+    });
+    expect(result.generated).toBe(true);
+  });
+
+  it("still honours the no-events / not-final / no-key gates", async () => {
+    // no-key
+    envMock.openrouterApiKey = null;
+    let admin = makeAdmin({ match: FINAL_MATCH, events: [GOAL] });
+    expect(
+      await generateMatchSummary(admin as never, "m1", { mode: "regenerate" }),
+    ).toEqual({ generated: false, reason: "no-key" });
+
+    // not-final
+    envMock.openrouterApiKey = "test-key";
+    admin = makeAdmin({ match: { ...FINAL_MATCH, status: "live" }, events: [GOAL] });
+    expect(
+      await generateMatchSummary(admin as never, "m1", { mode: "regenerate" }),
+    ).toEqual({ generated: false, reason: "not-final" });
+
+    // no-events
+    admin = makeAdmin({ match: FINAL_MATCH, events: [] });
+    expect(
+      await generateMatchSummary(admin as never, "m1", { mode: "regenerate" }),
+    ).toEqual({ generated: false, reason: "no-events" });
+  });
+});
+
 describe("buildSummaryPrompt", () => {
   it("instructs English output and includes the score and events", () => {
-    const prompt = buildSummaryPrompt(FINAL_MATCH, [
-      { type: "goal", team: "home", minute: 12, extra_minute: null, player: "Lozano", detail: null },
-    ]);
+    const prompt = buildSummaryPrompt(FINAL_MATCH, [GOAL]);
     expect(prompt.system).toContain("English");
     expect(prompt.user).toContain("Mexico 2 - 1 Canada");
     expect(prompt.user).toContain("Lozano");
@@ -200,6 +301,22 @@ describe("buildSummaryPrompt", () => {
   it("notes when no events were recorded", () => {
     const prompt = buildSummaryPrompt(FINAL_MATCH, []);
     expect(prompt.user).toContain("no individual events");
+  });
+
+  it("appends a style instruction after the grounding constraints", () => {
+    const instruction = "Lean into a dramatic tone.";
+    const prompt = buildSummaryPrompt(FINAL_MATCH, [GOAL], instruction);
+    expect(prompt.system).toContain(instruction);
+    // The style guidance is appended AFTER the "never invent" grounding rule.
+    expect(prompt.system.indexOf("never invent")).toBeLessThan(
+      prompt.system.indexOf(instruction),
+    );
+  });
+
+  it("ignores an empty/whitespace style instruction", () => {
+    const base = buildSummaryPrompt(FINAL_MATCH, [GOAL]);
+    const blank = buildSummaryPrompt(FINAL_MATCH, [GOAL], "   ");
+    expect(blank.system).toBe(base.system);
   });
 });
 

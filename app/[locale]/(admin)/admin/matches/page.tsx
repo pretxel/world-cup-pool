@@ -1,8 +1,15 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { CalendarClockIcon, RefreshCwIcon, SparklesIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRightIcon,
+  CalendarClockIcon,
+  RefreshCwIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
@@ -20,7 +27,7 @@ import {
   deleteMatch,
   syncNow,
 } from "./actions";
-import { isLocale, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
+import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { isConfirmedMatch } from "@/lib/match-utils";
 import { isStaleMatch } from "@/lib/result-sync/staleness";
 import { getManagedCompetition } from "@/lib/admin/managed-competition";
@@ -479,6 +486,17 @@ export default async function AdminMatchesPage({
                         </form>
 
                         <div className="flex flex-wrap items-center gap-1.5">
+                          <Link
+                            href={localePath(locale, `/admin/matches/${m.id}`)}
+                            className={buttonVariants({
+                              size: "sm",
+                              variant: "outline",
+                              className: "gap-1.5",
+                            })}
+                          >
+                            {t("detail.open")}
+                            <ArrowRightIcon className="size-3.5" aria-hidden />
+                          </Link>
                           <form action={forceRecompute}>
                             <input type="hidden" name="match_id" value={m.id} />
                             <SubmitButton size="sm" variant="ghost">
@@ -498,10 +516,15 @@ export default async function AdminMatchesPage({
                               hint when there are no events to summarize. */}
                           {m.status === "final" ? (
                             summarizedIds.has(m.id) ? (
-                              <Badge variant="outline" className="gap-1">
-                                <SparklesIcon className="size-3" aria-hidden />
-                                {t("summaryReady")}
-                              </Badge>
+                              <Link
+                                href={localePath(locale, `/admin/matches/${m.id}`)}
+                                className="transition-opacity hover:opacity-80"
+                              >
+                                <Badge variant="outline" className="gap-1">
+                                  <SparklesIcon className="size-3" aria-hidden />
+                                  {t("summaryReady")}
+                                </Badge>
+                              </Link>
                             ) : eventedIds.has(m.id) ? (
                               <SummarizeMatchButton
                                 matchId={m.id}

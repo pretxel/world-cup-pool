@@ -236,6 +236,7 @@ export default async function MatchDetailPage({
       .from("match_summaries")
       .select("content")
       .eq("match_id", match.id)
+      .eq("is_active", true)
       .maybeSingle();
     if (summaryRow) matchSummary = { content: summaryRow.content };
   }

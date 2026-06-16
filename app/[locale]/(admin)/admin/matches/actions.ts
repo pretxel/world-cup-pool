@@ -7,7 +7,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { runSync } from "@/lib/result-sync/core";
 import { forceDispatchResultEmails } from "@/lib/notifications/result-emails";
-import { generateMatchSummary } from "@/lib/matches/match-summary";
+import {
+  generateMatchSummary,
+  STYLE_PRESETS,
+  type SummaryStyle,
+} from "@/lib/matches/match-summary";
 import {
   getManagedCompetition,
   assertMatchInManaged,
@@ -304,6 +308,178 @@ export async function summarizeMatch(formData: FormData): Promise<void> {
   // A fresh recap surfaces on the public match page when the managed comp is active.
   revalidateAfterMutation(managed.is_active, `/matches/${match_id}`);
   redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+}
+
+// --- Recap versioning (admin fixture detail page) ----------------------------
+
+const STYLE_KEY_VALUES = ["neutral", "dramatic", "tactical", "concise", "custom"] as const;
+const MAX_STYLE_INSTRUCTION = 500;
+
+const regenerateSchema = z
+  .object({
+    match_id: z.string().uuid(),
+    style_key: z.enum(STYLE_KEY_VALUES),
+    style_instruction: z.string().trim().max(MAX_STYLE_INSTRUCTION).optional(),
+  })
+  .refine((v) => v.style_key !== "custom" || !!v.style_instruction, {
+    message: "A custom style needs an instruction",
+    path: ["style_instruction"],
+  });
+
+const versionActionSchema = z.object({
+  summary_id: z.string().uuid(),
+  match_id: z.string().uuid(),
+});
+
+// Map the posted style choice to the exact instruction injected + stored. Preset
+// fragments come from STYLE_PRESETS; a `custom` style carries the admin's text.
+function resolveStyle(
+  styleKey: (typeof STYLE_KEY_VALUES)[number],
+  instruction: string | undefined,
+): SummaryStyle {
+  if (styleKey === "custom") {
+    return { key: "custom", instruction: (instruction ?? "").trim() };
+  }
+  const preset = STYLE_PRESETS[styleKey] ?? "";
+  return { key: styleKey, instruction: preset.length > 0 ? preset : null };
+}
+
+function localeFrom(formData: FormData) {
+  const raw = formData.get("locale");
+  return typeof raw === "string" && isLocale(raw) ? raw : DEFAULT_LOCALE;
+}
+
+// Admin styled regeneration from the fixture detail page. Always inserts a new
+// NON-active draft version (the public view is unchanged until the admin
+// activates it). Outcome travels back via query params after the redirect.
+export async function regenerateMatchSummary(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = regenerateSchema.parse({
+    match_id: formData.get("match_id"),
+    style_key: formData.get("style_key"),
+    style_instruction: (formData.get("style_instruction") as string) || undefined,
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const style = resolveStyle(parsed.style_key, parsed.style_instruction);
+
+  const params = new URLSearchParams({ regenMatchId: parsed.match_id });
+  try {
+    const result = await generateMatchSummary(admin, parsed.match_id, {
+      mode: "regenerate",
+      style,
+    });
+    // "generated" on success, else the generator's skip reason
+    // (not-final, no-events, no-key, missing).
+    params.set("regenResult", result.generated ? "generated" : (result.reason ?? "error"));
+  } catch (err) {
+    console.error("[admin:regenerateMatchSummary] generation failed:", err);
+    params.set("regenResult", "error");
+  }
+
+  // A draft does not change the public view; revalidate the admin surfaces.
+  revalidateAfterMutation(managed.is_active);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
+}
+
+// Publish a chosen recap version: make it the single active version for its
+// match. Deactivate-all-then-activate-one so a crash between the two updates
+// leaves the match with no active version (recap hidden), never two.
+export async function setActiveSummaryVersion(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = versionActionSchema.parse({
+    summary_id: formData.get("summary_id"),
+    match_id: formData.get("match_id"),
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const params = new URLSearchParams({ activateSummaryId: parsed.summary_id });
+  try {
+    // Don't trust the posted summary_id — confirm it belongs to this match.
+    const { data: version } = await admin
+      .from("match_summaries")
+      .select("id, match_id")
+      .eq("id", parsed.summary_id)
+      .maybeSingle();
+    if (!version || version.match_id !== parsed.match_id) {
+      params.set("activateResult", "error");
+    } else {
+      const { error: deErr } = await admin
+        .from("match_summaries")
+        .update({ is_active: false })
+        .eq("match_id", parsed.match_id);
+      if (deErr) throw new Error(deErr.message);
+      const { error: actErr } = await admin
+        .from("match_summaries")
+        .update({ is_active: true })
+        .eq("id", parsed.summary_id);
+      if (actErr) throw new Error(actErr.message);
+      params.set("activateResult", "activated");
+    }
+  } catch (err) {
+    console.error("[admin:setActiveSummaryVersion] failed:", err);
+    params.set("activateResult", "error");
+  }
+
+  // The newly active version surfaces publicly when the managed comp is active.
+  revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
+}
+
+// Delete a non-active draft version. Refuses to delete the active version so a
+// match never silently loses its published recap.
+export async function deleteSummaryVersion(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = versionActionSchema.parse({
+    summary_id: formData.get("summary_id"),
+    match_id: formData.get("match_id"),
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const params = new URLSearchParams({ deleteSummaryId: parsed.summary_id });
+  try {
+    const { data: version } = await admin
+      .from("match_summaries")
+      .select("id, match_id, is_active")
+      .eq("id", parsed.summary_id)
+      .maybeSingle();
+    if (!version || version.match_id !== parsed.match_id) {
+      params.set("deleteResult", "error");
+    } else if (version.is_active) {
+      params.set("deleteResult", "active-blocked");
+    } else {
+      const { error } = await admin
+        .from("match_summaries")
+        .delete()
+        .eq("id", parsed.summary_id);
+      if (error) throw new Error(error.message);
+      params.set("deleteResult", "deleted");
+    }
+  } catch (err) {
+    console.error("[admin:deleteSummaryVersion] failed:", err);
+    params.set("deleteResult", "error");
+  }
+
+  revalidateAfterMutation(managed.is_active);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
 }
 
 export async function deleteMatch(formData: FormData) {

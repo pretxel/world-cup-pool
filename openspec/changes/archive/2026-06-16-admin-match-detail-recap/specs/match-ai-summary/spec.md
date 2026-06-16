@@ -1,10 +1,4 @@
-# match-ai-summary
-
-## Purpose
-
-Rules governing AI-generated match recaps: a dedicated `match_summaries` model, generation gated to matches that have reached `final`, the OpenRouter-backed generation path (env-gated, English locale), isolation from result-sync score writes, and how a stored summary surfaces to viewers via the per-match live API and the match-detail view.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: AI match summaries are stored in a dedicated model
 
@@ -93,19 +87,6 @@ via `style_key` and `style_instruction`. The stored row's `locale` SHALL be `'en
 - **WHEN** generation runs with a style instruction supplied
 - **THEN** the instruction is applied to the prompt while the grounding constraint still holds
 - **AND** the stored version records the style via `style_key` and `style_instruction`
-
-### Requirement: Generation is isolated from score writes and recorded
-
-The system SHALL run summary generation in isolation from the result-sync score/status writes, such that a failure or timeout in generation never blocks or rolls back a match's score, status update, or score computation. Each generation pass SHALL be tracked as an operation run via the existing `recordRun` mechanism so it surfaces in operations monitoring.
-
-#### Scenario: Generation failure does not block sync
-- **WHEN** summary generation throws or times out during a sync run
-- **THEN** the match's score and `final` status are still persisted
-- **AND** the failure is recorded rather than propagated to the cron response
-
-#### Scenario: Generation pass is recorded
-- **WHEN** a summary generation pass runs
-- **THEN** an operation run is recorded with its outcome (success, partial, or error)
 
 ### Requirement: Stored summary surfaces to viewers
 

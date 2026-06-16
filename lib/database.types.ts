@@ -363,11 +363,14 @@ export type Database = {
           created_at: string
           generated_at: string
           id: string
+          is_active: boolean
           locale: string
           match_id: string
           model: string | null
           prompt_tokens: number | null
           provider: string
+          style_instruction: string | null
+          style_key: string
           updated_at: string
         }
         Insert: {
@@ -376,11 +379,14 @@ export type Database = {
           created_at?: string
           generated_at?: string
           id?: string
+          is_active?: boolean
           locale?: string
           match_id: string
           model?: string | null
           prompt_tokens?: number | null
           provider?: string
+          style_instruction?: string | null
+          style_key?: string
           updated_at?: string
         }
         Update: {
@@ -389,18 +395,21 @@ export type Database = {
           created_at?: string
           generated_at?: string
           id?: string
+          is_active?: boolean
           locale?: string
           match_id?: string
           model?: string | null
           prompt_tokens?: number | null
           provider?: string
+          style_instruction?: string | null
+          style_key?: string
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "match_summaries_match_id_fkey"
             columns: ["match_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },

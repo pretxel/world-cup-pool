@@ -41,13 +41,12 @@ function makeClient(opts: {
         };
       }
       if (table === "match_summaries") {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: async () => ({ data: opts.summary ?? null, error: null }),
-            }),
-          }),
+        // Chainable .eq() so .select().eq("match_id").eq("is_active") both resolve.
+        const eqChain = {
+          eq: () => eqChain,
+          maybeSingle: async () => ({ data: opts.summary ?? null, error: null }),
         };
+        return { select: () => eqChain };
       }
       throw new Error(`unexpected from(${table})`);
     },
