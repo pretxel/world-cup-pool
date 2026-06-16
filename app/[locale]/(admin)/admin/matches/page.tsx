@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { CalendarClockIcon, RefreshCwIcon } from "lucide-react";
+import { CalendarClockIcon, RefreshCwIcon, SparklesIcon } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import { isConfirmedMatch } from "@/lib/match-utils";
 import { isStaleMatch } from "@/lib/result-sync/staleness";
 import { getManagedCompetition } from "@/lib/admin/managed-competition";
 import { ResendResultEmailsButton } from "@/components/admin/resend-emails-button";
+import { SummarizeMatchButton } from "@/components/admin/summarize-match-button";
 import {
   getStageLabel,
   hasGroupStage,
@@ -96,6 +97,36 @@ function parseResendSummaryParams(params: {
   };
 }
 
+// The summarizeMatch action reports back per-match via query params (same
+// server-rendered pattern as resendResultEmails): the target match id plus the
+// outcome reason ("generated" or a generator skip reason).
+function parseSummaryResultParams(params: {
+  [key: string]: string | string[] | undefined;
+}): { matchId: string; reason: string } | null {
+  const matchId = params.summaryMatchId;
+  if (typeof matchId !== "string" || matchId.length === 0) return null;
+  const reason =
+    typeof params.summaryReason === "string" ? params.summaryReason : "error";
+  return { matchId, reason };
+}
+
+// Map a summary outcome reason to its `admin` message key and panel variant.
+const SUMMARY_REASON_KEY: Record<string, string> = {
+  generated: "summaryDoneGenerated",
+  exists: "summaryDoneExists",
+  "no-events": "summaryDoneNoEvents",
+  "not-final": "summaryDoneNotFinal",
+  "no-key": "summaryDoneNoKey",
+  missing: "summaryDoneError",
+  error: "summaryDoneError",
+};
+
+function summaryVariant(reason: string): "success" | "error" | "info" {
+  if (reason === "generated") return "success";
+  if (reason === "error" || reason === "missing") return "error";
+  return "info";
+}
+
 export default async function AdminMatchesPage({
   params,
   searchParams,
@@ -113,6 +144,7 @@ export default async function AdminMatchesPage({
   const sp = await searchParams;
   const syncSummary = parseSyncSummaryParams(sp);
   const resendSummary = parseResendSummaryParams(sp);
+  const summaryResult = parseSummaryResultParams(sp);
   const now = new Date();
 
   // Everything on this page is scoped to the MANAGED competition (the admin's
@@ -137,6 +169,22 @@ export default async function AdminMatchesPage({
   const { data: matches } = await matchesQuery;
   const list = matches ?? [];
 
+  // Per-match summarize preconditions, batched over the visible match ids (both
+  // queries are index-backed): which matches already have a recap, and which
+  // have at least one event to summarize. Drives the button vs. "recap ready"
+  // vs. "no events" affordance without an N+1.
+  const matchIds = list.map((m) => m.id);
+  const summarizedIds = new Set<string>();
+  const eventedIds = new Set<string>();
+  if (matchIds.length > 0) {
+    const [{ data: summaryRows }, { data: eventRows }] = await Promise.all([
+      supabase.from("match_summaries").select("match_id").in("match_id", matchIds),
+      supabase.from("match_events").select("match_id").in("match_id", matchIds),
+    ]);
+    for (const r of summaryRows ?? []) summarizedIds.add(r.match_id);
+    for (const r of eventRows ?? []) eventedIds.add(r.match_id);
+  }
+
   // Outcome text for the always-mounted live regions (see <LiveRegion>): the
   // visible panels mount only after the action's redirect, so the persistent
   // region is what actually gets announced.
@@ -158,12 +206,20 @@ export default async function AdminMatchesPage({
       : undefined;
   const resendAlert =
     resendSummary?.error === "notFinal" ? t("resendNotFinal") : undefined;
+  const summaryMessage = summaryResult
+    ? t(SUMMARY_REASON_KEY[summaryResult.reason] ?? "summaryDoneError")
+    : undefined;
+  const summaryIsError =
+    summaryResult != null && summaryVariant(summaryResult.reason) === "error";
+  const summaryAnnounce =
+    summaryResult && !summaryIsError ? summaryMessage : undefined;
+  const summaryAlert = summaryIsError ? summaryMessage : undefined;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       <LiveRegion
-        status={syncAnnounce ?? resendAnnounce}
-        alert={syncAlert ?? resendAlert}
+        status={syncAnnounce ?? resendAnnounce ?? summaryAnnounce}
+        alert={syncAlert ?? resendAlert ?? summaryAlert}
       />
       <div className="admin-reveal space-y-8">
         <AdminPageHeader
@@ -437,6 +493,28 @@ export default async function AdminMatchesPage({
                               confirmText={t("resendConfirm")}
                             />
                           ) : null}
+                          {/* AI recap: button when there is event data and no
+                              recap yet; "ready" badge once a recap exists; a
+                              hint when there are no events to summarize. */}
+                          {m.status === "final" ? (
+                            summarizedIds.has(m.id) ? (
+                              <Badge variant="outline" className="gap-1">
+                                <SparklesIcon className="size-3" aria-hidden />
+                                {t("summaryReady")}
+                              </Badge>
+                            ) : eventedIds.has(m.id) ? (
+                              <SummarizeMatchButton
+                                matchId={m.id}
+                                locale={locale}
+                                label={t("summarize")}
+                                pendingLabel={t("summarizePending")}
+                              />
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                {t("summarizeNoEvents")}
+                              </span>
+                            )
+                          ) : null}
                           {/* Destructive action separated from primary/secondary */}
                           <form
                             action={deleteMatch}
@@ -467,6 +545,18 @@ export default async function AdminMatchesPage({
                               })}
                             </ActionStatus>
                           )
+                        ) : null}
+
+                        {summaryResult?.matchId === m.id ? (
+                          <ActionStatus
+                            variant={summaryVariant(summaryResult.reason)}
+                            live={false}
+                          >
+                            {t(
+                              SUMMARY_REASON_KEY[summaryResult.reason] ??
+                                "summaryDoneError",
+                            )}
+                          </ActionStatus>
                         ) : null}
                       </div>
 

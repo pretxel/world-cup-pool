@@ -37,6 +37,13 @@ vi.mock("@/lib/notifications/result-emails", () => ({
   forceDispatchResultEmails: forceDispatchMock,
 }));
 
+// The actions module also exports summarizeMatch, which pulls in the summary
+// generator (and its env access). This action doesn't use it — stub it so the
+// real module's import-time env validation doesn't run in this suite.
+vi.mock("@/lib/matches/match-summary", () => ({
+  generateMatchSummary: vi.fn(),
+}));
+
 vi.mock("@/lib/admin/managed-competition", () => ({
   getManagedCompetition: getManagedCompetitionMock,
   assertMatchInManaged: assertMatchInManagedMock,

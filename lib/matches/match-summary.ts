@@ -105,7 +105,7 @@ export function buildSummaryPrompt(
 
 export type GenerateResult = {
   generated: boolean;
-  reason?: "no-key" | "exists" | "missing" | "not-final";
+  reason?: "no-key" | "exists" | "missing" | "not-final" | "no-events";
 };
 
 /**
@@ -142,7 +142,13 @@ export async function generateMatchSummary(
     .eq("match_id", matchId)
     .order("sequence", { ascending: true });
 
-  const prompt = buildSummaryPrompt(match as SummaryMatch, (eventRows ?? []) as SummaryEvent[]);
+  // Require real event data: a recap built from the score alone is low value, so
+  // skip (no LLM call, no insert) when no events were ingested. This gate is
+  // authoritative for both the cron pass and the manual admin trigger.
+  const events = (eventRows ?? []) as SummaryEvent[];
+  if (events.length === 0) return { generated: false, reason: "no-events" };
+
+  const prompt = buildSummaryPrompt(match as SummaryMatch, events);
 
   const completion = await createChatCompletion({
     messages: [

@@ -164,11 +164,25 @@ describe("generateMatchSummary", () => {
     const admin = makeAdmin({
       existing: null,
       match: FINAL_MATCH,
-      events: [],
+      events: [
+        { type: "goal", team: "home", minute: 12, extra_minute: null, player: "Lozano", detail: null },
+      ],
       insertError: { code: "23505", message: "duplicate key" },
     });
     const result = await generateMatchSummary(admin as never, "m1");
     expect(result).toEqual({ generated: false, reason: "exists" });
+  });
+
+  it("skips a final match with no recorded events (no network, no insert)", async () => {
+    const admin = makeAdmin({
+      existing: null,
+      match: FINAL_MATCH,
+      events: [],
+    });
+    const result = await generateMatchSummary(admin as never, "m1");
+    expect(result).toEqual({ generated: false, reason: "no-events" });
+    expect(chatMock).not.toHaveBeenCalled();
+    expect(admin.insert).not.toHaveBeenCalled();
   });
 });
 
