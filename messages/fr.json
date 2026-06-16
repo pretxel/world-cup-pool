@@ -292,7 +292,9 @@
     "missingPickFinal": "Le match est terminé et vous n'avez pas envoyé de prono.",
     "missingPickCancelled": "Le match a été annulé — aucun prono ne peut être envoyé.",
     "missingPickLive": "Le match est en direct — les pronos sont verrouillés et vous n'en avez pas envoyé.",
-    "missingPickKickoff": "Pronos verrouillés — le coup d'envoi est passé et vous n'en avez pas envoyé pour ce match."
+    "missingPickKickoff": "Pronos verrouillés — le coup d'envoi est passé et vous n'en avez pas envoyé pour ce match.",
+    "summaryHeading": "Résumé du match",
+    "summaryDisclaimer": "Résumé généré par IA"
   },
   "predictionForm": {
     "adminBlocked": "Les comptes administrateur ne participent pas au pool.",

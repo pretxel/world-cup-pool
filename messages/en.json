@@ -292,7 +292,9 @@
     "missingPickFinal": "This match is final and you didn't submit a prediction.",
     "missingPickCancelled": "This match was cancelled — no predictions can be submitted.",
     "missingPickLive": "This match is live — predictions are locked and you didn't submit one.",
-    "missingPickKickoff": "Predictions are locked — kickoff has passed and you didn't submit one for this match."
+    "missingPickKickoff": "Predictions are locked — kickoff has passed and you didn't submit one for this match.",
+    "summaryHeading": "Match recap",
+    "summaryDisclaimer": "AI-generated summary"
   },
   "predictionForm": {
     "adminBlocked": "Admin accounts don't compete in the pool.",

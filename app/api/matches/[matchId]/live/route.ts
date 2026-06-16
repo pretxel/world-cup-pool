@@ -7,6 +7,7 @@ import type {
   MatchEvent,
   MatchEventTeam,
   MatchEventType,
+  MatchSummary,
 } from "@/lib/matches/match-events";
 
 // Per-match live feed. Polled ~15s by <LiveEventsFeed/> while a match is in
@@ -48,6 +49,21 @@ export async function GET(
     sequence: r.sequence,
   }));
 
+  // AI recap, if one has been generated (final matches only). Absent otherwise.
+  const { data: summaryRow } = await supabase
+    .from("match_summaries")
+    .select("content, model, locale, generated_at")
+    .eq("match_id", matchId)
+    .maybeSingle();
+  const summary: MatchSummary | undefined = summaryRow
+    ? {
+        content: summaryRow.content,
+        model: summaryRow.model,
+        locale: summaryRow.locale,
+        generatedAt: summaryRow.generated_at,
+      }
+    : undefined;
+
   const isLive = isLiveNow(match);
 
   const payload: LiveFeedPayload = {
@@ -59,6 +75,7 @@ export async function GET(
     isLive,
     updatedAt: new Date().toISOString(),
     events,
+    ...(summary ? { summary } : {}),
   };
 
   // Opportunistic refresh for in-progress matches only — terminal matches and

@@ -356,6 +356,56 @@ export type Database = {
           },
         ]
       }
+      match_summaries: {
+        Row: {
+          completion_tokens: number | null
+          content: string
+          created_at: string
+          generated_at: string
+          id: string
+          locale: string
+          match_id: string
+          model: string | null
+          prompt_tokens: number | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          completion_tokens?: number | null
+          content: string
+          created_at?: string
+          generated_at?: string
+          id?: string
+          locale?: string
+          match_id: string
+          model?: string | null
+          prompt_tokens?: number | null
+          provider?: string
+          updated_at?: string
+        }
+        Update: {
+          completion_tokens?: number | null
+          content?: string
+          created_at?: string
+          generated_at?: string
+          id?: string
+          locale?: string
+          match_id?: string
+          model?: string | null
+          prompt_tokens?: number | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_summaries_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_score: number | null

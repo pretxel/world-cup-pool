@@ -33,6 +33,15 @@ export type MatchEvent = {
   sequence: number;
 };
 
+/** AI-generated post-match recap. Present only once a match is final and has
+ * been summarized; absent otherwise. */
+export type MatchSummary = {
+  content: string;
+  model: string | null;
+  locale: string;
+  generatedAt: string;
+};
+
 export type LiveFeedPayload = {
   matchId: string;
   status: string;
@@ -42,6 +51,8 @@ export type LiveFeedPayload = {
   isLive: boolean;
   updatedAt: string;
   events: MatchEvent[];
+  // Omitted from the payload until a summary exists for the match.
+  summary?: MatchSummary;
 };
 
 const GOAL_TYPES = new Set<MatchEventType>(["goal", "penalty_goal"]);

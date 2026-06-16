@@ -292,7 +292,9 @@
     "missingPickFinal": "El partido ha terminado y no enviaste un pronóstico.",
     "missingPickCancelled": "El partido se canceló — no se pueden enviar pronósticos.",
     "missingPickLive": "El partido está en vivo — los pronósticos están cerrados y no enviaste uno.",
-    "missingPickKickoff": "Los pronósticos están cerrados — el inicio ya pasó y no enviaste uno para este partido."
+    "missingPickKickoff": "Los pronósticos están cerrados — el inicio ya pasó y no enviaste uno para este partido.",
+    "summaryHeading": "Resumen del partido",
+    "summaryDisclaimer": "Resumen generado por IA"
   },
   "predictionForm": {
     "adminBlocked": "Las cuentas de administrador no participan en la quiniela.",

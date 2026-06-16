@@ -228,6 +228,18 @@ export default async function MatchDetailPage({
       events,
     };
   }
+  // AI recap: only finished matches ever have one. Read-only; the body is the
+  // English summary, the surrounding labels are localized.
+  let matchSummary: { content: string } | null = null;
+  if (match.status === "final") {
+    const { data: summaryRow } = await supabase
+      .from("match_summaries")
+      .select("content")
+      .eq("match_id", match.id)
+      .maybeSingle();
+    if (summaryRow) matchSummary = { content: summaryRow.content };
+  }
+
   const tLiveFeed = await getTranslations("liveFeed");
   const liveFeedLabels: LiveFeedLabels = {
     heading: tLiveFeed("heading"),
@@ -408,6 +420,25 @@ export default async function MatchDetailPage({
           initialData={liveFeedData}
           labels={liveFeedLabels}
         />
+      ) : null}
+
+      {matchSummary ? (
+        <section className="mt-8" aria-label={t("summaryHeading")}>
+          <h2
+            className="mb-3 font-heading text-xl font-semibold tracking-tight"
+            style={{ fontStretch: "condensed" }}
+          >
+            {t("summaryHeading")}
+          </h2>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-sm leading-relaxed text-foreground/90">
+              {matchSummary.content}
+            </p>
+            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              {t("summaryDisclaimer")}
+            </p>
+          </div>
+        </section>
       ) : null}
 
       <section className="mt-8">
