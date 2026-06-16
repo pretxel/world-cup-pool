@@ -44,6 +44,12 @@ export const env = {
   // production; the default is dev-only.
   resendApiKey: process.env.RESEND_API_KEY ?? null,
   emailFrom: process.env.EMAIL_FROM ?? "World Cup Pools <onboarding@resend.dev>",
+  // OpenRouter (server only) for the post-final AI match recap. Nullable on
+  // purpose — when the key is unset the generation step short-circuits (no
+  // request, no row) instead of throwing, so the feature stays dormant until
+  // configured. `openrouterModel` defaults to a small, cheap instruct model.
+  openrouterApiKey: process.env.OPENROUTER_API_KEY ?? null,
+  openrouterModel: process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
   // Shared secret for the Supabase Auth "Send Email Hook" (Standard Webhooks
   // format: "v1,whsec_<base64>"). The send-email route verifies every hook
   // request against this. Nullable so the route returns 401 (not a crash) when

@@ -6,6 +6,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { dispatchResultEmails } from "@/lib/notifications/result-emails";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
+import { generatePendingSummaries } from "@/lib/matches/match-summary";
 
 function unauthorized() {
   return new NextResponse("unauthorized", { status: 401 });
@@ -60,7 +61,18 @@ export async function GET(request: NextRequest) {
       console.error("[cron:sync-matches] result-email dispatch failed:", err);
     }
 
-    return { ...summary, events, emailed };
+    // Generate AI recaps for matches that just went final. Isolated like the
+    // steps above: score/match writes have already committed, and any failure
+    // is logged, never thrown. No-ops when OPENROUTER_API_KEY is unset.
+    let summaries = 0;
+    try {
+      const pass = await generatePendingSummaries(createAdminSupabaseClient());
+      summaries = pass.generated;
+    } catch (err) {
+      console.error("[cron:sync-matches] summary generation failed:", err);
+    }
+
+    return { ...summary, events, emailed, summaries };
   });
 
   console.log(`[cron:sync-matches] summary:`, JSON.stringify(response));
