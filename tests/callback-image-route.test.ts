@@ -38,7 +38,13 @@ function post(body: unknown, auth?: string): Request {
 const COMPLETE = {
   type: "image_generation.complete",
   object: "generation",
-  data: { object: { id: "gen-1", images: [{ url: "http://img/x.png" }] } },
+  data: {
+    object: {
+      id: "gen-1",
+      status: "COMPLETE",
+      generated_images: [{ url: "http://img/x.png" }],
+    },
+  },
 };
 
 beforeEach(() => {
@@ -84,7 +90,10 @@ describe("POST /api/callback-image", () => {
 
   it("acks (200) and ignores a completion with no image url", async () => {
     const res = await POST(
-      post({ type: "image_generation.complete", data: { object: { id: "gen-1", images: [] } } }, "Bearer whsec"),
+      post(
+        { type: "image_generation.complete", data: { object: { id: "gen-1", generated_images: [] } } },
+        "Bearer whsec",
+      ),
     );
     expect(res.status).toBe(200);
     expect(finalizeMock).not.toHaveBeenCalled();

@@ -44,14 +44,15 @@ export async function POST(request: Request): Promise<NextResponse> {
     return new NextResponse("invalid json", { status: 400 });
   }
 
-  // Leonardo payload: { type, object, data: { object: { id, images: [{ url }] } } }.
+  // Leonardo payload: { type, data: { object: { id, status, generated_images: [{ url }] } } }.
   const root = (body ?? {}) as Record<string, unknown>;
-  console.log("root", root);
   const dataObject = ((root.data as Record<string, unknown> | undefined)?.object ?? {}) as
     Record<string, unknown>;
   const generationId =
     typeof dataObject.id === "string" && dataObject.id.length > 0 ? dataObject.id : null;
-  const images = Array.isArray(dataObject.images) ? dataObject.images : [];
+  // Images live under `generated_images` (fall back to `images` defensively).
+  const imagesRaw = dataObject.generated_images ?? dataObject.images;
+  const images = Array.isArray(imagesRaw) ? imagesRaw : [];
   const firstUrl = (images[0] as Record<string, unknown> | undefined)?.url;
   const imageUrl = typeof firstUrl === "string" && firstUrl.length > 0 ? firstUrl : null;
 
