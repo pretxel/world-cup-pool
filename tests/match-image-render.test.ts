@@ -135,18 +135,19 @@ describe("requestMatchImageRender", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://cloud.leonardo.ai/api/rest/v2/generations");
     const body = JSON.parse((init as { body: string }).body);
-    // v2 nests generation settings under `parameters`; `model` stays top-level.
+    // v2 nests generation settings under `parameters`; `model`/`public` are top-level.
     expect(body).toMatchObject({
+      public: false,
       model: "gpt-image-2",
       parameters: {
         prompt: "COMIC PROMPT",
+        quality: "MEDIUM",
         quantity: 1,
         width: 832,
         height: 1248,
+        prompt_enhance: "OFF",
       },
     });
-    // `quality` is not sent (it was the field Leonardo's validator rejected).
-    expect(body.parameters.quality).toBeUndefined();
 
     expect(admin.upsertPayloads).toHaveLength(1);
     expect(admin.upsertPayloads[0]).toMatchObject({

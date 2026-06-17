@@ -162,12 +162,15 @@ export async function requestMatchImageRender(
       // optional `public`) live at the top level. Sending these flat triggers
       // "Unexpected variable quality" (400).
       body: JSON.stringify({
+        public: false,
         model: env.leonardoModel,
         parameters: {
           prompt,
+          quality: "MEDIUM",
           quantity: 1,
           width: IMAGE_WIDTH,
           height: IMAGE_HEIGHT,
+          prompt_enhance: "OFF"
         },
       }),
     });
