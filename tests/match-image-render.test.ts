@@ -140,13 +140,13 @@ describe("requestMatchImageRender", () => {
       model: "gpt-image-2",
       parameters: {
         prompt: "COMIC PROMPT",
-        quality: "MEDIUM",
         quantity: 1,
         width: 832,
         height: 1248,
       },
     });
-    expect(body.quality).toBeUndefined();
+    // `quality` is not sent (it was the field Leonardo's validator rejected).
+    expect(body.parameters.quality).toBeUndefined();
 
     expect(admin.upsertPayloads).toHaveLength(1);
     expect(admin.upsertPayloads[0]).toMatchObject({
@@ -186,6 +186,26 @@ describe("requestMatchImageRender", () => {
     const admin = makeAdmin({ summary: { image_prompt: "P", match_id: "m1" } });
     await expect(requestMatchImageRender(admin as never, "s1")).rejects.toThrow(
       /missing a generation id; response: .*foo/,
+    );
+    expect(admin.upsertPayloads[0]).toMatchObject({ status: "failed" });
+  });
+
+  it("surfaces a Leonardo GraphQL validation-error envelope returned with HTTP 200", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          extensions: {
+            details: { message: "Validation failed. Please check your request parameters." },
+          },
+          message: "An error occurred.",
+          path: ["generate"],
+        },
+      ],
+    });
+    const admin = makeAdmin({ summary: { image_prompt: "P", match_id: "m1" } });
+    await expect(requestMatchImageRender(admin as never, "s1")).rejects.toThrow(
+      /Leonardo validation error: Validation failed/,
     );
     expect(admin.upsertPayloads[0]).toMatchObject({ status: "failed" });
   });

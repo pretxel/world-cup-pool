@@ -71,6 +71,26 @@ function findGenerationIdDeep(node: unknown, seen = new Set<unknown>()): string 
   return null;
 }
 
+/**
+ * Detect a Leonardo error body returned with HTTP 200. Leonardo's REST layer
+ * proxies a GraphQL backend, so validation failures arrive as a GraphQL-style
+ * envelope (`[{ message, extensions: { details: { message } } }]`) — or, for
+ * some endpoints, `{ error }` / `{ errors: [...] }`. Returns the human message.
+ */
+function extractLeonardoError(json: unknown): string | null {
+  if (Array.isArray(json)) {
+    const first = asRecord(json[0]);
+    const details = asRecord(asRecord(first.extensions).details);
+    return asString(details.message) ?? asString(first.message);
+  }
+  const j = asRecord(json);
+  if (typeof j.error === "string" && j.error.length > 0) return j.error;
+  if (Array.isArray(j.errors)) {
+    return asString(asRecord(j.errors[0]).message) ?? "validation error";
+  }
+  return null;
+}
+
 /** Pull the generation id out of a (tolerant) Leonardo create-generation reply. */
 function extractGenerationId(json: unknown): string | null {
   const j = asRecord(json);
@@ -145,7 +165,6 @@ export async function requestMatchImageRender(
         model: env.leonardoModel,
         parameters: {
           prompt,
-          quality: "MEDIUM",
           quantity: 1,
           width: IMAGE_WIDTH,
           height: IMAGE_HEIGHT,
@@ -157,6 +176,12 @@ export async function requestMatchImageRender(
       throw new Error(`Leonardo ${res.status}: ${detail.slice(0, 300)}`);
     }
     const json = await res.json();
+    // Leonardo can return HTTP 200 with a GraphQL-style validation error body;
+    // surface its message rather than mislabeling it as a missing id.
+    const apiError = extractLeonardoError(json);
+    if (apiError) {
+      throw new Error(`Leonardo validation error: ${apiError}`);
+    }
     generationId = extractGenerationId(json);
     if (!generationId) {
       // Surface the actual shape so the failed render row records it (visible in
