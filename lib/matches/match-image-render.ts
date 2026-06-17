@@ -48,18 +48,45 @@ function asString(v: unknown): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
+/**
+ * Find a key that looks like a generation id (camelCase or snake_case) anywhere
+ * in the response tree. Leonardo's v2 response shape is not reliably documented,
+ * so after the known paths we deep-scan for a `generation*id`-style key.
+ */
+function findGenerationIdDeep(node: unknown, seen = new Set<unknown>()): string | null {
+  if (!node || typeof node !== "object" || seen.has(node)) return null;
+  seen.add(node);
+  const entries = Object.entries(node as Record<string, unknown>);
+  for (const [key, value] of entries) {
+    const k = key.toLowerCase().replace(/_/g, "");
+    if (k.includes("generation") && k.includes("id")) {
+      const v = asString(value);
+      if (v) return v;
+    }
+  }
+  for (const [, value] of entries) {
+    const found = findGenerationIdDeep(value, seen);
+    if (found) return found;
+  }
+  return null;
+}
+
 /** Pull the generation id out of a (tolerant) Leonardo create-generation reply. */
 function extractGenerationId(json: unknown): string | null {
   const j = asRecord(json);
   const data = asRecord(j.data);
-  return (
+  const known =
     asString(asRecord(j.sdGenerationJob).generationId) ??
     asString(j.generationId) ??
+    asString(j.generation_id) ??
     asString(j.id) ??
     asString(asRecord(j.generation).id) ??
+    asString(asRecord(j.generation).generationId) ??
     asString(data.id) ??
-    asString(asRecord(data.object).id)
-  );
+    asString(asRecord(data.object).id);
+  // Fall back to a deep scan for any generation-id-shaped key (no generic `id`
+  // grab, so we never mistake a user/image id for the generation id).
+  return known ?? findGenerationIdDeep(j);
 }
 
 /** Read completion status + first image URL from a (tolerant) generation object. */
@@ -129,8 +156,15 @@ export async function requestMatchImageRender(
       const detail = await res.text().catch(() => "");
       throw new Error(`Leonardo ${res.status}: ${detail.slice(0, 300)}`);
     }
-    generationId = extractGenerationId(await res.json());
-    if (!generationId) throw new Error("Leonardo response missing a generation id");
+    const json = await res.json();
+    generationId = extractGenerationId(json);
+    if (!generationId) {
+      // Surface the actual shape so the failed render row records it (visible in
+      // the admin UI) — the v2 response field isn't reliably documented.
+      throw new Error(
+        `Leonardo response missing a generation id; response: ${JSON.stringify(json).slice(0, 400)}`,
+      );
+    }
   } catch (err) {
     // Record the failure (re-render replaces the row) so the admin can see/retry.
     await admin.from("match_summary_images").upsert(
