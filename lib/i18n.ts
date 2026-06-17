@@ -1,4 +1,4 @@
-export const SUPPORTED_LOCALES = ["en", "es", "fr"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "fr", "de"] as const;
 export const DEFAULT_LOCALE: Locale = "en";
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
@@ -20,6 +20,7 @@ export const LOCALE_LABELS: Record<string, string> = {
   en: "English",
   es: "Español",
   fr: "Français",
+  de: "Deutsch",
 };
 
 // Flag slug used to render the locale's flag in the language switcher.
@@ -29,4 +30,5 @@ export const LOCALE_FLAG_SLUG: Record<Locale, string> = {
   en: "us",
   es: "es",
   fr: "fr",
+  de: "de",
 };

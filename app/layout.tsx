@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     // Tells Facebook the page is also available in these languages.
-    alternateLocale: ["es_ES", "fr_FR"],
+    alternateLocale: ["es_ES", "fr_FR", "de_DE"],
     url: siteUrl,
     siteName,
     title: defaultTitle,

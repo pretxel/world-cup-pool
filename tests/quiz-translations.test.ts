@@ -14,11 +14,14 @@ const read = (rel: string) =>
   readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
 
 const SEED_SQL = read("../supabase/seed/quiz.sql");
+// The German backfill is a new, dated migration; the historical es/fr backfill
+// (20260614020000) is already applied to remote and intentionally left as-is.
+// The canonical {es, fr, de} literal is embedded in the newer file.
 const MIGRATION_SQL = read(
-  "../supabase/migrations/20260614020000_quiz_question_translations_backfill.sql",
+  "../supabase/migrations/20260617000000_quiz_question_translations_de_backfill.sql",
 );
 
-const TRANSLATED: Array<"es" | "fr"> = ["es", "fr"];
+const TRANSLATED: Array<"es" | "fr" | "de"> = ["es", "fr", "de"];
 
 describe("quiz seed translations are complete", () => {
   it("ships ~30 questions", () => {

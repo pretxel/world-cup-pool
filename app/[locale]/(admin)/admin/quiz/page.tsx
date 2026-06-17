@@ -37,10 +37,13 @@ function parseQuizResendParams(params: {
   };
 }
 
-// Translatable non-English locales, paired with their field-label language name.
+// Translatable non-English locales, paired with their field-label language name
+// and the "translated" badge key. Keep in sync with the non-default
+// SUPPORTED_LOCALES the save action persists.
 const TRANSLATION_LOCALES = [
-  { code: "es", langKey: "langEs" },
-  { code: "fr", langKey: "langFr" },
+  { code: "es", langKey: "langEs", badgeKey: "badgeEs" },
+  { code: "fr", langKey: "langFr", badgeKey: "badgeFr" },
+  { code: "de", langKey: "langDe", badgeKey: "badgeDe" },
 ] as const;
 
 export async function generateMetadata({
@@ -241,9 +244,9 @@ export default async function AdminQuizPage({
                           {q.active_on}
                         </p>
                         {translated.length > 0 ? (
-                          translated.map(({ code }) => (
+                          translated.map(({ code, badgeKey }) => (
                             <Badge key={code} variant="secondary">
-                              {t(code === "es" ? "badgeEs" : "badgeFr")}
+                              {t(badgeKey)}
                             </Badge>
                           ))
                         ) : (

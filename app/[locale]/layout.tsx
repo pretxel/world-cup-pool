@@ -18,11 +18,13 @@ const OG_LOCALE: Record<Locale, string> = {
   en: "en_US",
   es: "es_ES",
   fr: "fr_FR",
+  de: "de_DE",
 };
 const ALT_LOCALES: Record<Locale, string[]> = {
-  en: ["es_ES", "fr_FR"],
-  es: ["en_US", "fr_FR"],
-  fr: ["en_US", "es_ES"],
+  en: ["es_ES", "fr_FR", "de_DE"],
+  es: ["en_US", "fr_FR", "de_DE"],
+  fr: ["en_US", "es_ES", "de_DE"],
+  de: ["en_US", "es_ES", "fr_FR"],
 };
 
 // Localized site-wide title/description/og/twitter. Metadata is shallow-merged
