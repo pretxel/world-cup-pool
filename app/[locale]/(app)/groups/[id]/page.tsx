@@ -98,6 +98,7 @@ export default async function GroupDetailPage({
               points: t("boardPoints"),
               exact: t("boardExact"),
               winnerGd: t("boardWinnerGd"),
+              wins: t("boardWins"),
               you: t("you"),
               noName: t("noName"),
             }}
