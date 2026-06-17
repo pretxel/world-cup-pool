@@ -111,13 +111,18 @@ export async function requestMatchImageRender(
         "content-type": "application/json",
         accept: "application/json",
       },
+      // v2 nests generation settings under `parameters`; only `model` (and the
+      // optional `public`) live at the top level. Sending these flat triggers
+      // "Unexpected variable quality" (400).
       body: JSON.stringify({
         model: env.leonardoModel,
-        prompt,
-        quantity: 1,
-        quality: "MEDIUM",
-        width: IMAGE_WIDTH,
-        height: IMAGE_HEIGHT,
+        parameters: {
+          prompt,
+          quality: "MEDIUM",
+          quantity: 1,
+          width: IMAGE_WIDTH,
+          height: IMAGE_HEIGHT,
+        },
       }),
     });
     if (!res.ok) {
