@@ -37,6 +37,7 @@ import {
   generateMatchImagePromptAction,
   renderMatchImageAction,
   syncMatchImageRenderAction,
+  generateAndRenderImageAction,
   saveFixtureDetail,
   setMatchResultDetail,
   forceRecomputeDetail,
@@ -132,6 +133,17 @@ function resolveOutcome(
     if (syncRender === "no-key")
       return { message: t("detail.outcomeRenderNoKey"), variant: "info" };
     return { message: t("detail.outcomeRenderError"), variant: "error" };
+  }
+  // One-click generate-prompt-and-render combined outcome.
+  const combo = sp.comboResult;
+  if (typeof combo === "string" && combo.length > 0) {
+    if (combo === "rendered")
+      return { message: t("detail.outcomeComboRendered"), variant: "success" };
+    if (combo === "prompt-only")
+      return { message: t("detail.outcomeComboPromptOnly"), variant: "info" };
+    if (combo === "no-key")
+      return { message: t("detail.outcomeImagePromptNoKey"), variant: "info" };
+    return { message: t("detail.outcomeComboError"), variant: "error" };
   }
   const edit = sp.editResult;
   if (typeof edit === "string" && edit.length > 0) {
@@ -717,6 +729,18 @@ export default async function AdminMatchDetailPage({
                     ) : null}
 
                     <div className="flex flex-wrap items-center gap-1.5">
+                      <form action={generateAndRenderImageAction}>
+                        <input type="hidden" name="summary_id" value={v.id} />
+                        <input type="hidden" name="match_id" value={match.id} />
+                        <input type="hidden" name="locale" value={locale} />
+                        <SubmitButton
+                          size="sm"
+                          disabled={!hasKey}
+                          pendingLabel={t("detail.generateAndRenderPending")}
+                        >
+                          {t("detail.generateAndRender")}
+                        </SubmitButton>
+                      </form>
                       <form action={renderMatchImageAction}>
                         <input type="hidden" name="summary_id" value={v.id} />
                         <input type="hidden" name="match_id" value={match.id} />

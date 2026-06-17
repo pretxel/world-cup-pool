@@ -662,6 +662,62 @@ export async function syncMatchImageRenderAction(formData: FormData): Promise<vo
   redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
 }
 
+// One-click: generate the image prompt from the recap, THEN request the Leonardo
+// render (sequenced — the render reads the prompt just written). Combined outcome:
+// `rendered` (both), `prompt-only` (prompt ok, render skipped/failed), `no-key`
+// (OpenRouter unset), or `error`. A skip/failure in either step is reported inline,
+// never a server-error page.
+export async function generateAndRenderImageAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = versionActionSchema.parse({
+    summary_id: formData.get("summary_id"),
+    match_id: formData.get("match_id"),
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const params = new URLSearchParams({ comboSummaryId: parsed.summary_id });
+  try {
+    // Confirm the posted summary belongs to this match before touching it.
+    const { data: version } = await admin
+      .from("match_summaries")
+      .select("id, match_id")
+      .eq("id", parsed.summary_id)
+      .maybeSingle();
+    if (!version || version.match_id !== parsed.match_id) {
+      params.set("comboResult", "error");
+    } else {
+      const prompt = await generateMatchImagePrompt(admin, parsed.summary_id);
+      if (!prompt.generated) {
+        // Prompt step did nothing — surface no-key distinctly, else a generic error.
+        params.set("comboResult", prompt.reason === "no-key" ? "no-key" : "error");
+      } else {
+        // Prompt is stored; request the render. A render skip/failure leaves the
+        // prompt in place, so report `prompt-only` rather than failing the whole op.
+        let rendered = false;
+        try {
+          const render = await requestMatchImageRender(admin, parsed.summary_id);
+          rendered = render.requested;
+        } catch (err) {
+          console.error("[admin:generateAndRenderImageAction] render failed:", err);
+        }
+        params.set("comboResult", rendered ? "rendered" : "prompt-only");
+      }
+    }
+  } catch (err) {
+    console.error("[admin:generateAndRenderImageAction] failed:", err);
+    params.set("comboResult", "error");
+  }
+
+  revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
+}
+
 export async function deleteMatch(formData: FormData) {
   await assertAdmin();
   const managed = await getManagedCompetition();
