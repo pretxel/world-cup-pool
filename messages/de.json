@@ -296,7 +296,8 @@
     "missingPickLive": "Dieses Spiel läuft – die Tipps sind gesperrt und du hast keinen abgegeben.",
     "missingPickKickoff": "Die Tipps sind gesperrt – der Anstoß ist vorbei und du hast für dieses Spiel keinen abgegeben.",
     "summaryHeading": "Spielzusammenfassung",
-    "summaryDisclaimer": "KI-generierte Zusammenfassung"
+    "summaryDisclaimer": "KI-generierte Zusammenfassung",
+    "recapImageAlt": "Comic-Rückblick: {home} gegen {away}"
   },
   "predictionForm": {
     "adminBlocked": "Administratorkonten nehmen nicht am Pool teil.",
@@ -321,6 +322,15 @@
     "errorNotSignedIn": "Sie müssen angemeldet sein, um einen Tipp abzugeben.",
     "errorMatchNotFound": "Spiel nicht gefunden.",
     "errorInvalidScores": "Die Ergebnisse müssen ganze Zahlen zwischen 0 und 20 sein."
+  },
+  "shareRecap": {
+    "heading": "Teile diesen Rückblick",
+    "shareText": "Der Comic-Rückblick zu {home} gegen {away} · WM 2026 Pool",
+    "shareOnX": "Auf X teilen",
+    "shareOnFacebook": "Auf Facebook teilen",
+    "shareNative": "Teilen…",
+    "copyLink": "Link kopieren",
+    "copied": "Link kopiert"
   },
   "sharePick": {
     "heading": "Teile deinen Tipp",

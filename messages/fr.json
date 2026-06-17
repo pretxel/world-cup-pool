@@ -296,7 +296,8 @@
     "missingPickLive": "Le match est en direct — les pronos sont verrouillés et vous n'en avez pas envoyé.",
     "missingPickKickoff": "Pronos verrouillés — le coup d'envoi est passé et vous n'en avez pas envoyé pour ce match.",
     "summaryHeading": "Résumé du match",
-    "summaryDisclaimer": "Résumé généré par IA"
+    "summaryDisclaimer": "Résumé généré par IA",
+    "recapImageAlt": "Résumé BD de {home} contre {away}"
   },
   "predictionForm": {
     "adminBlocked": "Les comptes administrateur ne participent pas au pool.",
@@ -321,6 +322,15 @@
     "errorNotSignedIn": "Connectez-vous pour envoyer un prono.",
     "errorMatchNotFound": "Match introuvable.",
     "errorInvalidScores": "Les scores doivent être des entiers entre 0 et 20."
+  },
+  "shareRecap": {
+    "heading": "Partagez ce résumé",
+    "shareText": "Le résumé BD de {home} contre {away} · Pool Coupe du Monde 2026",
+    "shareOnX": "Partager sur X",
+    "shareOnFacebook": "Partager sur Facebook",
+    "shareNative": "Partager…",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié"
   },
   "sharePick": {
     "heading": "Partagez votre prono",
