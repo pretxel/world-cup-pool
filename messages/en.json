@@ -583,8 +583,6 @@
     "resendNotFinal": "Can't resend — this match is not final.",
     "summarize": "Summarize",
     "summarizePending": "Summarizing…",
-    "summaryReady": "Recap ready",
-    "summarizeNoEvents": "No events to summarize",
     "summaryDoneGenerated": "Recap generated.",
     "summaryDoneExists": "A recap already exists for this match.",
     "summaryDoneNoEvents": "No events to summarize yet — sync the match feed first.",
@@ -614,6 +612,7 @@
     "fixturesEmptyTitle": "No fixtures yet",
     "fixturesEmptyBody": "Create a fixture above to start building the schedule.",
     "deleteFixtureConfirm": "Delete this fixture? This can't be undone.",
+    "fixtureDeleted": "Fixture deleted.",
     "detail": {
       "open": "Open",
       "back": "Back to fixtures",
@@ -651,7 +650,14 @@
       "outcomeError": "Couldn't generate the recap. Try again.",
       "outcomeActivated": "Recap published.",
       "outcomeDeleted": "Draft recap deleted.",
-      "outcomeActiveBlocked": "Can't delete the published version — publish another first."
+      "outcomeActiveBlocked": "Can't delete the published version — publish another first.",
+      "maintenanceSection": "Maintenance",
+      "outcomeFixtureSaved": "Fixture saved.",
+      "outcomeFixtureInvalid": "Couldn't save the fixture — check the fields.",
+      "outcomeResultSaved": "Result saved and scores recomputed.",
+      "outcomeResultInvalid": "Couldn't save the result — check the fields.",
+      "outcomeRecomputed": "Scores recomputed.",
+      "outcomeRecomputeError": "Couldn't recompute scores. Try again."
     },
     "nav": {
       "dashboard": "Dashboard",

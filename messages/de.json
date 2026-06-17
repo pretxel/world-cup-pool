@@ -583,8 +583,6 @@
     "resendNotFinal": "Erneutes Senden nicht möglich – dieses Spiel ist nicht beendet.",
     "summarize": "Zusammenfassen",
     "summarizePending": "Wird zusammengefasst…",
-    "summaryReady": "Rückblick bereit",
-    "summarizeNoEvents": "Keine Ereignisse zum Zusammenfassen",
     "summaryDoneGenerated": "Rückblick erstellt.",
     "summaryDoneExists": "Für dieses Spiel existiert bereits ein Rückblick.",
     "summaryDoneNoEvents": "Noch keine Ereignisse zum Zusammenfassen – synchronisiere zuerst den Spielfeed.",
@@ -614,6 +612,7 @@
     "fixturesEmptyTitle": "Noch keine Spiele",
     "fixturesEmptyBody": "Lege oben ein Spiel an, um den Spielplan aufzubauen.",
     "deleteFixtureConfirm": "Dieses Spiel löschen? Das kann nicht rückgängig gemacht werden.",
+    "fixtureDeleted": "Spiel gelöscht.",
     "detail": {
       "open": "Öffnen",
       "back": "Zurück zu den Spielen",
@@ -651,7 +650,14 @@
       "outcomeError": "Die Zusammenfassung konnte nicht erstellt werden. Bitte erneut versuchen.",
       "outcomeActivated": "Zusammenfassung veröffentlicht.",
       "outcomeDeleted": "Entwurfs-Zusammenfassung gelöscht.",
-      "outcomeActiveBlocked": "Die veröffentlichte Version kann nicht gelöscht werden – veröffentliche zuerst eine andere."
+      "outcomeActiveBlocked": "Die veröffentlichte Version kann nicht gelöscht werden – veröffentliche zuerst eine andere.",
+      "maintenanceSection": "Wartung",
+      "outcomeFixtureSaved": "Spiel gespeichert.",
+      "outcomeFixtureInvalid": "Spiel konnte nicht gespeichert werden – bitte Felder prüfen.",
+      "outcomeResultSaved": "Ergebnis gespeichert und Punkte neu berechnet.",
+      "outcomeResultInvalid": "Ergebnis konnte nicht gespeichert werden – bitte Felder prüfen.",
+      "outcomeRecomputed": "Punkte neu berechnet.",
+      "outcomeRecomputeError": "Punkte konnten nicht neu berechnet werden. Bitte erneut versuchen."
     },
     "nav": {
       "dashboard": "Dashboard",
