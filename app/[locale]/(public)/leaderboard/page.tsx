@@ -125,6 +125,7 @@ export default async function LeaderboardPage({
             points: t("headerPoints"),
             exact: t("headerExact"),
             winnerGd: t("headerWinnerGd"),
+            wins: t("headerWins"),
             you: t("you"),
             noName: t("noName"),
           }}

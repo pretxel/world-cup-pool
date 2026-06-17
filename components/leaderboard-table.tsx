@@ -16,6 +16,7 @@ export type BoardRow = {
   total_points: number | null;
   exact_hits: number | null;
   winner_gd_hits: number | null;
+  winner_hits: number | null;
   rank: number | null;
 };
 
@@ -25,6 +26,7 @@ export type LeaderboardLabels = {
   points: string;
   exact: string;
   winnerGd: string;
+  wins: string;
   you: string;
   noName: string;
 };
@@ -81,8 +83,11 @@ export function LeaderboardTable({
             <TableHead className="hidden text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
               {labels.exact}
             </TableHead>
-            <TableHead className="hidden pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
+            <TableHead className="hidden text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
               {labels.winnerGd}
+            </TableHead>
+            <TableHead className="hidden pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
+              {labels.wins}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -130,8 +135,11 @@ export function LeaderboardTable({
                 <TableCell className="hidden text-right font-mono tabular-nums text-muted-foreground sm:table-cell">
                   {r.exact_hits}
                 </TableCell>
-                <TableCell className="hidden pr-4 text-right font-mono tabular-nums text-muted-foreground sm:table-cell">
+                <TableCell className="hidden text-right font-mono tabular-nums text-muted-foreground sm:table-cell">
                   {r.winner_gd_hits}
+                </TableCell>
+                <TableCell className="hidden pr-4 text-right font-mono tabular-nums text-muted-foreground sm:table-cell">
+                  {r.winner_hits ?? 0}
                 </TableCell>
               </TableRow>
             );
