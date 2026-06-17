@@ -583,8 +583,6 @@
     "resendNotFinal": "Impossible de renvoyer — ce match n'est pas terminé.",
     "summarize": "Résumer",
     "summarizePending": "Résumé en cours…",
-    "summaryReady": "Résumé prêt",
-    "summarizeNoEvents": "Aucun évènement à résumer",
     "summaryDoneGenerated": "Résumé généré.",
     "summaryDoneExists": "Un résumé existe déjà pour ce match.",
     "summaryDoneNoEvents": "Aucun évènement à résumer pour l'instant — synchronisez d'abord le flux du match.",
@@ -614,6 +612,7 @@
     "fixturesEmptyTitle": "Aucun match pour l'instant",
     "fixturesEmptyBody": "Créez un match ci-dessus pour commencer le calendrier.",
     "deleteFixtureConfirm": "Supprimer ce match ? Cette action est irréversible.",
+    "fixtureDeleted": "Match supprimé.",
     "detail": {
       "open": "Ouvrir",
       "back": "Retour aux matchs",
@@ -651,7 +650,14 @@
       "outcomeError": "Impossible de générer le résumé. Réessayez.",
       "outcomeActivated": "Résumé publié.",
       "outcomeDeleted": "Brouillon de résumé supprimé.",
-      "outcomeActiveBlocked": "Impossible de supprimer la version publiée — publiez-en une autre d'abord."
+      "outcomeActiveBlocked": "Impossible de supprimer la version publiée — publiez-en une autre d'abord.",
+      "maintenanceSection": "Maintenance",
+      "outcomeFixtureSaved": "Match enregistré.",
+      "outcomeFixtureInvalid": "Impossible d'enregistrer le match — vérifiez les champs.",
+      "outcomeResultSaved": "Résultat enregistré et scores recalculés.",
+      "outcomeResultInvalid": "Impossible d'enregistrer le résultat — vérifiez les champs.",
+      "outcomeRecomputed": "Scores recalculés.",
+      "outcomeRecomputeError": "Impossible de recalculer les scores. Réessayez."
     },
     "nav": {
       "dashboard": "Tableau de bord",

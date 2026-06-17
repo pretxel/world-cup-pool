@@ -583,8 +583,6 @@
     "resendNotFinal": "No se puede reenviar — este partido no está finalizado.",
     "summarize": "Resumir",
     "summarizePending": "Resumiendo…",
-    "summaryReady": "Resumen listo",
-    "summarizeNoEvents": "Sin eventos para resumir",
     "summaryDoneGenerated": "Resumen generado.",
     "summaryDoneExists": "Ya existe un resumen para este partido.",
     "summaryDoneNoEvents": "Aún no hay eventos para resumir — sincroniza el feed del partido primero.",
@@ -614,6 +612,7 @@
     "fixturesEmptyTitle": "Aún no hay partidos",
     "fixturesEmptyBody": "Crea un partido arriba para empezar a montar el calendario.",
     "deleteFixtureConfirm": "¿Eliminar este partido? Esta acción no se puede deshacer.",
+    "fixtureDeleted": "Partido eliminado.",
     "detail": {
       "open": "Abrir",
       "back": "Volver a los partidos",
@@ -651,7 +650,14 @@
       "outcomeError": "No se pudo generar el resumen. Inténtalo de nuevo.",
       "outcomeActivated": "Resumen publicado.",
       "outcomeDeleted": "Borrador de resumen eliminado.",
-      "outcomeActiveBlocked": "No se puede eliminar la versión publicada; publica otra primero."
+      "outcomeActiveBlocked": "No se puede eliminar la versión publicada; publica otra primero.",
+      "maintenanceSection": "Mantenimiento",
+      "outcomeFixtureSaved": "Partido guardado.",
+      "outcomeFixtureInvalid": "No se pudo guardar el partido: revisa los campos.",
+      "outcomeResultSaved": "Resultado guardado y puntuaciones recalculadas.",
+      "outcomeResultInvalid": "No se pudo guardar el resultado: revisa los campos.",
+      "outcomeRecomputed": "Puntuaciones recalculadas.",
+      "outcomeRecomputeError": "No se pudieron recalcular las puntuaciones. Inténtalo de nuevo."
     },
     "nav": {
       "dashboard": "Panel",

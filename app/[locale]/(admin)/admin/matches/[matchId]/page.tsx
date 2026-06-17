@@ -15,12 +15,17 @@ import { VenueImage } from "@/components/venue-image";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { FormSection } from "@/components/admin/form-section";
 import { EmptyState } from "@/components/admin/empty-state";
 import { ActionStatus } from "@/components/admin/action-status";
 import { LiveRegion } from "@/components/admin/live-region";
 import { SubmitButton } from "@/components/admin/submit-button";
+import { ResendResultEmailsButton } from "@/components/admin/resend-emails-button";
+import { SummarizeMatchButton } from "@/components/admin/summarize-match-button";
 import {
   RegenerateSummaryForm,
   type RegenerateLabels,
@@ -29,9 +34,17 @@ import {
   regenerateMatchSummary,
   setActiveSummaryVersion,
   deleteSummaryVersion,
+  saveFixtureDetail,
+  setMatchResultDetail,
+  forceRecomputeDetail,
+  deleteMatchDetail,
 } from "../actions";
 import { getManagedCompetition } from "@/lib/admin/managed-competition";
-import { getStageLabel } from "@/lib/competition-schema";
+import {
+  getStageLabel,
+  hasGroupStage,
+  sortedStages,
+} from "@/lib/competition-schema";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 type BadgeStatus = "scheduled" | "live" | "final" | "cancelled";
@@ -50,10 +63,84 @@ const OUTCOME: Record<string, { key: string; variant: "success" | "error" | "inf
   "active-blocked": { key: "outcomeActiveBlocked", variant: "error" },
 };
 
-function pickOutcome(sp: { [k: string]: string | string[] | undefined }): string | null {
+// Map a one-shot summarize reason (carried back via `summaryReason`) to its
+// top-level `admin` message key, shared with the relocated Summarize control.
+const SUMMARY_REASON_KEY: Record<string, string> = {
+  generated: "summaryDoneGenerated",
+  exists: "summaryDoneExists",
+  "no-events": "summaryDoneNoEvents",
+  "not-final": "summaryDoneNotFinal",
+  "no-key": "summaryDoneNoKey",
+  missing: "summaryDoneError",
+  error: "summaryDoneError",
+};
+
+function summaryVariant(reason: string): "success" | "error" | "info" {
+  if (reason === "generated") return "success";
+  if (reason === "error" || reason === "missing") return "error";
+  return "info";
+}
+
+type Outcome = { message: string; variant: "success" | "error" | "info" };
+
+// Resolve the single inline outcome for this page load. Each per-match action
+// redirects back with its own query-param family (recap, edit, result,
+// recompute, resend, summarize); only one is present per navigation.
+function resolveOutcome(
+  sp: { [k: string]: string | string[] | undefined },
+  t: (key: string, values?: Record<string, string | number>) => string,
+): Outcome | null {
+  // Recap actions share a code -> message map.
   for (const k of ["regenResult", "activateResult", "deleteResult"]) {
     const v = sp[k];
-    if (typeof v === "string" && v.length > 0) return v;
+    if (typeof v === "string" && v.length > 0) {
+      const o = OUTCOME[v];
+      if (o) return { message: t(`detail.${o.key}`), variant: o.variant };
+    }
+  }
+  const edit = sp.editResult;
+  if (typeof edit === "string" && edit.length > 0) {
+    return edit === "saved"
+      ? { message: t("detail.outcomeFixtureSaved"), variant: "success" }
+      : { message: t("detail.outcomeFixtureInvalid"), variant: "error" };
+  }
+  const result = sp.resultResult;
+  if (typeof result === "string" && result.length > 0) {
+    return result === "saved"
+      ? { message: t("detail.outcomeResultSaved"), variant: "success" }
+      : { message: t("detail.outcomeResultInvalid"), variant: "error" };
+  }
+  const recompute = sp.recomputeResult;
+  if (typeof recompute === "string" && recompute.length > 0) {
+    return recompute === "recomputed"
+      ? { message: t("detail.outcomeRecomputed"), variant: "success" }
+      : { message: t("detail.outcomeRecomputeError"), variant: "error" };
+  }
+  const resendId = sp.resendMatchId;
+  if (typeof resendId === "string" && resendId.length > 0) {
+    if (sp.resendError === "notFinal") {
+      return { message: t("resendNotFinal"), variant: "error" };
+    }
+    const n = (key: string) => {
+      const raw = sp[key];
+      const x = typeof raw === "string" ? Number(raw) : NaN;
+      return Number.isInteger(x) && x >= 0 ? x : 0;
+    };
+    return {
+      message: t("resendSummary", {
+        emailed: n("resendEmailed"),
+        failed: n("resendFailed"),
+        skipped: n("resendSkipped"),
+      }),
+      variant: "success",
+    };
+  }
+  const reason = sp.summaryReason;
+  if (typeof reason === "string" && reason.length > 0) {
+    return {
+      message: t(SUMMARY_REASON_KEY[reason] ?? "summaryDoneError"),
+      variant: summaryVariant(reason),
+    };
   }
   return null;
 }
@@ -125,15 +212,18 @@ export default async function AdminMatchDetailPage({
   const versions = versionRows ?? [];
 
   const sp = await searchParams;
-  const outcomeCode = pickOutcome(sp);
-  const outcome = outcomeCode ? OUTCOME[outcomeCode] : null;
-  const outcomeMessage = outcome ? t(`detail.${outcome.key}`) : undefined;
+  const outcome = resolveOutcome(sp, t);
   const outcomeAnnounce =
-    outcome && outcome.variant !== "error" ? outcomeMessage : undefined;
-  const outcomeAlert = outcome?.variant === "error" ? outcomeMessage : undefined;
+    outcome && outcome.variant !== "error" ? outcome.message : undefined;
+  const outcomeAlert = outcome?.variant === "error" ? outcome.message : undefined;
 
   const status = match.status as BadgeStatus;
   const stageLabel = getStageLabel(managed.format, match.stage, locale);
+  const stageOptions = sortedStages(managed.format).map((s) => ({
+    value: s.key,
+    label: getStageLabel(managed.format, s.key, locale),
+  }));
+  const showGroupCode = hasGroupStage(managed.format);
   const isFinal =
     match.status === "final" && match.home_score != null && match.away_score != null;
 
@@ -215,6 +305,14 @@ export default async function AdminMatchDetailPage({
           }
         />
 
+        {/* Outcome of the last per-match action (edit, result, recompute,
+            resend, summarize, recap). One renders per load. */}
+        {outcome ? (
+          <ActionStatus variant={outcome.variant} live={false}>
+            {outcome.message}
+          </ActionStatus>
+        ) : null}
+
         {/* Fixture info */}
         <Card className="overflow-hidden p-0">
           <div className="relative">
@@ -247,6 +345,166 @@ export default async function AdminMatchDetailPage({
               </span>
             ) : null}
           </div>
+        </Card>
+
+        {/* Edit fixture */}
+        <Card className="p-5">
+          <FormSection title={t("editFixture")}>
+            <form
+              action={saveFixtureDetail}
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+            >
+              <input type="hidden" name="id" value={match.id} />
+              <input type="hidden" name="locale" value={locale} />
+              <div className="space-y-1.5">
+                <Label htmlFor="stage">{t("stage")}</Label>
+                <NativeSelect id="stage" name="stage" defaultValue={match.stage}>
+                  {stageOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </div>
+              {showGroupCode ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="group_code">{t("groupCode")}</Label>
+                  <Input
+                    id="group_code"
+                    name="group_code"
+                    maxLength={1}
+                    defaultValue={match.group_code ?? ""}
+                  />
+                </div>
+              ) : null}
+              <div className="space-y-1.5">
+                <Label htmlFor="home_team">{t("homeTeam")}</Label>
+                <Input
+                  id="home_team"
+                  name="home_team"
+                  defaultValue={match.home_team}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="away_team">{t("awayTeam")}</Label>
+                <Input
+                  id="away_team"
+                  name="away_team"
+                  defaultValue={match.away_team}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="kickoff_at">{t("kickoff")}</Label>
+                <Input
+                  id="kickoff_at"
+                  name="kickoff_at"
+                  type="datetime-local"
+                  step="60"
+                  defaultValue={match.kickoff_at.slice(0, 16)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="venue">{t("venue")}</Label>
+                <Input id="venue" name="venue" defaultValue={match.venue ?? ""} />
+              </div>
+              <div className="sm:col-span-2">
+                <SubmitButton size="sm">{t("saveEdit")}</SubmitButton>
+              </div>
+            </form>
+          </FormSection>
+        </Card>
+
+        {/* Result entry */}
+        <Card className="p-5">
+          <FormSection title={t("result")}>
+            <form action={setMatchResultDetail} className="space-y-3">
+              <input type="hidden" name="match_id" value={match.id} />
+              <input type="hidden" name="locale" value={locale} />
+              <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                  <Label htmlFor="home_score" className="block truncate text-xs">
+                    {match.home_team}
+                  </Label>
+                  <Input
+                    id="home_score"
+                    name="home_score"
+                    type="number"
+                    min={0}
+                    max={30}
+                    defaultValue={match.home_score ?? ""}
+                    className="tabular-nums"
+                  />
+                </div>
+                <span className="pb-2 text-muted-foreground">–</span>
+                <div className="min-w-0 flex-1">
+                  <Label htmlFor="away_score" className="block truncate text-xs">
+                    {match.away_team}
+                  </Label>
+                  <Input
+                    id="away_score"
+                    name="away_score"
+                    type="number"
+                    min={0}
+                    max={30}
+                    defaultValue={match.away_score ?? ""}
+                    className="tabular-nums"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="status" className="text-xs">
+                  {t("status")}
+                </Label>
+                <NativeSelect id="status" name="status" defaultValue={match.status}>
+                  <option value="scheduled">{t("statusScheduled")}</option>
+                  <option value="live">{t("statusLive")}</option>
+                  <option value="final">{t("statusFinal")}</option>
+                  <option value="cancelled">{t("statusCancelled")}</option>
+                </NativeSelect>
+              </div>
+              <SubmitButton size="sm">{t("saveResult")}</SubmitButton>
+            </form>
+          </FormSection>
+        </Card>
+
+        {/* Maintenance */}
+        <Card className="p-5">
+          <FormSection title={t("detail.maintenanceSection")}>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <form action={forceRecomputeDetail}>
+                <input type="hidden" name="match_id" value={match.id} />
+                <input type="hidden" name="locale" value={locale} />
+                <SubmitButton size="sm" variant="ghost">
+                  {t("forceRecompute")}
+                </SubmitButton>
+              </form>
+              {match.status === "final" ? (
+                <ResendResultEmailsButton
+                  matchId={match.id}
+                  locale={locale}
+                  label={t("resendEmails")}
+                  confirmText={t("resendConfirm")}
+                />
+              ) : null}
+              <form
+                action={deleteMatchDetail}
+                className="ml-auto border-l border-border pl-1.5"
+              >
+                <input type="hidden" name="id" value={match.id} />
+                <input type="hidden" name="locale" value={locale} />
+                <SubmitButton
+                  size="sm"
+                  variant="destructive"
+                  confirmText={t("deleteFixtureConfirm")}
+                >
+                  {t("deleteFixture")}
+                </SubmitButton>
+              </form>
+            </div>
+          </FormSection>
         </Card>
 
         {/* Event timeline */}
@@ -288,14 +546,18 @@ export default async function AdminMatchDetailPage({
             {t("detail.recapSection")}
           </h2>
 
-          {outcome ? (
-            <ActionStatus variant={outcome.variant} live={false}>
-              {outcomeMessage}
-            </ActionStatus>
-          ) : null}
-
           {versions.length === 0 ? (
-            <EmptyState icon={<SparklesIcon />} title={t("detail.recapEmpty")} />
+            <div className="space-y-3">
+              <EmptyState icon={<SparklesIcon />} title={t("detail.recapEmpty")} />
+              {match.status === "final" ? (
+                <SummarizeMatchButton
+                  matchId={match.id}
+                  locale={locale}
+                  label={t("summarize")}
+                  pendingLabel={t("summarizePending")}
+                />
+              ) : null}
+            </div>
           ) : (
             <ul className="space-y-3">
               {versions.map((v) => (

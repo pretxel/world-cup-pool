@@ -148,6 +148,25 @@ export async function saveFixture(formData: FormData) {
   revalidateAfterMutation(managed.is_active);
 }
 
+// Detail-page wrapper around `saveFixture`. `saveFixture` is the shared save
+// core (it handles both insert and update via the presence of `id`) and stays
+// redirect-free so the list's New-fixture create form keeps re-rendering in
+// place. From the fixture detail page we instead want to land back on the detail
+// page with an inline outcome, so this catches validation/save errors rather
+// than throwing a server-error page and redirects with `editResult`.
+export async function saveFixtureDetail(formData: FormData): Promise<void> {
+  const id = z.string().uuid().parse(formData.get("id"));
+  const locale = localeFrom(formData);
+  let result: "saved" | "invalid" = "saved";
+  try {
+    await saveFixture(formData);
+  } catch (err) {
+    console.error("[admin:saveFixtureDetail] save failed:", err);
+    result = "invalid";
+  }
+  redirect(localePath(locale, `/admin/matches/${id}?editResult=${result}`));
+}
+
 export async function setMatchResult(formData: FormData): Promise<void> {
   await assertAdmin();
   const managed = await getManagedCompetition();
@@ -184,6 +203,21 @@ export async function setMatchResult(formData: FormData): Promise<void> {
   revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
 }
 
+// Detail-page wrapper around `setMatchResult`. Runs the same validated update +
+// recompute, then redirects back to the detail page with an inline outcome.
+export async function setMatchResultDetail(formData: FormData): Promise<void> {
+  const match_id = z.string().uuid().parse(formData.get("match_id"));
+  const locale = localeFrom(formData);
+  let result: "saved" | "invalid" = "saved";
+  try {
+    await setMatchResult(formData);
+  } catch (err) {
+    console.error("[admin:setMatchResultDetail] result failed:", err);
+    result = "invalid";
+  }
+  redirect(localePath(locale, `/admin/matches/${match_id}?resultResult=${result}`));
+}
+
 export async function forceRecompute(formData: FormData) {
   await assertAdmin();
   const managed = await getManagedCompetition();
@@ -196,6 +230,21 @@ export async function forceRecompute(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidateAfterMutation(managed.is_active);
+}
+
+// Detail-page wrapper around `forceRecompute`. Reruns the score RPC, then
+// redirects back to the detail page with an inline outcome.
+export async function forceRecomputeDetail(formData: FormData): Promise<void> {
+  const match_id = z.string().uuid().parse(formData.get("match_id"));
+  const locale = localeFrom(formData);
+  let result: "recomputed" | "error" = "recomputed";
+  try {
+    await forceRecompute(formData);
+  } catch (err) {
+    console.error("[admin:forceRecomputeDetail] recompute failed:", err);
+    result = "error";
+  }
+  redirect(localePath(locale, `/admin/matches/${match_id}?recomputeResult=${result}`));
 }
 
 // Human-triggered fallback for the daily cron: run the shared sync core on
@@ -259,7 +308,7 @@ export async function resendResultEmails(formData: FormData): Promise<void> {
   const params = new URLSearchParams({ resendMatchId: match_id });
   if (match?.status !== "final") {
     params.set("resendError", "notFinal");
-    redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+    redirect(localePath(locale, `/admin/matches/${match_id}?${params.toString()}`));
   }
 
   const summary = await forceDispatchResultEmails(match_id);
@@ -269,7 +318,7 @@ export async function resendResultEmails(formData: FormData): Promise<void> {
   params.set("resendEmailed", String(summary.emailed));
   params.set("resendFailed", String(summary.failed));
   params.set("resendSkipped", String(summary.skipped));
-  redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+  redirect(localePath(locale, `/admin/matches/${match_id}?${params.toString()}`));
 }
 
 // Admin on-demand AI recap for one match. Validates admin + managed scope, then
@@ -307,7 +356,7 @@ export async function summarizeMatch(formData: FormData): Promise<void> {
 
   // A fresh recap surfaces on the public match page when the managed comp is active.
   revalidateAfterMutation(managed.is_active, `/matches/${match_id}`);
-  redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+  redirect(localePath(locale, `/admin/matches/${match_id}?${params.toString()}`));
 }
 
 // --- Recap versioning (admin fixture detail page) ----------------------------
@@ -494,4 +543,13 @@ export async function deleteMatch(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidateAfterMutation(managed.is_active);
+}
+
+// Detail-page wrapper around `deleteMatch`. After the row is gone the detail
+// page no longer exists, so redirect to the list (with an inline outcome there)
+// rather than re-rendering a missing match.
+export async function deleteMatchDetail(formData: FormData): Promise<void> {
+  const locale = localeFrom(formData);
+  await deleteMatch(formData);
+  redirect(localePath(locale, `/admin/matches?deleteResult=deleted`));
 }
