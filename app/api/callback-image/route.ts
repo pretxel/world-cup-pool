@@ -46,6 +46,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   // Leonardo payload: { type, object, data: { object: { id, images: [{ url }] } } }.
   const root = (body ?? {}) as Record<string, unknown>;
+  console.log("root", root);
   const dataObject = ((root.data as Record<string, unknown> | undefined)?.object ?? {}) as
     Record<string, unknown>;
   const generationId =
