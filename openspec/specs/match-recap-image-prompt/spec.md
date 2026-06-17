@@ -1,5 +1,8 @@
-## ADDED Requirements
+# match-recap-image-prompt Specification
 
+## Purpose
+TBD - created by archiving change match-recap-image-prompt. Update Purpose after archive.
+## Requirements
 ### Requirement: Image prompt storage
 
 The system SHALL store an image-generation prompt per recap version in a nullable
@@ -44,10 +47,10 @@ absent from that source.
 
 ### Requirement: Automatic image-prompt generation after recap
 
-After an active recap version is generated and its `content` is stored in the
-result-sync (auto) flow, the system SHALL build and store that version's
-`image_prompt`. This step SHALL be isolated so that a failure to generate or store
-the image prompt never blocks recap storage, score writes, or the surrounding sync.
+The system SHALL, after an active recap version is generated and its `content` is
+stored in the result-sync (auto) flow, build and store that version's `image_prompt`.
+This step SHALL be isolated so that a failure to generate or store the image prompt
+never blocks recap storage, score writes, or the surrounding sync.
 
 #### Scenario: Active recap gains an image prompt
 
@@ -92,3 +95,4 @@ to the caller (admin path) or be logged without blocking (auto path).
 - **WHEN** image-prompt generation runs while `OPENROUTER_API_KEY` is unset
 - **THEN** no OpenRouter request or `image_prompt` write occurs and the caller is told
   generation was skipped
+

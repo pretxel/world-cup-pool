@@ -91,10 +91,10 @@ environments the webhook cannot reach (e.g. local development).
 
 ### Requirement: Automatic and admin-triggered rendering
 
-After a recap version's `image_prompt` is set for the active version in the auto flow,
-the system SHALL request a render, isolated so that a render failure never blocks recap
-generation, the image-prompt step, score writes, or the surrounding sync. The admin
-match detail page SHALL also provide a per-version action to request a render (or
+The system SHALL, after a recap version's `image_prompt` is set for the active version
+in the auto flow, request a render, isolated so that a render failure never blocks
+recap generation, the image-prompt step, score writes, or the surrounding sync. The
+admin match detail page SHALL also provide a per-version action to request a render (or
 re-render) on demand, restricted to admins, reporting success or failure.
 
 #### Scenario: Auto render after prompt
