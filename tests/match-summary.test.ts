@@ -19,6 +19,12 @@ const envMock = vi.hoisted(
 
 vi.mock("@/lib/env", () => ({ env: envMock }));
 vi.mock("@/lib/ai/openrouter", () => ({ createChatCompletion: vi.fn() }));
+vi.mock("@/lib/matches/match-image-prompt", () => ({
+  generateMatchImagePrompt: vi.fn(),
+}));
+vi.mock("@/lib/matches/match-image-render", () => ({
+  requestMatchImageRender: vi.fn(),
+}));
 
 import { createChatCompletion } from "@/lib/ai/openrouter";
 import {
@@ -28,8 +34,12 @@ import {
   type SummaryMatch,
   type SummaryEvent,
 } from "@/lib/matches/match-summary";
+import { generateMatchImagePrompt } from "@/lib/matches/match-image-prompt";
+import { requestMatchImageRender } from "@/lib/matches/match-image-render";
 
 const chatMock = vi.mocked(createChatCompletion);
+const imagePromptMock = vi.mocked(generateMatchImagePrompt);
+const renderMock = vi.mocked(requestMatchImageRender);
 
 const FINAL_MATCH: SummaryMatch & { status: string } = {
   home_team: "Mexico",
@@ -115,6 +125,10 @@ const GOAL: SummaryEvent = {
 beforeEach(() => {
   envMock.openrouterApiKey = "test-key";
   chatMock.mockReset();
+  imagePromptMock.mockReset();
+  imagePromptMock.mockResolvedValue({ generated: true });
+  renderMock.mockReset();
+  renderMock.mockResolvedValue({ requested: true });
 });
 
 describe("generateMatchSummary (auto mode)", () => {
@@ -190,6 +204,46 @@ describe("generateMatchSummary (auto mode)", () => {
         is_active: true,
       }),
     );
+    // Auto path chains image-prompt generation for the freshly published recap.
+    expect(imagePromptMock).toHaveBeenCalledWith(admin, "s-auto");
+    // …and then requests the Leonardo render of that prompt.
+    expect(renderMock).toHaveBeenCalledWith(admin, "s-auto");
+  });
+
+  it("still returns success when the image RENDER request fails (isolated)", async () => {
+    chatMock.mockResolvedValue({
+      content: "Mexico edged Canada 2-1.",
+      model: "test/model",
+      promptTokens: 1,
+      completionTokens: 2,
+    });
+    renderMock.mockRejectedValue(new Error("leonardo boom"));
+    const admin = makeAdmin({
+      existing: null,
+      match: FINAL_MATCH,
+      events: [GOAL],
+      insertedId: "s-auto",
+    });
+    const result = await generateMatchSummary(admin as never, "m1");
+    expect(result).toEqual({ generated: true, summaryId: "s-auto" });
+  });
+
+  it("still returns success when image-prompt generation fails (isolated)", async () => {
+    chatMock.mockResolvedValue({
+      content: "Mexico edged Canada 2-1.",
+      model: "test/model",
+      promptTokens: 1,
+      completionTokens: 2,
+    });
+    imagePromptMock.mockRejectedValue(new Error("image prompt boom"));
+    const admin = makeAdmin({
+      existing: null,
+      match: FINAL_MATCH,
+      events: [GOAL],
+      insertedId: "s-auto",
+    });
+    const result = await generateMatchSummary(admin as never, "m1");
+    expect(result).toEqual({ generated: true, summaryId: "s-auto" });
   });
 
   it("treats a unique-violation on insert as already-exists (concurrent race)", async () => {
@@ -245,6 +299,10 @@ describe("generateMatchSummary (regenerate mode)", () => {
         is_active: false,
       }),
     );
+    // Regenerate produces a DRAFT — it must NOT auto-generate an image prompt
+    // or request a render.
+    expect(imagePromptMock).not.toHaveBeenCalled();
+    expect(renderMock).not.toHaveBeenCalled();
   });
 
   it("does not run the existence check at all in regenerate mode", async () => {

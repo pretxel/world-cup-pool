@@ -32,6 +32,13 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/result-sync/core", () => ({ runSync: vi.fn() }));
+vi.mock("@/lib/matches/match-image-prompt", () => ({
+  generateMatchImagePrompt: vi.fn(async () => ({ generated: true })),
+}));
+vi.mock("@/lib/matches/match-image-render", () => ({
+  requestMatchImageRender: vi.fn(async () => ({ requested: true })),
+  pollMatchImageRender: vi.fn(async () => ({ polled: true })),
+}));
 
 vi.mock("@/lib/notifications/result-emails", () => ({
   forceDispatchResultEmails: forceDispatchMock,

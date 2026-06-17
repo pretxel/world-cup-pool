@@ -50,6 +50,15 @@ export const env = {
   // configured. `openrouterModel` defaults to a small, cheap instruct model.
   openrouterApiKey: process.env.OPENROUTER_API_KEY ?? null,
   openrouterModel: process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
+  // Leonardo.ai image generation (server only) — renders a recap's image_prompt
+  // into the comic strip. Nullable/dormant: with no key the render step no-ops
+  // (no Leonardo call, no render row). `leonardoWebhookSecret` authenticates the
+  // /api/callback-image webhook; when unset the webhook rejects every request.
+  // The secret must equal the "webhook callback API key" bound to the Leonardo
+  // production API key. `leonardoModel` defaults to the GPT-Image-2 model.
+  leonardoApiKey: process.env.LEONARDO_API_KEY ?? null,
+  leonardoWebhookSecret: process.env.LEONARDO_WEBHOOK_SECRET ?? null,
+  leonardoModel: process.env.LEONARDO_MODEL ?? "gpt-image-2",
   // Shared secret for the Supabase Auth "Send Email Hook" (Standard Webhooks
   // format: "v1,whsec_<base64>"). The send-email route verifies every hook
   // request against this. Nullable so the route returns 401 (not a crash) when

@@ -11,6 +11,18 @@ const generateMatchSummaryMock = vi.fn(async () => ({ generated: true }) as {
   reason?: string;
   summaryId?: string;
 });
+const generateImagePromptMock = vi.fn(async () => ({ generated: true }) as {
+  generated: boolean;
+  reason?: string;
+});
+const requestRenderMock = vi.fn(async () => ({ requested: true }) as {
+  requested: boolean;
+  reason?: string;
+});
+const pollRenderMock = vi.fn(async () => ({ polled: true }) as {
+  polled: boolean;
+  reason?: string;
+});
 const assertMatchInManagedMock = vi.fn(async () => {});
 const getManagedCompetitionMock = vi.fn(async () => ({ id: "comp1", is_active: true }));
 const getUserMock = vi.fn();
@@ -40,6 +52,13 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/result-sync/core", () => ({ runSync: vi.fn() }));
+vi.mock("@/lib/matches/match-image-prompt", () => ({
+  generateMatchImagePrompt: generateImagePromptMock,
+}));
+vi.mock("@/lib/matches/match-image-render", () => ({
+  requestMatchImageRender: requestRenderMock,
+  pollMatchImageRender: pollRenderMock,
+}));
 vi.mock("@/lib/notifications/result-emails", () => ({
   forceDispatchResultEmails: vi.fn(),
 }));
@@ -103,6 +122,9 @@ async function importActions() {
 
 beforeEach(() => {
   generateMatchSummaryMock.mockReset().mockResolvedValue({ generated: true, summaryId: "s-new" });
+  generateImagePromptMock.mockReset().mockResolvedValue({ generated: true });
+  requestRenderMock.mockReset().mockResolvedValue({ requested: true });
+  pollRenderMock.mockReset().mockResolvedValue({ polled: true });
   assertMatchInManagedMock.mockReset().mockResolvedValue(undefined);
   getManagedCompetitionMock.mockReset().mockResolvedValue({ id: "comp1", is_active: true });
   getUserMock.mockReset().mockResolvedValue({ data: { user: { id: "admin1" } } });
@@ -245,5 +267,151 @@ describe("deleteSummaryVersion action", () => {
     await expect(
       deleteSummaryVersion(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
     ).rejects.toThrow(/deleteResult=error/);
+  });
+});
+
+describe("generateMatchImagePromptAction action", () => {
+  it("rejects a non-admin and never generates", async () => {
+    profileSingleMock.mockResolvedValue({ data: { is_admin: false } });
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow("Admin only");
+    expect(generateImagePromptMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a match outside the managed competition", async () => {
+    assertMatchInManagedMock.mockRejectedValue(
+      new Error("Match does not belong to the managed competition"),
+    );
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow("managed");
+    expect(generateImagePromptMock).not.toHaveBeenCalled();
+  });
+
+  it("generates for a version that belongs to the match and surfaces success", async () => {
+    const admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    holder.admin = admin;
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/imagePromptResult=generated/);
+    expect(generateImagePromptMock).toHaveBeenCalledWith(admin, SUMMARY_ID);
+  });
+
+  it("refuses a version that belongs to another match (no generation)", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: OTHER_MATCH_ID } });
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/imagePromptResult=error/);
+    expect(generateImagePromptMock).not.toHaveBeenCalled();
+  });
+
+  it("surfaces an error when the version is missing", async () => {
+    holder.admin = makeAdmin({ version: null });
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/imagePromptResult=error/);
+    expect(generateImagePromptMock).not.toHaveBeenCalled();
+  });
+
+  it("surfaces the generator skip reason (no-key)", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    generateImagePromptMock.mockResolvedValue({ generated: false, reason: "no-key" });
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/imagePromptResult=no-key/);
+  });
+
+  it("maps a thrown generator error to an error outcome, not a server error", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    generateImagePromptMock.mockRejectedValue(new Error("openrouter down"));
+    const { generateMatchImagePromptAction } = await importActions();
+    await expect(
+      generateMatchImagePromptAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/imagePromptResult=error/);
+  });
+});
+
+describe("renderMatchImageAction action", () => {
+  it("rejects a non-admin and never requests a render", async () => {
+    profileSingleMock.mockResolvedValue({ data: { is_admin: false } });
+    const { renderMatchImageAction } = await importActions();
+    await expect(
+      renderMatchImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow("Admin only");
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("requests a render for a version that belongs to the match", async () => {
+    const admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    holder.admin = admin;
+    const { renderMatchImageAction } = await importActions();
+    await expect(
+      renderMatchImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/renderResult=requested/);
+    expect(requestRenderMock).toHaveBeenCalledWith(admin, SUMMARY_ID);
+  });
+
+  it("refuses a version that belongs to another match (no render)", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: OTHER_MATCH_ID } });
+    const { renderMatchImageAction } = await importActions();
+    await expect(
+      renderMatchImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/renderResult=error/);
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("surfaces the skip reason (no-prompt)", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    requestRenderMock.mockResolvedValue({ requested: false, reason: "no-prompt" });
+    const { renderMatchImageAction } = await importActions();
+    await expect(
+      renderMatchImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/renderResult=no-prompt/);
+  });
+
+  it("maps a thrown render error to an error outcome", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    requestRenderMock.mockRejectedValue(new Error("leonardo down"));
+    const { renderMatchImageAction } = await importActions();
+    await expect(
+      renderMatchImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/renderResult=error/);
+  });
+});
+
+describe("syncMatchImageRenderAction action", () => {
+  it("rejects a non-admin and never polls", async () => {
+    profileSingleMock.mockResolvedValue({ data: { is_admin: false } });
+    const { syncMatchImageRenderAction } = await importActions();
+    await expect(
+      syncMatchImageRenderAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow("Admin only");
+    expect(pollRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("syncs a pending render and surfaces success", async () => {
+    const admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    holder.admin = admin;
+    const { syncMatchImageRenderAction } = await importActions();
+    await expect(
+      syncMatchImageRenderAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/syncRenderResult=synced/);
+    expect(pollRenderMock).toHaveBeenCalledWith(admin, SUMMARY_ID);
+  });
+
+  it("surfaces the pending reason when the render is not yet complete", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    pollRenderMock.mockResolvedValue({ polled: false, reason: "pending" });
+    const { syncMatchImageRenderAction } = await importActions();
+    await expect(
+      syncMatchImageRenderAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/syncRenderResult=pending/);
   });
 });

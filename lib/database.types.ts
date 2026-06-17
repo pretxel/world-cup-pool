@@ -363,6 +363,7 @@ export type Database = {
           created_at: string
           generated_at: string
           id: string
+          image_prompt: string | null
           is_active: boolean
           locale: string
           match_id: string
@@ -379,6 +380,7 @@ export type Database = {
           created_at?: string
           generated_at?: string
           id?: string
+          image_prompt?: string | null
           is_active?: boolean
           locale?: string
           match_id: string
@@ -395,6 +397,7 @@ export type Database = {
           created_at?: string
           generated_at?: string
           id?: string
+          image_prompt?: string | null
           is_active?: boolean
           locale?: string
           match_id?: string
@@ -414,6 +417,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      match_summary_images: {
+        Row: {
+          created_at: string
+          error: string | null
+          generation_id: string | null
+          id: string
+          match_id: string
+          model: string | null
+          provider: string
+          status: string
+          storage_path: string | null
+          summary_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          generation_id?: string | null
+          id?: string
+          match_id: string
+          model?: string | null
+          provider?: string
+          status?: string
+          storage_path?: string | null
+          summary_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          generation_id?: string | null
+          id?: string
+          match_id?: string
+          model?: string | null
+          provider?: string
+          status?: string
+          storage_path?: string | null
+          summary_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       matches: {
         Row: {
