@@ -18,6 +18,7 @@ import { TeamFlagWall } from "@/components/team-flag-wall";
 import { TeamFlag } from "@/components/team-flag";
 import { Logotype } from "@/components/logotype";
 import { TournamentCountdown } from "@/components/tournament-countdown";
+import { RecentRecapImages } from "@/components/recent-recap-images";
 
 export async function generateMetadata({
   params,
@@ -49,6 +50,7 @@ export default async function HomePage({
       <FlagWallDivider />
       <Cadence t={t} />
       <FeatureSections locale={locale} t={t} />
+      <RecentRecapImages locale={locale} />
     </main>
   );
 }
