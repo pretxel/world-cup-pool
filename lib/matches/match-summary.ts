@@ -2,6 +2,8 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { env } from "@/lib/env";
 import { createChatCompletion } from "@/lib/ai/openrouter";
+import { generateMatchImagePrompt } from "@/lib/matches/match-image-prompt";
+import { requestMatchImageRender } from "@/lib/matches/match-image-render";
 import type { MatchEventType, MatchEventTeam } from "@/lib/matches/match-events";
 import type { Database } from "@/lib/database.types";
 
@@ -237,6 +239,25 @@ export async function generateMatchSummary(
       return { generated: false, reason: "exists" };
     }
     throw new Error(`Failed to store summary for ${matchId}: ${error.message}`);
+  }
+
+  // Best-effort: derive the comic-strip image prompt for the freshly published
+  // recap. Only the auto (active) path; isolated in try/catch so a failure here
+  // never blocks recap storage, score writes, or the surrounding sync.
+  if (isActive && inserted?.id) {
+    try {
+      await generateMatchImagePrompt(admin, inserted.id);
+    } catch (err) {
+      console.error(`[match-summary] image prompt generation failed for ${matchId}:`, err);
+    }
+    // Then render that prompt to an image (Leonardo). Separate isolated step: it
+    // reads the image_prompt the call above just stored, and no-ops when that
+    // prompt is absent (the step above failed) or the Leonardo key is unset.
+    try {
+      await requestMatchImageRender(admin, inserted.id);
+    } catch (err) {
+      console.error(`[match-summary] image render request failed for ${matchId}:`, err);
+    }
   }
 
   return { generated: true, summaryId: inserted?.id };

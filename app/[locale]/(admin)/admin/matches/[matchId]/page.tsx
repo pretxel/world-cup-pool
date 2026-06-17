@@ -34,6 +34,9 @@ import {
   regenerateMatchSummary,
   setActiveSummaryVersion,
   deleteSummaryVersion,
+  generateMatchImagePromptAction,
+  renderMatchImageAction,
+  syncMatchImageRenderAction,
   saveFixtureDetail,
   setMatchResultDetail,
   forceRecomputeDetail,
@@ -97,6 +100,38 @@ function resolveOutcome(
       const o = OUTCOME[v];
       if (o) return { message: t(`detail.${o.key}`), variant: o.variant };
     }
+  }
+  // Image-prompt generation carries its own code family + dedicated messages.
+  const imagePrompt = sp.imagePromptResult;
+  if (typeof imagePrompt === "string" && imagePrompt.length > 0) {
+    if (imagePrompt === "generated")
+      return { message: t("detail.outcomeImagePromptGenerated"), variant: "success" };
+    if (imagePrompt === "no-key")
+      return { message: t("detail.outcomeImagePromptNoKey"), variant: "info" };
+    return { message: t("detail.outcomeImagePromptError"), variant: "error" };
+  }
+  // Image render request + poll-sync carry their own code families.
+  const render = sp.renderResult;
+  if (typeof render === "string" && render.length > 0) {
+    if (render === "requested")
+      return { message: t("detail.outcomeRenderRequested"), variant: "success" };
+    if (render === "no-key")
+      return { message: t("detail.outcomeRenderNoKey"), variant: "info" };
+    if (render === "no-prompt")
+      return { message: t("detail.outcomeRenderNoPrompt"), variant: "info" };
+    return { message: t("detail.outcomeRenderError"), variant: "error" };
+  }
+  const syncRender = sp.syncRenderResult;
+  if (typeof syncRender === "string" && syncRender.length > 0) {
+    if (syncRender === "synced")
+      return { message: t("detail.outcomeSyncSynced"), variant: "success" };
+    if (syncRender === "pending")
+      return { message: t("detail.outcomeSyncPending"), variant: "info" };
+    if (syncRender === "already-complete")
+      return { message: t("detail.outcomeSyncAlreadyComplete"), variant: "info" };
+    if (syncRender === "no-key")
+      return { message: t("detail.outcomeRenderNoKey"), variant: "info" };
+    return { message: t("detail.outcomeRenderError"), variant: "error" };
   }
   const edit = sp.editResult;
   if (typeof edit === "string" && edit.length > 0) {
@@ -196,20 +231,29 @@ export default async function AdminMatchDetailPage({
     .maybeSingle();
   if (!match) notFound();
 
-  const [{ data: eventRows }, { data: versionRows }] = await Promise.all([
-    admin
-      .from("match_events")
-      .select("id, type, team, minute, extra_minute, player, detail, sequence")
-      .eq("match_id", matchId)
-      .order("sequence", { ascending: true }),
-    admin
-      .from("match_summaries")
-      .select("id, content, style_key, style_instruction, model, generated_at, is_active")
-      .eq("match_id", matchId)
-      .order("generated_at", { ascending: false }),
-  ]);
+  const [{ data: eventRows }, { data: versionRows }, { data: renderRows }] =
+    await Promise.all([
+      admin
+        .from("match_events")
+        .select("id, type, team, minute, extra_minute, player, detail, sequence")
+        .eq("match_id", matchId)
+        .order("sequence", { ascending: true }),
+      admin
+        .from("match_summaries")
+        .select(
+          "id, content, style_key, style_instruction, model, generated_at, is_active, image_prompt",
+        )
+        .eq("match_id", matchId)
+        .order("generated_at", { ascending: false }),
+      admin
+        .from("match_summary_images")
+        .select("summary_id, status, storage_path, error")
+        .eq("match_id", matchId),
+    ]);
   const events = eventRows ?? [];
   const versions = versionRows ?? [];
+  // Render state keyed by recap-version id (one render row per version).
+  const renders = new Map((renderRows ?? []).map((r) => [r.summary_id, r]));
 
   const sp = await searchParams;
   const outcome = resolveOutcome(sp, t);
@@ -232,6 +276,12 @@ export default async function AdminMatchDetailPage({
   // the form (with the most relevant reason) when any precondition fails.
   const hasEvents = events.length > 0;
   const hasKey = Boolean(env.openrouterApiKey);
+  const hasLeonardoKey = Boolean(env.leonardoApiKey);
+  // Build the browser-facing public URL for a stored render. Use the PUBLIC
+  // Supabase origin (server env.supabaseUrl may be an in-network host).
+  const publicBase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? env.supabaseUrl;
+  const renderImageUrl = (path: string) =>
+    `${publicBase}/storage/v1/object/public/match-recap-images/${path}`;
   const regenDisabled = match.status !== "final" || !hasEvents || !hasKey;
   const regenNotice =
     match.status !== "final"
@@ -560,7 +610,9 @@ export default async function AdminMatchDetailPage({
             </div>
           ) : (
             <ul className="space-y-3">
-              {versions.map((v) => (
+              {versions.map((v) => {
+                const render = renders.get(v.id) ?? null;
+                return (
                 <li
                   key={v.id}
                   className="space-y-3 rounded-xl border border-border bg-card p-4"
@@ -593,6 +645,108 @@ export default async function AdminMatchDetailPage({
                     </span>
                   </div>
 
+                  {v.image_prompt ? (
+                    <details className="rounded-lg border border-border bg-muted/20 p-3">
+                      <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {t("detail.imagePromptLabel")}
+                      </summary>
+                      <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-foreground/80">
+                        {v.image_prompt}
+                      </pre>
+                    </details>
+                  ) : null}
+
+                  <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
+                    <form action={generateMatchImagePromptAction}>
+                      <input type="hidden" name="summary_id" value={v.id} />
+                      <input type="hidden" name="match_id" value={match.id} />
+                      <input type="hidden" name="locale" value={locale} />
+                      <SubmitButton
+                        size="sm"
+                        variant="secondary"
+                        disabled={!hasKey}
+                        pendingLabel={t("detail.generateImagePromptPending")}
+                      >
+                        {v.image_prompt
+                          ? t("detail.regenerateImagePrompt")
+                          : t("detail.generateImagePrompt")}
+                      </SubmitButton>
+                    </form>
+                  </div>
+
+                  <div className="space-y-2 border-t border-border pt-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {t("detail.renderLabel")}
+                      </span>
+                      {render ? (
+                        <Badge
+                          variant={
+                            render.status === "complete"
+                              ? "default"
+                              : render.status === "failed"
+                                ? "destructive"
+                                : "secondary"
+                          }
+                        >
+                          {t(`detail.renderStatus_${render.status}`)}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">{t("detail.renderStatusNone")}</Badge>
+                      )}
+                    </div>
+
+                    {render?.status === "complete" && render.storage_path ? (
+                      <a
+                        href={renderImageUrl(render.storage_path)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block w-fit"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={renderImageUrl(render.storage_path)}
+                          alt={t("detail.renderLabel")}
+                          className="max-h-80 w-auto rounded-lg border border-border"
+                        />
+                      </a>
+                    ) : null}
+
+                    {render?.status === "failed" && render.error ? (
+                      <p className="text-xs text-destructive">{render.error}</p>
+                    ) : null}
+
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <form action={renderMatchImageAction}>
+                        <input type="hidden" name="summary_id" value={v.id} />
+                        <input type="hidden" name="match_id" value={match.id} />
+                        <input type="hidden" name="locale" value={locale} />
+                        <SubmitButton
+                          size="sm"
+                          variant="secondary"
+                          disabled={!hasLeonardoKey || !v.image_prompt}
+                          pendingLabel={t("detail.renderImagePending")}
+                        >
+                          {render ? t("detail.rerenderImage") : t("detail.renderImage")}
+                        </SubmitButton>
+                      </form>
+                      {render?.status === "pending" ? (
+                        <form action={syncMatchImageRenderAction}>
+                          <input type="hidden" name="summary_id" value={v.id} />
+                          <input type="hidden" name="match_id" value={match.id} />
+                          <input type="hidden" name="locale" value={locale} />
+                          <SubmitButton
+                            size="sm"
+                            variant="ghost"
+                            pendingLabel={t("detail.syncRenderPending")}
+                          >
+                            {t("detail.syncRender")}
+                          </SubmitButton>
+                        </form>
+                      ) : null}
+                    </div>
+                  </div>
+
                   {!v.is_active ? (
                     <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
                       <form action={setActiveSummaryVersion}>
@@ -618,7 +772,8 @@ export default async function AdminMatchDetailPage({
                     </div>
                   ) : null}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </section>

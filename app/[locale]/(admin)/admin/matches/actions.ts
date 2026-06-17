@@ -12,6 +12,11 @@ import {
   STYLE_PRESETS,
   type SummaryStyle,
 } from "@/lib/matches/match-summary";
+import { generateMatchImagePrompt } from "@/lib/matches/match-image-prompt";
+import {
+  requestMatchImageRender,
+  pollMatchImageRender,
+} from "@/lib/matches/match-image-render";
 import {
   getManagedCompetition,
   assertMatchInManaged,
@@ -528,6 +533,132 @@ export async function deleteSummaryVersion(formData: FormData): Promise<void> {
   }
 
   revalidateAfterMutation(managed.is_active);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
+}
+
+// Generate (or regenerate) the 90s-anime comic-strip image prompt for one recap
+// version from its stored recap text. Overwrites any existing prompt for that
+// version. No-ops (no-key) when the OpenRouter key is unset.
+export async function generateMatchImagePromptAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = versionActionSchema.parse({
+    summary_id: formData.get("summary_id"),
+    match_id: formData.get("match_id"),
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const params = new URLSearchParams({ imagePromptSummaryId: parsed.summary_id });
+  try {
+    // Don't trust the posted summary_id — confirm it belongs to this match.
+    const { data: version } = await admin
+      .from("match_summaries")
+      .select("id, match_id")
+      .eq("id", parsed.summary_id)
+      .maybeSingle();
+    if (!version || version.match_id !== parsed.match_id) {
+      params.set("imagePromptResult", "error");
+    } else {
+      const result = await generateMatchImagePrompt(admin, parsed.summary_id);
+      // "generated" on success, else the generator's skip reason
+      // (no-key, missing, empty-content).
+      params.set(
+        "imagePromptResult",
+        result.generated ? "generated" : (result.reason ?? "error"),
+      );
+    }
+  } catch (err) {
+    console.error("[admin:generateMatchImagePromptAction] generation failed:", err);
+    params.set("imagePromptResult", "error");
+  }
+
+  revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
+}
+
+// Request a Leonardo render of one recap version's image prompt. The rendered
+// image is stored asynchronously by the /api/callback-image webhook (or the sync
+// action below) once Leonardo completes the generation.
+export async function renderMatchImageAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = versionActionSchema.parse({
+    summary_id: formData.get("summary_id"),
+    match_id: formData.get("match_id"),
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const params = new URLSearchParams({ renderSummaryId: parsed.summary_id });
+  try {
+    // Confirm the posted summary belongs to this match before touching it.
+    const { data: version } = await admin
+      .from("match_summaries")
+      .select("id, match_id")
+      .eq("id", parsed.summary_id)
+      .maybeSingle();
+    if (!version || version.match_id !== parsed.match_id) {
+      params.set("renderResult", "error");
+    } else {
+      const result = await requestMatchImageRender(admin, parsed.summary_id);
+      // "requested" on success, else the skip reason (no-key, no-prompt, missing).
+      params.set("renderResult", result.requested ? "requested" : (result.reason ?? "error"));
+    }
+  } catch (err) {
+    console.error("[admin:renderMatchImageAction] render request failed:", err);
+    params.set("renderResult", "error");
+  }
+
+  revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
+  redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
+}
+
+// Poll Leonardo for a pending render and finalize it. For local dev (where the
+// webhook can't reach this environment) and manual recovery of a stuck render.
+export async function syncMatchImageRenderAction(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+  const locale = localeFrom(formData);
+
+  const parsed = versionActionSchema.parse({
+    summary_id: formData.get("summary_id"),
+    match_id: formData.get("match_id"),
+  });
+
+  const admin = createAdminSupabaseClient();
+  await assertMatchInManaged(admin, parsed.match_id, managed.id);
+
+  const params = new URLSearchParams({ syncRenderSummaryId: parsed.summary_id });
+  try {
+    const { data: version } = await admin
+      .from("match_summaries")
+      .select("id, match_id")
+      .eq("id", parsed.summary_id)
+      .maybeSingle();
+    if (!version || version.match_id !== parsed.match_id) {
+      params.set("syncRenderResult", "error");
+    } else {
+      const result = await pollMatchImageRender(admin, parsed.summary_id);
+      // "synced" on a finalized render, else the reason (pending, no-key, missing,
+      // already-complete).
+      params.set("syncRenderResult", result.polled ? "synced" : (result.reason ?? "error"));
+    }
+  } catch (err) {
+    console.error("[admin:syncMatchImageRenderAction] poll failed:", err);
+    params.set("syncRenderResult", "error");
+  }
+
+  revalidateAfterMutation(managed.is_active, `/matches/${parsed.match_id}`);
   redirect(localePath(locale, `/admin/matches/${parsed.match_id}?${params.toString()}`));
 }
 
