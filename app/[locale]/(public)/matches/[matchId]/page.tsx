@@ -32,6 +32,15 @@ import { simulateGroup, type GroupTeamRow } from "@/lib/group-standings";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
+const RECAP_BUCKET = "match-recap-images";
+
+// Public Storage URL for a stored recap comic image. Uses the PUBLIC Supabase
+// origin (server env.supabaseUrl may be an in-network host).
+function recapImagePublicUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? env.supabaseUrl;
+  return `${base}/storage/v1/object/public/${RECAP_BUCKET}/${path}`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -75,6 +84,18 @@ export async function generateMetadata({
       });
   const canonical = `/matches/${matchId}`;
 
+  // Preview the active recap's comic when one has been rendered (active-only RLS
+  // scopes this row; nothing for matches without a completed render).
+  const { data: renderRow } = await supabase
+    .from("match_summary_images")
+    .select("storage_path")
+    .eq("match_id", matchId)
+    .eq("status", "complete")
+    .maybeSingle();
+  const recapImage = renderRow?.storage_path
+    ? recapImagePublicUrl(renderRow.storage_path)
+    : null;
+
   return {
     title,
     description,
@@ -84,11 +105,15 @@ export async function generateMetadata({
       url: canonical,
       title: `${title} · WC26 Pool`,
       description,
+      ...(recapImage
+        ? { images: [{ url: recapImage, alt: `${match.home_team} vs ${match.away_team}` }] }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: `${title} · WC26 Pool`,
       description,
+      ...(recapImage ? { images: [recapImage] } : {}),
     },
   };
 }
@@ -106,6 +131,7 @@ export default async function MatchDetailPage({
   const tForm = await getTranslations("predictionForm");
   const tGroupSim = await getTranslations("groupSimulation");
   const tShare = await getTranslations("sharePick");
+  const tShareRecap = await getTranslations("shareRecap");
 
   const supabase = await createServerSupabaseClient();
 
@@ -231,6 +257,7 @@ export default async function MatchDetailPage({
   // AI recap: only finished matches ever have one. Read-only; the body is the
   // English summary, the surrounding labels are localized.
   let matchSummary: { content: string } | null = null;
+  let recapImageUrl: string | null = null;
   if (match.status === "final") {
     const { data: summaryRow } = await supabase
       .from("match_summaries")
@@ -239,6 +266,17 @@ export default async function MatchDetailPage({
       .eq("is_active", true)
       .maybeSingle();
     if (summaryRow) matchSummary = { content: summaryRow.content };
+
+    // The active version's completed comic render (active-only RLS scopes this).
+    const { data: renderRow } = await supabase
+      .from("match_summary_images")
+      .select("storage_path")
+      .eq("match_id", match.id)
+      .eq("status", "complete")
+      .maybeSingle();
+    if (renderRow?.storage_path) {
+      recapImageUrl = recapImagePublicUrl(renderRow.storage_path);
+    }
   }
 
   const tLiveFeed = await getTranslations("liveFeed");
@@ -432,6 +470,17 @@ export default async function MatchDetailPage({
             {t("summaryHeading")}
           </h2>
           <div className="rounded-xl border border-border bg-card p-5">
+            {recapImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={recapImageUrl}
+                alt={t("recapImageAlt", {
+                  home: match.home_team,
+                  away: match.away_team,
+                })}
+                className="mx-auto mb-4 block w-full max-w-sm rounded-lg border border-border"
+              />
+            ) : null}
             <p className="text-sm leading-relaxed text-foreground/90">
               {matchSummary.content}
             </p>
@@ -439,6 +488,27 @@ export default async function MatchDetailPage({
               {t("summaryDisclaimer")}
             </p>
           </div>
+          {recapImageUrl ? (
+            <div className="mt-4">
+              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                {tShareRecap("heading")}
+              </p>
+              <ShareButtons
+                shareUrl={`${env.siteUrl}${localePath(locale, `/matches/${match.id}`)}`}
+                shareText={tShareRecap("shareText", {
+                  home: match.home_team,
+                  away: match.away_team,
+                })}
+                labels={{
+                  x: tShareRecap("shareOnX"),
+                  facebook: tShareRecap("shareOnFacebook"),
+                  native: tShareRecap("shareNative"),
+                  copy: tShareRecap("copyLink"),
+                  copied: tShareRecap("copied"),
+                }}
+              />
+            </div>
+          ) : null}
         </section>
       ) : null}
 

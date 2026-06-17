@@ -296,7 +296,8 @@
     "missingPickLive": "El partido está en vivo — los pronósticos están cerrados y no enviaste uno.",
     "missingPickKickoff": "Los pronósticos están cerrados — el inicio ya pasó y no enviaste uno para este partido.",
     "summaryHeading": "Resumen del partido",
-    "summaryDisclaimer": "Resumen generado por IA"
+    "summaryDisclaimer": "Resumen generado por IA",
+    "recapImageAlt": "Resumen cómic de {home} vs {away}"
   },
   "predictionForm": {
     "adminBlocked": "Las cuentas de administrador no participan en la quiniela.",
@@ -321,6 +322,15 @@
     "errorNotSignedIn": "Debes iniciar sesión para enviar un pronóstico.",
     "errorMatchNotFound": "Partido no encontrado.",
     "errorInvalidScores": "Los marcadores deben ser números enteros entre 0 y 20."
+  },
+  "shareRecap": {
+    "heading": "Comparte este resumen",
+    "shareText": "El resumen cómic de {home} vs {away} · Quiniela Mundial 2026",
+    "shareOnX": "Compartir en X",
+    "shareOnFacebook": "Compartir en Facebook",
+    "shareNative": "Compartir…",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado"
   },
   "sharePick": {
     "heading": "Comparte tu pronóstico",

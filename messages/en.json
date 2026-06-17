@@ -296,7 +296,8 @@
     "missingPickLive": "This match is live — predictions are locked and you didn't submit one.",
     "missingPickKickoff": "Predictions are locked — kickoff has passed and you didn't submit one for this match.",
     "summaryHeading": "Match recap",
-    "summaryDisclaimer": "AI-generated summary"
+    "summaryDisclaimer": "AI-generated summary",
+    "recapImageAlt": "Comic recap of {home} vs {away}"
   },
   "predictionForm": {
     "adminBlocked": "Admin accounts don't compete in the pool.",
@@ -321,6 +322,15 @@
     "errorNotSignedIn": "You need to be signed in to submit a prediction.",
     "errorMatchNotFound": "Match not found.",
     "errorInvalidScores": "Scores must be whole numbers between 0 and 20."
+  },
+  "shareRecap": {
+    "heading": "Share this recap",
+    "shareText": "The comic recap of {home} vs {away} · World Cup 2026 Pool",
+    "shareOnX": "Share on X",
+    "shareOnFacebook": "Share on Facebook",
+    "shareNative": "Share…",
+    "copyLink": "Copy link",
+    "copied": "Link copied"
   },
   "sharePick": {
     "heading": "Share your pick",
