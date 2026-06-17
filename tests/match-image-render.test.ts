@@ -163,6 +163,32 @@ describe("requestMatchImageRender", () => {
     await expect(requestMatchImageRender(admin as never, "s1")).rejects.toThrow(/Leonardo 500/);
     expect(admin.upsertPayloads[0]).toMatchObject({ status: "failed", generation_id: null });
   });
+
+  it("accepts a snake_case generation_id", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ generation_id: "gen-snake" }) });
+    const admin = makeAdmin({ summary: { image_prompt: "P", match_id: "m1" } });
+    expect(await requestMatchImageRender(admin as never, "s1")).toEqual({ requested: true });
+    expect(admin.upsertPayloads[0]).toMatchObject({ generation_id: "gen-snake", status: "pending" });
+  });
+
+  it("deep-scans for a nested generation id", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ result: { job: { generationId: "gen-deep" } } }),
+    });
+    const admin = makeAdmin({ summary: { image_prompt: "P", match_id: "m1" } });
+    expect(await requestMatchImageRender(admin as never, "s1")).toEqual({ requested: true });
+    expect(admin.upsertPayloads[0]).toMatchObject({ generation_id: "gen-deep" });
+  });
+
+  it("records failed and surfaces the response shape when no id is present", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ foo: "bar" }) });
+    const admin = makeAdmin({ summary: { image_prompt: "P", match_id: "m1" } });
+    await expect(requestMatchImageRender(admin as never, "s1")).rejects.toThrow(
+      /missing a generation id; response: .*foo/,
+    );
+    expect(admin.upsertPayloads[0]).toMatchObject({ status: "failed" });
+  });
 });
 
 describe("finalizeRender", () => {
