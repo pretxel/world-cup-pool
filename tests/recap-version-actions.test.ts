@@ -415,3 +415,84 @@ describe("syncMatchImageRenderAction action", () => {
     ).rejects.toThrow(/syncRenderResult=pending/);
   });
 });
+
+describe("generateAndRenderImageAction action", () => {
+  it("rejects a non-admin and does nothing", async () => {
+    profileSingleMock.mockResolvedValue({ data: { is_admin: false } });
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow("Admin only");
+    expect(generateImagePromptMock).not.toHaveBeenCalled();
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("generates the prompt then requests the render (comboResult=rendered)", async () => {
+    const admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    holder.admin = admin;
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=rendered/);
+    expect(generateImagePromptMock).toHaveBeenCalledWith(admin, SUMMARY_ID);
+    expect(requestRenderMock).toHaveBeenCalledWith(admin, SUMMARY_ID);
+  });
+
+  it("refuses a version from another match (no prompt, no render)", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: OTHER_MATCH_ID } });
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=error/);
+    expect(generateImagePromptMock).not.toHaveBeenCalled();
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("reports no-key and skips the render when the prompt step is dormant", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    generateImagePromptMock.mockResolvedValue({ generated: false, reason: "no-key" });
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=no-key/);
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("reports error and skips the render when the prompt step fails", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    generateImagePromptMock.mockResolvedValue({ generated: false, reason: "missing" });
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=error/);
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+
+  it("reports prompt-only when the render is skipped", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    requestRenderMock.mockResolvedValue({ requested: false, reason: "no-key" });
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=prompt-only/);
+  });
+
+  it("reports prompt-only when the render throws (isolated)", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    requestRenderMock.mockRejectedValue(new Error("leonardo down"));
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=prompt-only/);
+  });
+
+  it("maps a thrown prompt error to comboResult=error", async () => {
+    holder.admin = makeAdmin({ version: { id: SUMMARY_ID, match_id: MATCH_ID } });
+    generateImagePromptMock.mockRejectedValue(new Error("openrouter down"));
+    const { generateAndRenderImageAction } = await importActions();
+    await expect(
+      generateAndRenderImageAction(form({ summary_id: SUMMARY_ID, match_id: MATCH_ID, locale: "en" })),
+    ).rejects.toThrow(/comboResult=error/);
+    expect(requestRenderMock).not.toHaveBeenCalled();
+  });
+});
