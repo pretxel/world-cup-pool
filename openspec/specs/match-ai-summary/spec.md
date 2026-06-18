@@ -3,9 +3,7 @@
 ## Purpose
 
 Rules governing AI-generated match recaps: a dedicated `match_summaries` model, generation gated to matches that have reached `final`, the OpenRouter-backed generation path (env-gated, English locale), isolation from result-sync score writes, and how a stored summary surfaces to viewers via the per-match live API and the match-detail view.
-
 ## Requirements
-
 ### Requirement: AI match summaries are stored in a dedicated model
 
 The system SHALL persist AI-generated recaps in a `match_summaries` table keyed to
@@ -129,3 +127,25 @@ NOT be surfaced to viewers.
 - **WHEN** a viewer opens the detail view of a match that has an active recap version
 - **THEN** the active recap is displayed as read-only content
 - **AND** when no active version exists the section is not rendered
+
+### Requirement: Automatic recap uses the dramatic style
+
+The automatic recap generation path SHALL apply the `dramatic` style preset by default —
+the post-final flow (the result-sync cron pass and the management-list quick action)
+stores the active version with `style_key = "dramatic"` and the preset's
+`style_instruction`. Admin regeneration with an explicitly chosen style SHALL be
+unaffected — the dramatic default applies only when no style is supplied. The dramatic
+recap SHALL remain grounded strictly in the provided events and score; the style
+guidance SHALL NOT override the no-invented-facts constraint.
+
+#### Scenario: Automatic recap is dramatic
+
+- **WHEN** the automatic path generates a recap for a `final` match
+- **THEN** the stored active version records `style_key = "dramatic"` and the dramatic
+  `style_instruction`, and the recap stays within the provided events and score
+
+#### Scenario: Explicit admin style still wins
+
+- **WHEN** an admin regenerates with an explicitly chosen style (e.g. `concise`)
+- **THEN** that chosen style is applied, not the dramatic auto default
+
