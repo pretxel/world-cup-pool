@@ -31,6 +31,7 @@ import {
   buildSummaryPrompt,
   generateMatchSummary,
   generatePendingSummaries,
+  STYLE_PRESETS,
   type SummaryMatch,
   type SummaryEvent,
 } from "@/lib/matches/match-summary";
@@ -199,8 +200,9 @@ describe("generateMatchSummary (auto mode)", () => {
         prompt_tokens: 11,
         completion_tokens: 22,
         locale: "en",
-        style_key: "neutral",
-        style_instruction: null,
+        // Auto path now defaults to the dramatic style.
+        style_key: "dramatic",
+        style_instruction: STYLE_PRESETS.dramatic,
         is_active: true,
       }),
     );
