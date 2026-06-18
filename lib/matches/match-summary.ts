@@ -14,7 +14,10 @@ import type { Database } from "@/lib/database.types";
 type AdminClient = SupabaseClient<Database>;
 
 const SUMMARY_LOCALE = "en";
-const DEFAULT_STYLE_KEY = "neutral";
+// The automatic post-final path (result-sync cron + admin quick action) defaults
+// to the dramatic style — punchier recaps and a better source for the comic render.
+// Admin regeneration always passes an explicit style, so this only affects auto.
+const AUTO_SUMMARY_STYLE_KEY = "dramatic";
 // Cap how many matches one batch pass will summarize, so a backlog (e.g. the
 // first run after deploy) can't fan out into an unbounded burst of LLM calls.
 const DEFAULT_BATCH_LIMIT = 20;
@@ -165,7 +168,11 @@ export async function generateMatchSummary(
   opts: GenerateOptions = {},
 ): Promise<GenerateResult> {
   const mode = opts.mode ?? "auto";
-  const style = opts.style ?? { key: DEFAULT_STYLE_KEY, instruction: null };
+  const style =
+    opts.style ?? {
+      key: AUTO_SUMMARY_STYLE_KEY,
+      instruction: STYLE_PRESETS[AUTO_SUMMARY_STYLE_KEY] || null,
+    };
 
   // Gate on the key first so a dormant deploy never touches the DB or network.
   if (!env.openrouterApiKey) return { generated: false, reason: "no-key" };
