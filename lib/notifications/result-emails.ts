@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
+import { checkEmailSenderConfig } from "./email-sender-config";
 import type { HitType } from "@/lib/db";
 import {
   renderResultEmail,
@@ -19,9 +20,25 @@ export interface DispatchSummary {
   emailed: number;
   failed: number;
   skipped: number;
+  // Set when the production email-sender guard detected a misconfiguration
+  // during this run (sandbox default sender and/or missing RESEND_API_KEY).
+  // Optional so healthy runs (and `emailed`/`failed`/`skipped` semantics) are
+  // unchanged; flows through recordRun into the operations record / cron logs.
+  senderMisconfigured?: boolean;
 }
 
 const ZERO: DispatchSummary = { emailed: 0, failed: 0, skipped: 0 };
+
+// Emits one clear warning when the production email sender is misconfigured and
+// reports whether the run should carry the summary flag. Pure detection: never
+// throws, never changes the resolved sender. Shared by both entry points.
+function warnIfSenderMisconfigured(context: string): boolean {
+  const check = checkEmailSenderConfig();
+  if (check.shouldWarn) {
+    console.warn(`[result-emails] ${context}: ${check.message}`);
+  }
+  return check.shouldWarn;
+}
 
 // A scored row for a match that is currently final, flattened with the match's
 // teams + scoreline. The unit of "a player's standing changed".
@@ -300,9 +317,10 @@ async function dispatchPending(
 export async function dispatchResultEmails(
   fromName?: string,
 ): Promise<DispatchSummary> {
+  const senderMisconfigured = warnIfSenderMisconfigured("dispatch");
   if (!env.resendApiKey) {
     console.log("[result-emails] RESEND_API_KEY unset — skipping dispatch");
-    return { ...ZERO };
+    return { ...ZERO, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
   }
 
   const admin = createAdminSupabaseClient();
@@ -316,7 +334,8 @@ export async function dispatchResultEmails(
   }
 
   const pending = computePendingByUser(scored, ledgerData ?? []);
-  return dispatchPending(admin, pending, fromName);
+  const summary = await dispatchPending(admin, pending, fromName);
+  return { ...summary, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
 }
 
 // Admin force path: re-emails every scored player of ONE final match,
@@ -329,16 +348,18 @@ export async function forceDispatchResultEmails(
   matchId: string,
   fromName?: string,
 ): Promise<DispatchSummary> {
+  const senderMisconfigured = warnIfSenderMisconfigured("force dispatch");
   if (!env.resendApiKey) {
     console.log("[result-emails] RESEND_API_KEY unset — skipping force dispatch");
-    return { ...ZERO };
+    return { ...ZERO, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
   }
 
   const admin = createAdminSupabaseClient();
   const scored = await loadScoredFinals(admin, matchId);
   // Empty ledger → every scored recipient of this match is pending.
   const pending = computePendingByUser(scored, []);
-  return dispatchPending(admin, pending, fromName);
+  const summary = await dispatchPending(admin, pending, fromName);
+  return { ...summary, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
 }
 
 // Player emails live only in auth.users — reachable via the service-role admin

@@ -192,6 +192,33 @@ kickoff.
 message. Set it in Vercel project settings (Production and Preview) and
 redeploy. Locally, set it in `.env.local`.
 
+### "Production email sender is misconfigured: …"
+
+The email dispatchers (result emails, prediction reminders, quiz reminders)
+run a guard at the start of every run
+([`lib/notifications/email-sender-config.ts`](../lib/notifications/email-sender-config.ts)).
+In **production** (`NODE_ENV === "production"`) it emits a single
+`console.warn` and sets `senderMisconfigured: true` on the dispatch summary
+(visible in the cron logs and the operations control room) when either:
+
+- **`RESEND_API_KEY` is unset** — the dispatcher no-ops and sends nothing.
+  Result: reminders and result emails silently stop going out.
+- **`EMAIL_FROM` still resolves to the Resend sandbox sender**
+  (`World Cup Pools <onboarding@resend.dev>`, the dev-only default) — emails
+  still send, but from a shared sandbox address that hurts deliverability and
+  brand trust and is likely to land in spam.
+
+**Required production configuration** (Vercel project settings → Production):
+
+- `RESEND_API_KEY` — your Resend API key.
+- `EMAIL_FROM` — a sender on a **Resend verified domain**, e.g.
+  `World Cup Pools <noreply@your-verified-domain.com>`. The display name is
+  cosmetic; the address inside `<…>` must be on a domain verified in Resend.
+
+The guard only detects the two known defaults above; verifying the domain in
+Resend remains an ops responsibility. The warning is non-fatal — dispatch
+never throws or fails the cron because of it.
+
 ## Redeploy and rollback
 
 ### Redeploy
