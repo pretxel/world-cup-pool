@@ -41,7 +41,8 @@
     "result": "Correos de resultados",
     "quiz_reminder": "Recordatorios del quiz",
     "saved": "Preferencias actualizadas",
-    "error": "No se pudieron actualizar las preferencias"
+    "error": "No se pudieron actualizar las preferencias",
+    "results_digest": "Resumen diario de resultados"
   },
   "footer": {
     "tournament": "WC26 Pool · 11 jun – 19 jul 2026",
@@ -944,13 +945,15 @@
         "sync_matches": "Sincronización de resultados",
         "sync_news": "Sincronización de noticias",
         "prediction_reminders": "Recordatorios de pronósticos",
-        "quiz_reminders": "Recordatorios del quiz"
+        "quiz_reminders": "Recordatorios del quiz",
+        "results_digest": "Resumen de resultados"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
         "sync_news": "Actualiza las noticias del Mundial",
         "prediction_reminders": "Avisa a quienes tienen pronósticos abiertos",
-        "quiz_reminders": "Avisa a quienes no han respondido"
+        "quiz_reminders": "Avisa a quienes no han respondido",
+        "results_digest": "Resumen diario de la clasificación y los que más suben"
       },
       "status": {
         "success": "Éxito",
@@ -1150,5 +1153,28 @@
     "ctaLabel": "Hacer mis pronósticos",
     "footer": "Recibes esto porque participas en la quiniela del Mundial. Los pronósticos se cierran al inicio de cada partido.",
     "unsubscribeLabel": "Cancelar los recordatorios de pronósticos diarios"
+  },
+  "resultsDigest": {
+    "subject": "Tu resumen diario del Mundial",
+    "preheader": "El top 5 de ayer, tu posición y quienes más se movieron.",
+    "eyebrow": "Resumen diario de resultados",
+    "heading": "{name}, así se movió la quiniela",
+    "headingNoName": "Así se movió la quiniela",
+    "intro": "Un resumen rápido de la clasificación y de quién subió más.",
+    "top5Label": "Top 5",
+    "rankLabel": "Posición",
+    "playerLabel": "Jugador",
+    "pointsLabel": "Puntos",
+    "yourRankLabel": "Tu posición",
+    "yourPointsLabel": "Puntos",
+    "deltaUpLabel": "Sube",
+    "deltaDownLabel": "Baja",
+    "deltaFlatLabel": "Sin cambios",
+    "moversLabel": "Los que más se movieron",
+    "climbedLabel": "Subió",
+    "droppedLabel": "Bajó",
+    "youLabel": "Tú",
+    "ctaLabel": "Ver clasificación completa",
+    "footer": "Recibes este resumen diario de tu quiniela del Mundial. Puedes desactivarlo en las preferencias de correo de tu cuenta."
   }
 }

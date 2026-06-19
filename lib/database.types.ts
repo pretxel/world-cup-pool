@@ -831,6 +831,32 @@ export type Database = {
           },
         ]
       }
+      leaderboard_rank_daily: {
+        Row: {
+          rank: number
+          snapshot_date: string
+          user_id: string
+        }
+        Insert: {
+          rank: number
+          snapshot_date: string
+          user_id: string
+        }
+        Update: {
+          rank?: number
+          snapshot_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_rank_daily_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       result_email_log: {
         Row: {
           match_id: string
@@ -857,6 +883,32 @@ export type Database = {
           },
           {
             foreignKeyName: "result_email_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      results_digest_log: {
+        Row: {
+          digest_date: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          digest_date: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          digest_date?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "results_digest_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

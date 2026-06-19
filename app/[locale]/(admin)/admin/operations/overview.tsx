@@ -14,6 +14,7 @@ import {
   runSyncNews,
   runPredictionReminders,
   runQuizReminders,
+  runResultsDigest,
 } from "./actions";
 
 const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> = {
@@ -21,6 +22,7 @@ const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> =
   sync_news: runSyncNews,
   prediction_reminders: runPredictionReminders,
   quiz_reminders: runQuizReminders,
+  results_digest: runResultsDigest,
 };
 
 // Parses the "Run now" outcome the trigger action redirects back with. The

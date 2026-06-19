@@ -41,7 +41,8 @@
     "result": "Ergebnis-E-Mails",
     "quiz_reminder": "Quiz-Erinnerungen",
     "saved": "Einstellungen aktualisiert",
-    "error": "Einstellungen konnten nicht aktualisiert werden"
+    "error": "Einstellungen konnten nicht aktualisiert werden",
+    "results_digest": "Tägliche Ergebnisübersicht"
   },
   "footer": {
     "tournament": "WC26 Pool · 11. Jun – 19. Jul 2026",
@@ -944,13 +945,15 @@
         "sync_matches": "Ergebnisabgleich",
         "sync_news": "News-Abgleich",
         "prediction_reminders": "Tipp-Erinnerungen",
-        "quiz_reminders": "Quiz-Erinnerungen"
+        "quiz_reminders": "Quiz-Erinnerungen",
+        "results_digest": "Ergebnisübersicht"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
         "sync_news": "Aktualisiert den World-Cup-News-Feed",
         "prediction_reminders": "Erinnert Spieler mit offenen Tipps",
-        "quiz_reminders": "Erinnert Spieler, die noch nicht geantwortet haben"
+        "quiz_reminders": "Erinnert Spieler, die noch nicht geantwortet haben",
+        "results_digest": "Tägliche Zusammenfassung von Tabelle und Aufsteigern"
       },
       "status": {
         "success": "Erfolgreich",
@@ -1150,5 +1153,28 @@
     "ctaLabel": "Tipps abgeben",
     "footer": "Du erhältst diese E-Mail, weil du am World Cup Pool teilnimmst. Die Tipps werden zum Anpfiff jedes Spiels gesperrt.",
     "unsubscribeLabel": "Tägliche Tipp-Erinnerungen abbestellen"
+  },
+  "resultsDigest": {
+    "subject": "Deine tägliche WM-Pool-Zusammenfassung",
+    "preheader": "Die Top 5 von gestern, dein Rang und die größten Bewegungen.",
+    "eyebrow": "Tägliche Ergebnisübersicht",
+    "heading": "{name}, so hat sich der Pool bewegt",
+    "headingNoName": "So hat sich der Pool bewegt",
+    "intro": "Eine kurze Zusammenfassung der Tabelle und wer am meisten aufgestiegen ist.",
+    "top5Label": "Top 5",
+    "rankLabel": "Rang",
+    "playerLabel": "Spieler",
+    "pointsLabel": "Punkte",
+    "yourRankLabel": "Dein Stand",
+    "yourPointsLabel": "Punkte",
+    "deltaUpLabel": "Hoch",
+    "deltaDownLabel": "Runter",
+    "deltaFlatLabel": "Unverändert",
+    "moversLabel": "Größte Bewegungen",
+    "climbedLabel": "Aufgestiegen",
+    "droppedLabel": "Abgestiegen",
+    "youLabel": "Du",
+    "ctaLabel": "Gesamte Tabelle ansehen",
+    "footer": "Du erhältst diese tägliche Zusammenfassung deines WM-Pools. Du kannst sie in den E-Mail-Einstellungen deines Kontos deaktivieren."
   }
 }

@@ -50,7 +50,12 @@ describe("GET /api/prediction-reminders/unsubscribe", () => {
     expect(res.status).toBe(200);
     expect(updateMock).toHaveBeenCalledWith({
       prediction_reminder_opt_out: true,
-      email_prefs: { prediction_reminder: false, result: true, quiz_reminder: true },
+      email_prefs: {
+        prediction_reminder: false,
+        result: true,
+        quiz_reminder: true,
+        results_digest: true,
+      },
     });
     expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
   });
@@ -64,7 +69,12 @@ describe("GET /api/prediction-reminders/unsubscribe", () => {
     await GET(req(`http://localhost/api/prediction-reminders/unsubscribe?token=${TOKEN}`));
     expect(updateMock).toHaveBeenCalledWith({
       prediction_reminder_opt_out: true,
-      email_prefs: { prediction_reminder: false, result: false, quiz_reminder: false },
+      email_prefs: {
+        prediction_reminder: false,
+        result: false,
+        quiz_reminder: false,
+        results_digest: true,
+      },
     });
   });
 
@@ -115,7 +125,12 @@ describe("POST /api/prediction-reminders/unsubscribe", () => {
     expect(res.status).toBe(200);
     expect(updateMock).toHaveBeenCalledWith({
       prediction_reminder_opt_out: true,
-      email_prefs: { prediction_reminder: false, result: true, quiz_reminder: true },
+      email_prefs: {
+        prediction_reminder: false,
+        result: true,
+        quiz_reminder: true,
+        results_digest: true,
+      },
     });
     expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
   });
