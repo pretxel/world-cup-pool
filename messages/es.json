@@ -17,6 +17,7 @@
   "nav": {
     "matches": "Partidos",
     "standings": "Posiciones",
+    "bracket": "Eliminatorias",
     "news": "Noticias",
     "quiz": "Reto",
     "leaderboard": "Clasificación",
@@ -474,6 +475,19 @@
     "colGoalDiffFull": "Diferencia de goles",
     "colPoints": "Pts",
     "colPointsFull": "Puntos"
+  },
+  "bracket": {
+    "title": "Eliminatorias",
+    "description": "El cuadro de eliminatorias del Mundial 2026, proyectado en vivo desde la clasificación actual de los grupos.",
+    "ogTitle": "Eliminatorias · WC26 Pool",
+    "ogDescription": "El cuadro de eliminatorias del Mundial 2026, proyectado desde la clasificación en vivo.",
+    "eyebrow": "Fase eliminatoria",
+    "headline": "Eliminatorias",
+    "lede": "El camino a la final, proyectado desde la clasificación actual. Primeros y segundos se actualizan en vivo; los puestos de terceros y las rondas siguientes se completan al definirse.",
+    "provisional": "Provisional",
+    "thirdPlace": "Partido por el tercer puesto",
+    "emptyTitle": "Aún no hay cuadro",
+    "emptyBody": "La competición actual no tiene fase eliminatoria."
   },
   "leaderboard": {
     "title": "Clasificación",
