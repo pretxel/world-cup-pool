@@ -1068,6 +1068,24 @@
     "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde. Le quiz se réinitialise chaque jour à minuit UTC.",
     "unsubscribeLabel": "Se désabonner des rappels du quiz quotidien"
   },
+  "welcomeEmail": {
+    "subject": "Bienvenue dans le pool de la Coupe du monde",
+    "preheader": "Vos premiers pronostics, le quiz quotidien et le classement vous attendent.",
+    "eyebrow": "Vous y êtes",
+    "heading": "Bienvenue, {name} !",
+    "headingNoName": "Bienvenue dans le pool !",
+    "intro": "Tout est prêt. Voici les trois premières choses à faire — chacune prend moins d'une minute.",
+    "quizTitle": "Répondez au quiz quotidien",
+    "quizBlurb": "Une question de quiz sur la Coupe du monde chaque jour. Lancez une série et accumulez des points.",
+    "quizCta": "Jouer au quiz du jour",
+    "groupsTitle": "Créez ou rejoignez un groupe",
+    "groupsBlurb": "Affrontez vos amis en tête-à-tête dans votre propre mini-ligue privée.",
+    "groupsCta": "Retrouvez vos amis",
+    "leaderboardTitle": "Consultez le classement",
+    "leaderboardBlurb": "Voyez où vous vous situez par rapport aux autres et grimpez dans le classement.",
+    "leaderboardCta": "Voir le classement",
+    "footer": "Vous recevez ceci car vous venez de rejoindre le pool de la Coupe du monde. À bientôt sur le terrain."
+  },
   "predictionEmail": {
     "subject": "Les matchs du jour — envoyez vos pronostics",
     "preheader": "Il vous reste des pronostics à faire avant le coup d'envoi. Ne perdez pas de points.",

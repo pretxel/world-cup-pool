@@ -1068,6 +1068,24 @@
     "footer": "You're getting this because you're playing the World Cup pool. The quiz resets every day at midnight UTC.",
     "unsubscribeLabel": "Unsubscribe from daily quiz reminders"
   },
+  "welcomeEmail": {
+    "subject": "Welcome to the World Cup pool",
+    "preheader": "Your first picks, the daily quiz, and the leaderboard await.",
+    "eyebrow": "You're in",
+    "heading": "Welcome, {name}!",
+    "headingNoName": "Welcome to the pool!",
+    "intro": "You're all set. Here are the three things to do first — each takes less than a minute.",
+    "quizTitle": "Answer the daily quiz",
+    "quizBlurb": "One World Cup trivia question every day. Build a streak and rack up points.",
+    "quizCta": "Play today's quiz",
+    "groupsTitle": "Start or join a group",
+    "groupsBlurb": "Compete head-to-head with friends in your own private mini-league.",
+    "groupsCta": "Find your friends",
+    "leaderboardTitle": "Check the leaderboard",
+    "leaderboardBlurb": "See where you stand against everyone else and climb the ranks.",
+    "leaderboardCta": "View the leaderboard",
+    "footer": "You're getting this because you just joined the World Cup pool. See you on the pitch."
+  },
   "predictionEmail": {
     "subject": "Today's matches — get your predictions in",
     "preheader": "You still have picks to make before kickoff. Don't miss out on points.",

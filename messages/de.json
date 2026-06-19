@@ -1068,6 +1068,24 @@
     "footer": "Du erhältst diese E-Mail, weil du am World Cup Pool teilnimmst. Das Quiz wird jeden Tag um Mitternacht UTC zurückgesetzt.",
     "unsubscribeLabel": "Erinnerungen zum täglichen Quiz abbestellen"
   },
+  "welcomeEmail": {
+    "subject": "Willkommen im World Cup Pool",
+    "preheader": "Deine ersten Tipps, das tägliche Quiz und die Rangliste warten.",
+    "eyebrow": "Du bist dabei",
+    "heading": "Willkommen, {name}!",
+    "headingNoName": "Willkommen im Pool!",
+    "intro": "Alles bereit. Hier sind die ersten drei Dinge, die du tun solltest — jedes dauert weniger als eine Minute.",
+    "quizTitle": "Beantworte das tägliche Quiz",
+    "quizBlurb": "Jeden Tag eine Quizfrage rund um die Weltmeisterschaft. Baue eine Serie auf und sammle Punkte.",
+    "quizCta": "Heutiges Quiz spielen",
+    "groupsTitle": "Gründe oder tritt einer Gruppe bei",
+    "groupsBlurb": "Tritt in deiner eigenen privaten Mini-Liga direkt gegen Freunde an.",
+    "groupsCta": "Finde deine Freunde",
+    "leaderboardTitle": "Schau auf die Rangliste",
+    "leaderboardBlurb": "Sieh, wo du im Vergleich zu allen anderen stehst, und klettere nach oben.",
+    "leaderboardCta": "Rangliste ansehen",
+    "footer": "Du erhältst diese E-Mail, weil du gerade dem World Cup Pool beigetreten bist. Wir sehen uns auf dem Platz."
+  },
   "predictionEmail": {
     "subject": "Die heutigen Spiele — gib deine Tipps ab",
     "preheader": "Du musst noch Tipps abgeben, bevor das Spiel beginnt. Lass dir keine Punkte entgehen.",
