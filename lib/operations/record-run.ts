@@ -9,7 +9,8 @@ export type OperationKind =
   | "sync_news"
   | "prediction_reminders"
   | "quiz_reminders"
-  | "results_digest";
+  | "results_digest"
+  | "recap_digest";
 
 export const OPERATION_KINDS: readonly OperationKind[] = [
   "sync_matches",
@@ -17,6 +18,7 @@ export const OPERATION_KINDS: readonly OperationKind[] = [
   "prediction_reminders",
   "quiz_reminders",
   "results_digest",
+  "recap_digest",
 ] as const;
 
 // How a run was started: the daily schedule, or an admin pressing "Run now".

@@ -857,6 +857,39 @@ export type Database = {
           },
         ]
       }
+      recap_digest_email_log: {
+        Row: {
+          sent_at: string
+          summary_image_id: string
+          user_id: string
+        }
+        Insert: {
+          sent_at?: string
+          summary_image_id: string
+          user_id: string
+        }
+        Update: {
+          sent_at?: string
+          summary_image_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recap_digest_email_log_summary_image_id_fkey"
+            columns: ["summary_image_id"]
+            isOneToOne: false
+            referencedRelation: "match_summary_images"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recap_digest_email_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       result_email_log: {
         Row: {
           match_id: string

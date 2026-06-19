@@ -42,7 +42,8 @@
     "quiz_reminder": "Quiz-Erinnerungen",
     "saved": "Einstellungen aktualisiert",
     "error": "Einstellungen konnten nicht aktualisiert werden",
-    "results_digest": "Tägliche Ergebnisübersicht"
+    "results_digest": "Tägliche Ergebnisübersicht",
+    "recap_digest": "Spiel-Comic-Übersicht"
   },
   "footer": {
     "tournament": "WC26 Pool · 11. Jun – 19. Jul 2026",
@@ -946,14 +947,16 @@
         "sync_news": "News-Abgleich",
         "prediction_reminders": "Tipp-Erinnerungen",
         "quiz_reminders": "Quiz-Erinnerungen",
-        "results_digest": "Ergebnisübersicht"
+        "results_digest": "Ergebnisübersicht",
+        "recap_digest": "Recap-Übersicht"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
         "sync_news": "Aktualisiert den World-Cup-News-Feed",
         "prediction_reminders": "Erinnert Spieler mit offenen Tipps",
         "quiz_reminders": "Erinnert Spieler, die noch nicht geantwortet haben",
-        "results_digest": "Tägliche Zusammenfassung von Tabelle und Aufsteigern"
+        "results_digest": "Tägliche Zusammenfassung von Tabelle und Aufsteigern",
+        "recap_digest": "Versendet neu erstellte Spiel-Comics"
       },
       "status": {
         "success": "Erfolgreich",
@@ -1176,5 +1179,18 @@
     "youLabel": "Du",
     "ctaLabel": "Gesamte Tabelle ansehen",
     "footer": "Du erhältst diese tägliche Zusammenfassung deines WM-Pools. Du kannst sie in den E-Mail-Einstellungen deines Kontos deaktivieren."
+  },
+  "recapDigest": {
+    "subject": "Neue Spiel-Comics aus dem Pool",
+    "preheader": "Frisch gezeichnete Recap-Comics der letzten Spiele.",
+    "eyebrow": "Spiel-Comics",
+    "heading": "{name}, neue Comics sind da",
+    "headingNoName": "Neue Comics sind da",
+    "intro": "Wir haben die letzten Spiele in Recap-Comics verwandelt. Schau sie dir an und teile deine Favoriten.",
+    "vsLabel": "vs",
+    "matchCtaLabel": "Spiel ansehen",
+    "shareCtaLabel": "Teilen",
+    "shareText": "Schau dir diesen Spiel-Recap-Comic an · WM-2026-Pool",
+    "footer": "Du erhältst diese Recap-Comic-Übersicht deines WM-Pools. Du kannst sie in den E-Mail-Einstellungen deines Kontos deaktivieren."
   }
 }

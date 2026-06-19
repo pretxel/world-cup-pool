@@ -42,7 +42,8 @@
     "quiz_reminder": "Quiz reminders",
     "saved": "Preferences updated",
     "error": "Couldn't update your preferences",
-    "results_digest": "Daily results digest"
+    "results_digest": "Daily results digest",
+    "recap_digest": "Match comic digest"
   },
   "footer": {
     "tournament": "WC26 Pool · 11 Jun – 19 Jul 2026",
@@ -946,14 +947,16 @@
         "sync_news": "News sync",
         "prediction_reminders": "Prediction reminders",
         "quiz_reminders": "Quiz reminders",
-        "results_digest": "Results digest"
+        "results_digest": "Results digest",
+        "recap_digest": "Recap digest"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
         "sync_news": "Refreshes the World Cup news feed",
         "prediction_reminders": "Nudges players with open picks",
         "quiz_reminders": "Nudges players who haven't answered",
-        "results_digest": "Daily recap of the leaderboard and movers"
+        "results_digest": "Daily recap of the leaderboard and movers",
+        "recap_digest": "Emails newly-rendered match comics"
       },
       "status": {
         "success": "Success",
@@ -1176,5 +1179,18 @@
     "youLabel": "You",
     "ctaLabel": "View full leaderboard",
     "footer": "You're getting this daily recap of your World Cup pool. You can turn it off in your account email preferences."
+  },
+  "recapDigest": {
+    "subject": "New match comics from the pool",
+    "preheader": "Freshly drawn recap comics from the latest matches.",
+    "eyebrow": "Match comics",
+    "heading": "{name}, fresh comics just dropped",
+    "headingNoName": "Fresh comics just dropped",
+    "intro": "We turned the latest matches into comic recaps. Take a look and share your favorites.",
+    "vsLabel": "vs",
+    "matchCtaLabel": "View match",
+    "shareCtaLabel": "Share",
+    "shareText": "Check out this match comic recap · World Cup 2026 Pool",
+    "footer": "You're getting this recap-comic digest from your World Cup pool. You can turn it off in your account email preferences."
   }
 }

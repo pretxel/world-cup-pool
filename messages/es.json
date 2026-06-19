@@ -42,7 +42,8 @@
     "quiz_reminder": "Recordatorios del quiz",
     "saved": "Preferencias actualizadas",
     "error": "No se pudieron actualizar las preferencias",
-    "results_digest": "Resumen diario de resultados"
+    "results_digest": "Resumen diario de resultados",
+    "recap_digest": "Resumen de cómics de partidos"
   },
   "footer": {
     "tournament": "WC26 Pool · 11 jun – 19 jul 2026",
@@ -946,14 +947,16 @@
         "sync_news": "Sincronización de noticias",
         "prediction_reminders": "Recordatorios de pronósticos",
         "quiz_reminders": "Recordatorios del quiz",
-        "results_digest": "Resumen de resultados"
+        "results_digest": "Resumen de resultados",
+        "recap_digest": "Resumen de recaps"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
         "sync_news": "Actualiza las noticias del Mundial",
         "prediction_reminders": "Avisa a quienes tienen pronósticos abiertos",
         "quiz_reminders": "Avisa a quienes no han respondido",
-        "results_digest": "Resumen diario de la clasificación y los que más suben"
+        "results_digest": "Resumen diario de la clasificación y los que más suben",
+        "recap_digest": "Envía los cómics de partidos recién generados"
       },
       "status": {
         "success": "Éxito",
@@ -1176,5 +1179,18 @@
     "youLabel": "Tú",
     "ctaLabel": "Ver clasificación completa",
     "footer": "Recibes este resumen diario de tu quiniela del Mundial. Puedes desactivarlo en las preferencias de correo de tu cuenta."
+  },
+  "recapDigest": {
+    "subject": "Nuevos cómics de partidos de la quiniela",
+    "preheader": "Cómics de recap recién dibujados de los últimos partidos.",
+    "eyebrow": "Cómics de partidos",
+    "heading": "{name}, hay cómics nuevos",
+    "headingNoName": "Hay cómics nuevos",
+    "intro": "Convertimos los últimos partidos en cómics de recap. Échales un vistazo y comparte tus favoritos.",
+    "vsLabel": "vs",
+    "matchCtaLabel": "Ver partido",
+    "shareCtaLabel": "Compartir",
+    "shareText": "Mira este cómic de recap del partido · Quiniela Mundial 2026",
+    "footer": "Recibes este resumen de cómics de recap de tu quiniela del Mundial. Puedes desactivarlo en las preferencias de correo de tu cuenta."
   }
 }
