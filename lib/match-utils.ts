@@ -234,6 +234,19 @@ export function needsPick(
   return !pickedIds.has(match.id) && !isLocked(match);
 }
 
+// The soonest still-pickable match in a kickoff-ASC list: the first fixture
+// the user could still predict (unpicked and unlocked, per needsPick), or null
+// when none is open. Reuses needsPick so "pickable" can't drift from the lock
+// rules used elsewhere; assumes the input is already ordered by kickoff_at ASC.
+export function soonestPickableMatch<
+  T extends { id: string; kickoff_at: string; status: string },
+>(matches: readonly T[], pickedIds: ReadonlySet<string>): T | null {
+  for (const match of matches) {
+    if (needsPick(match, pickedIds)) return match;
+  }
+  return null;
+}
+
 // A match is "confirmed" once both participants are real participating
 // countries. Knockout fixtures seed placeholder participants ("2nd Group A",
 // "Winner Match 73", …) that don't resolve to a flag; those stay unconfirmed

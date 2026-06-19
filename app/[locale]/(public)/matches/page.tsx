@@ -23,6 +23,7 @@ import {
   parseStatusParam,
   parseTeamParam,
   reconcileSelectedTeams,
+  soonestPickableMatch,
   statusBucket,
 } from "@/lib/match-utils";
 import { readTimeZoneCookie } from "@/lib/timezone";
@@ -172,6 +173,15 @@ export default async function MatchesPage({
   const isFiltered =
     selectedTeams.length > 0 || statusFilter !== null || picksNeeded;
 
+  // First-pick lead state (QW8): a signed-in user who has made zero picks and
+  // has no filter active gets an inviting nudge toward the soonest still-open
+  // fixture. It sits above the list (additive, never a takeover). When nothing
+  // is currently pickable we fall back to encouraging copy instead of a CTA.
+  const showFirstPick = user != null && pickedIds.size === 0 && !isFiltered;
+  const firstPickMatch = showFirstPick
+    ? soonestPickableMatch(list, pickedIds)
+    : null;
+
   // Group by the visitor's local calendar day so each match sits under the day
   // its displayed local kickoff falls on. The timezone comes from the `tz`
   // cookie (set client-side by <TimezoneSync/>); until it's known we key by UTC
@@ -255,6 +265,40 @@ export default async function MatchesPage({
             label={t("filterLabel")}
           />
         </Suspense>
+      ) : null}
+
+      {showFirstPick ? (
+        <div className="mb-8 rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center sm:p-8">
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            {t("firstPick.eyebrow")}
+          </p>
+          {firstPickMatch ? (
+            <>
+              <p className="mx-auto mt-2 max-w-sm font-heading text-2xl font-semibold tracking-tight">
+                {t("firstPick.title")}
+              </p>
+              <Link
+                href={localePath(locale, `/matches/${firstPickMatch.id}`)}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 font-heading text-sm font-medium tracking-tight text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {t("firstPick.cta", {
+                  home: firstPickMatch.home_team,
+                  away: firstPickMatch.away_team,
+                })}
+                <ChevronRightIcon className="size-4" aria-hidden />
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="mx-auto mt-2 max-w-sm font-heading text-2xl font-semibold tracking-tight">
+                {t("firstPick.noneTitle")}
+              </p>
+              <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                {t("firstPick.noneBody")}
+              </p>
+            </>
+          )}
+        </div>
       ) : null}
 
       <div className="space-y-12">

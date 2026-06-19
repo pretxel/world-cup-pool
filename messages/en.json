@@ -194,6 +194,13 @@
     "pendingPicksNudge": "{count, plural, one {You still have # upcoming match needing a pick.} other {You still have # upcoming matches needing a pick.}}",
     "pendingPicksNudgeAction": "Make your picks",
     "pendingPicksNudgeDismiss": "Dismiss reminder",
+    "firstPick": {
+      "eyebrow": "Get started",
+      "title": "Make your first pick",
+      "cta": "Pick {home} vs {away}",
+      "noneTitle": "No open matches right now",
+      "noneBody": "Every fixture is locked or done for the moment — check back soon to make your first pick."
+    },
     "loadFailed": "Failed to load matches: {message}"
   },
   "news": {

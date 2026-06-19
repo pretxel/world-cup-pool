@@ -194,6 +194,13 @@
     "pendingPicksNudge": "{count, plural, one {Aún tienes # partido próximo sin pronóstico.} other {Aún tienes # partidos próximos sin pronóstico.}}",
     "pendingPicksNudgeAction": "Haz tus pronósticos",
     "pendingPicksNudgeDismiss": "Descartar aviso",
+    "firstPick": {
+      "eyebrow": "Empieza aquí",
+      "title": "Haz tu primer pronóstico",
+      "cta": "Pronosticar {home} vs {away}",
+      "noneTitle": "No hay partidos abiertos ahora mismo",
+      "noneBody": "Todos los partidos están bloqueados o ya jugados por ahora; vuelve pronto para hacer tu primer pronóstico."
+    },
     "loadFailed": "No se pudieron cargar los partidos: {message}"
   },
   "news": {

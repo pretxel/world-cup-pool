@@ -194,6 +194,13 @@
     "pendingPicksNudge": "{count, plural, one {Il vous reste # match à venir sans prono.} other {Il vous reste # matchs à venir sans prono.}}",
     "pendingPicksNudgeAction": "Faire vos pronos",
     "pendingPicksNudgeDismiss": "Masquer le rappel",
+    "firstPick": {
+      "eyebrow": "Pour commencer",
+      "title": "Faites votre premier pronostic",
+      "cta": "Pronostiquer {home} vs {away}",
+      "noneTitle": "Aucun match ouvert pour le moment",
+      "noneBody": "Tous les matchs sont verrouillés ou terminés pour l'instant — revenez bientôt pour faire votre premier pronostic."
+    },
     "loadFailed": "Échec du chargement des matchs : {message}"
   },
   "news": {

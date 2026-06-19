@@ -14,6 +14,7 @@ import {
   parseStatusParam,
   parseTeamParam,
   reconcileSelectedTeams,
+  soonestPickableMatch,
   statusBucket,
   utcDateKey,
 } from "@/lib/match-utils";
@@ -235,6 +236,47 @@ describe("needsPick", () => {
   it("excludes locked and live unpicked matches", () => {
     expect(needsPick(lockedUnpicked, new Set())).toBe(false);
     expect(needsPick(live, new Set())).toBe(false);
+  });
+});
+
+describe("soonestPickableMatch", () => {
+  const m = (id: string, status: string, kickoff_at: string) => ({
+    id,
+    status,
+    kickoff_at,
+  });
+
+  it("returns the first open match in a kickoff-ASC list", () => {
+    const list = [m("a", "scheduled", FUTURE), m("b", "scheduled", FUTURE)];
+    expect(soonestPickableMatch(list, new Set())?.id).toBe("a");
+  });
+
+  it("skips leading locked, live, and final matches", () => {
+    const list = [
+      m("locked", "scheduled", PAST),
+      m("live", "live", PAST),
+      m("final", "final", PAST),
+      m("open", "scheduled", FUTURE),
+    ];
+    expect(soonestPickableMatch(list, new Set())?.id).toBe("open");
+  });
+
+  it("skips already-picked matches", () => {
+    const list = [m("picked", "scheduled", FUTURE), m("open", "scheduled", FUTURE)];
+    expect(soonestPickableMatch(list, new Set(["picked"]))?.id).toBe("open");
+  });
+
+  it("returns null when every match is locked/live/final", () => {
+    const list = [
+      m("locked", "scheduled", PAST),
+      m("live", "live", PAST),
+      m("final", "final", PAST),
+    ];
+    expect(soonestPickableMatch(list, new Set())).toBeNull();
+  });
+
+  it("returns null for an empty list", () => {
+    expect(soonestPickableMatch([], new Set())).toBeNull();
   });
 });
 
