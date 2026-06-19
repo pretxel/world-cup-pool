@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchDaySection } from "@/components/match-day-section";
+import { MatchLockCountdown } from "@/components/match-lock-countdown";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { MatchStatusFilter } from "@/components/match-status-filter";
 import { MatchTeamFilter } from "@/components/match-team-filter";
@@ -15,6 +16,7 @@ import {
   dayKeyForTimeZone,
   filterableTeams,
   formatDayKeyLabel,
+  isClosingSoon,
   isConfirmedMatch,
   isLocked,
   matchInvolvesTeam,
@@ -83,11 +85,7 @@ export default async function MatchesPage({
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
 
-  const {
-    team: teamParam,
-    status: statusParam,
-    picks: picksParam,
-  } = await searchParams;
+  const { team: teamParam, status: statusParam, picks: picksParam } = await searchParams;
 
   const t = await getTranslations("matches");
   const activeCompetition = await getActiveCompetition();
@@ -102,7 +100,7 @@ export default async function MatchesPage({
   if (error) {
     return (
       <main className="mx-auto max-w-4xl px-4 py-10">
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
           {t("loadFailed", { message: error.message })}
         </div>
       </main>
@@ -139,10 +137,7 @@ export default async function MatchesPage({
   // Unknown param values are dropped so a bad URL falls back to "show
   // everything" rather than erroring.
   const availableTeams = filterableTeams(list);
-  const selectedTeams = reconcileSelectedTeams(
-    parseTeamParam(teamParam),
-    availableTeams,
-  );
+  const selectedTeams = reconcileSelectedTeams(parseTeamParam(teamParam), availableTeams);
   const selectedKeys = new Set(selectedTeams.map((team) => team.toLowerCase()));
   const teamFiltered = list.filter((m) => matchInvolvesTeam(m, selectedKeys));
 
@@ -163,24 +158,19 @@ export default async function MatchesPage({
   // The picks filter exists only for signed-in users; an anonymous request
   // carrying `?picks=needed` is silently ignored.
   const picksNeeded = user != null && parsePicksParam(picksParam);
-  const needsPickCount = user
-    ? teamFiltered.filter((m) => needsPick(m, pickedIds)).length
-    : 0;
+  const needsPickCount = user ? teamFiltered.filter((m) => needsPick(m, pickedIds)).length : 0;
   const filtered = picksNeeded
     ? statusFiltered.filter((m) => needsPick(m, pickedIds))
     : statusFiltered;
 
-  const isFiltered =
-    selectedTeams.length > 0 || statusFilter !== null || picksNeeded;
+  const isFiltered = selectedTeams.length > 0 || statusFilter !== null || picksNeeded;
 
   // First-pick lead state (QW8): a signed-in user who has made zero picks and
   // has no filter active gets an inviting nudge toward the soonest still-open
   // fixture. It sits above the list (additive, never a takeover). When nothing
   // is currently pickable we fall back to encouraging copy instead of a CTA.
   const showFirstPick = user != null && pickedIds.size === 0 && !isFiltered;
-  const firstPickMatch = showFirstPick
-    ? soonestPickableMatch(list, pickedIds)
-    : null;
+  const firstPickMatch = showFirstPick ? soonestPickableMatch(list, pickedIds) : null;
 
   // Group by the visitor's local calendar day so each match sits under the day
   // its displayed local kickoff falls on. The timezone comes from the `tz`
@@ -202,18 +192,18 @@ export default async function MatchesPage({
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <TimezoneSync />
-      <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="border-border mb-8 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+          <p className="text-muted-foreground font-mono text-[11px] tracking-[0.24em] uppercase">
             {t("eyebrow")}
           </p>
           <h1
-            className="mt-1 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
+            className="font-heading mt-1 text-4xl font-semibold tracking-tight sm:text-5xl"
             style={{ fontStretch: "condensed" }}
           >
             {t("headline")}
           </h1>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-2 max-w-md text-sm">
             {t("lede", { total: filtered.length })}
           </p>
         </div>
@@ -268,18 +258,18 @@ export default async function MatchesPage({
       ) : null}
 
       {showFirstPick ? (
-        <div className="mb-8 rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center sm:p-8">
-          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+        <div className="border-border bg-muted/30 mb-8 rounded-xl border border-dashed p-6 text-center sm:p-8">
+          <p className="text-muted-foreground font-mono text-[11px] tracking-[0.24em] uppercase">
             {t("firstPick.eyebrow")}
           </p>
           {firstPickMatch ? (
             <>
-              <p className="mx-auto mt-2 max-w-sm font-heading text-2xl font-semibold tracking-tight">
+              <p className="font-heading mx-auto mt-2 max-w-sm text-2xl font-semibold tracking-tight">
                 {t("firstPick.title")}
               </p>
               <Link
                 href={localePath(locale, `/matches/${firstPickMatch.id}`)}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-1.5 font-heading text-sm font-medium tracking-tight text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="border-border bg-card font-heading text-foreground hover:bg-muted/50 focus-visible:ring-ring mt-4 inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 {t("firstPick.cta", {
                   home: firstPickMatch.home_team,
@@ -290,10 +280,10 @@ export default async function MatchesPage({
             </>
           ) : (
             <>
-              <p className="mx-auto mt-2 max-w-sm font-heading text-2xl font-semibold tracking-tight">
+              <p className="font-heading mx-auto mt-2 max-w-sm text-2xl font-semibold tracking-tight">
                 {t("firstPick.noneTitle")}
               </p>
-              <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+              <p className="text-muted-foreground mx-auto mt-2 max-w-sm text-sm">
                 {t("firstPick.noneBody")}
               </p>
             </>
@@ -307,9 +297,7 @@ export default async function MatchesPage({
           // (final or cancelled); any day still holding a scheduled, locked, or
           // live match defaults to expanded. The client shell overrides this
           // with the user's stored per-day choice after mount.
-          const dayDone = dayMatches.every(
-            (m) => m.status === "final" || m.status === "cancelled",
-          );
+          const dayDone = dayMatches.every((m) => m.status === "final" || m.status === "cancelled");
           return (
             <MatchDaySection
               key={day}
@@ -321,15 +309,15 @@ export default async function MatchesPage({
               expandLabel={t("dayExpand")}
               collapseLabel={t("dayCollapse")}
             >
-              <ul className="overflow-hidden rounded-xl border border-border bg-card">
+              <ul className="border-border bg-card overflow-hidden rounded-xl border">
                 {dayMatches.map((m, i) => {
                   const delay = Math.min(i * ROW_STAGGER_MS, ROW_STAGGER_CAP_MS);
                   return (
                     <li
                       key={m.id}
                       className={cn(
-                        i !== 0 && "border-t border-border",
-                        "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-300 motion-safe:fill-mode-both",
+                        i !== 0 && "border-border border-t",
+                        "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:fill-mode-both motion-safe:duration-300",
                       )}
                       style={{ animationDelay: `${delay}ms` }}
                     >
@@ -343,6 +331,7 @@ export default async function MatchesPage({
                         tOnNow={t("rowOnNow")}
                         tLocked={t("rowLocked")}
                         tPick={t("rowPick")}
+                        tClosesIn={t("rowClosesIn", { time: "{time}" })}
                         picked={pickedIds.has(m.id)}
                         tPicked={t("rowPicked")}
                       />
@@ -355,8 +344,8 @@ export default async function MatchesPage({
         })}
 
         {filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+          <div className="border-border bg-muted/30 rounded-xl border border-dashed p-10 text-center">
+            <p className="text-muted-foreground font-mono text-[11px] tracking-[0.24em] uppercase">
               {picksNeeded
                 ? t("needsPickEmptyTitle")
                 : isFiltered
@@ -373,7 +362,7 @@ export default async function MatchesPage({
             {isFiltered ? (
               <Link
                 href={localePath(locale, "/matches")}
-                className="mt-4 inline-flex items-center rounded-full border border-border bg-card px-3 py-1 font-heading text-xs font-medium tracking-tight text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="border-border bg-card font-heading text-foreground hover:bg-muted/50 focus-visible:ring-ring mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 {picksNeeded ? t("needsPickEmptyAction") : t("filterClear")}
               </Link>
@@ -395,6 +384,7 @@ function MatchRowCard({
   tOnNow,
   tLocked,
   tPick,
+  tClosesIn,
   picked,
   tPicked,
 }: {
@@ -407,50 +397,61 @@ function MatchRowCard({
   tOnNow: string;
   tLocked: string;
   tPick: string;
+  tClosesIn: string;
   picked: boolean;
   tPicked: string;
 }) {
   const finalKnown =
-    match.status === "final" &&
-    match.home_score != null &&
-    match.away_score != null;
+    match.status === "final" && match.home_score != null && match.away_score != null;
+
+  // A scheduled, unpicked fixture becomes a "closing soon" candidate. The
+  // server hint drives the row's urgency styling at render time; the badge
+  // itself self-corrects on the client clock (and clears the styling on the
+  // next render once kickoff passes).
+  const pickable = uiStatus === "scheduled" && !picked;
+  const closingSoon = pickable && isClosingSoon(match.kickoff_at);
 
   return (
     <Link
       href={localePath(locale, `/matches/${match.id}`)}
-      className="group/match relative flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/50 sm:gap-4"
+      className={cn(
+        "group/match hover:bg-muted/50 relative flex items-center gap-3 px-4 py-3.5 transition-colors sm:gap-4",
+        // Subtle urgency accent, distinct from the live `live-pulse` and the
+        // muted locked treatment: a warm inset ring + faint tint.
+        closingSoon && "bg-flag/[0.06] ring-flag/30 ring-1 ring-inset",
+      )}
     >
       <div className="flex w-auto shrink-0 flex-col items-start sm:w-14">
-        <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:block">
+        <span className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.18em] uppercase sm:block">
           {tKickoff}
         </span>
-        <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
+        <span className="text-foreground font-mono text-sm font-semibold tabular-nums">
           <LocalTime iso={match.kickoff_at} format="time" />
         </span>
       </div>
 
-      <div aria-hidden className="hidden h-10 w-px bg-border sm:block" />
+      <div aria-hidden className="bg-border hidden h-10 w-px sm:block" />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-sm border border-border bg-secondary px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="border-border bg-secondary text-muted-foreground rounded-sm border px-1.5 py-0.5 font-mono text-[10px] tracking-[0.16em] uppercase">
             {tStage}
             {match.group_code ? ` · ${match.group_code}` : ""}
           </span>
           <MatchStateBadge status={uiStatus} size="sm" />
           {picked ? (
-            <span className="inline-flex items-center gap-1 rounded-sm border border-pitch/40 bg-pitch/10 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-pitch">
+            <span className="border-pitch/40 bg-pitch/10 text-pitch inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-[0.16em] uppercase">
               <CheckCircle2Icon className="size-3" aria-hidden />
               {tPicked}
             </span>
           ) : null}
         </div>
-        <div className="mt-1.5 flex min-w-0 flex-col gap-1 font-heading text-base font-semibold tracking-tight text-foreground sm:flex-row sm:items-center sm:gap-2 sm:text-lg">
+        <div className="font-heading text-foreground mt-1.5 flex min-w-0 flex-col gap-1 text-base font-semibold tracking-tight sm:flex-row sm:items-center sm:gap-2 sm:text-lg">
           <span className="flex min-w-0 items-center gap-2">
             <TeamFlag team={match.home_team} size="sm" />
             <span className="truncate">{match.home_team}</span>
           </span>
-          <span className="hidden text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground sm:inline">
+          <span className="text-muted-foreground hidden text-xs font-medium tracking-[0.18em] uppercase sm:inline">
             vs
           </span>
           <span className="flex min-w-0 items-center gap-2">
@@ -459,7 +460,7 @@ function MatchRowCard({
           </span>
         </div>
         {match.venue ? (
-          <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
             <MapPinIcon className="size-3" aria-hidden />
             <span className="truncate">{match.venue}</span>
           </div>
@@ -469,29 +470,49 @@ function MatchRowCard({
       <div className="flex shrink-0 items-center gap-1.5 text-right">
         {finalKnown ? (
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="text-muted-foreground font-mono text-[10px] tracking-[0.2em] uppercase">
               {tFinal}
             </div>
-            <div className="font-mono text-xl font-semibold tabular-nums text-foreground">
+            <div className="text-foreground font-mono text-xl font-semibold tabular-nums">
               {match.home_score}–{match.away_score}
             </div>
           </div>
         ) : uiStatus === "live" ? (
-          <div className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-destructive live-pulse sm:block">
+          <div className="text-destructive live-pulse hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:block">
             {tOnNow}
           </div>
         ) : uiStatus === "locked" ? (
-          <div className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:block">
+          <div className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:block">
             {tLocked}
           </div>
+        ) : pickable ? (
+          // Open & unpicked: one client island owns the trailing affordance. It
+          // shows the static "Pick" label until kickoff is within the lead
+          // window, the "closes in mm:ss" badge while imminent, and the locked
+          // label at kickoff — updating in place as the clock crosses each
+          // boundary, no reload.
+          <MatchLockCountdown
+            kickoffAt={match.kickoff_at}
+            closesInTemplate={tClosesIn}
+            lockedNode={
+              <span className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:inline">
+                {tLocked}
+              </span>
+            }
+            pickNode={
+              <span className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:inline">
+                {tPick}
+              </span>
+            }
+          />
         ) : (
-          <div className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:block">
+          <div className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:block">
             {tPick}
           </div>
         )}
         <ChevronRightIcon
           aria-hidden
-          className="size-4 shrink-0 text-muted-foreground/60 transition-transform group-hover/match:translate-x-0.5 group-hover/match:text-foreground"
+          className="text-muted-foreground/60 group-hover/match:text-foreground size-4 shrink-0 transition-transform group-hover/match:translate-x-0.5"
         />
       </div>
     </Link>

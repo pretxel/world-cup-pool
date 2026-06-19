@@ -3,8 +3,10 @@ import {
   dayKeyForTimeZone,
   filterableTeams,
   formatDayKeyLabel,
+  isClosingSoon,
   isConfirmedMatch,
   isLocked,
+  LOCK_LEAD_WINDOW_MS,
   isValidTimeZone,
   localDateKey,
   lockReason,
@@ -52,12 +54,8 @@ describe("lockReason", () => {
   });
 
   it("returns 'cancelled' regardless of kickoff", () => {
-    expect(lockReason({ status: "cancelled", kickoff_at: FUTURE })).toBe(
-      "cancelled",
-    );
-    expect(lockReason({ status: "cancelled", kickoff_at: PAST })).toBe(
-      "cancelled",
-    );
+    expect(lockReason({ status: "cancelled", kickoff_at: FUTURE })).toBe("cancelled");
+    expect(lockReason({ status: "cancelled", kickoff_at: PAST })).toBe("cancelled");
   });
 });
 
@@ -89,30 +87,21 @@ describe("parseTeamParam", () => {
   });
 
   it("splits a comma-separated value", () => {
-    expect(parseTeamParam("Brazil,Argentina")).toEqual(
-      new Set(["brazil", "argentina"]),
-    );
+    expect(parseTeamParam("Brazil,Argentina")).toEqual(new Set(["brazil", "argentina"]));
   });
 
   it("flattens a repeated (array) param", () => {
-    expect(parseTeamParam(["Brazil", "Mexico"])).toEqual(
-      new Set(["brazil", "mexico"]),
-    );
+    expect(parseTeamParam(["Brazil", "Mexico"])).toEqual(new Set(["brazil", "mexico"]));
   });
 
   it("trims whitespace and drops blank segments", () => {
-    expect(parseTeamParam(" Brazil , , Argentina,")).toEqual(
-      new Set(["brazil", "argentina"]),
-    );
+    expect(parseTeamParam(" Brazil , , Argentina,")).toEqual(new Set(["brazil", "argentina"]));
   });
 });
 
 describe("filterableTeams", () => {
   it("returns distinct country teams sorted alphabetically", () => {
-    const list = [
-      team("Mexico", "Brazil"),
-      team("Argentina", "Brazil"),
-    ];
+    const list = [team("Mexico", "Brazil"), team("Argentina", "Brazil")];
     expect(filterableTeams(list)).toEqual(["Argentina", "Brazil", "Mexico"]);
   });
 
@@ -126,9 +115,10 @@ describe("reconcileSelectedTeams", () => {
   const available = ["Argentina", "Brazil", "Mexico"];
 
   it("keeps known teams in available order, case-insensitively", () => {
-    expect(reconcileSelectedTeams(new Set(["brazil", "argentina"]), available)).toEqual(
-      ["Argentina", "Brazil"],
-    );
+    expect(reconcileSelectedTeams(new Set(["brazil", "argentina"]), available)).toEqual([
+      "Argentina",
+      "Brazil",
+    ]);
   });
 
   it("drops unknown values, collapsing an all-unknown selection to empty", () => {
@@ -148,9 +138,7 @@ describe("matchInvolvesTeam", () => {
   });
 
   it("returns false when no selected team is in the fixture", () => {
-    expect(matchInvolvesTeam(team("Mexico", "Argentina"), new Set(["brazil"]))).toBe(
-      false,
-    );
+    expect(matchInvolvesTeam(team("Mexico", "Argentina"), new Set(["brazil"]))).toBe(false);
   });
 
   it("matches the union for a multi-team selection", () => {
@@ -205,18 +193,12 @@ describe("statusBucket", () => {
   it("buckets live, final, and cancelled by status", () => {
     expect(statusBucket({ status: "live", kickoff_at: FUTURE })).toBe("live");
     expect(statusBucket({ status: "final", kickoff_at: PAST })).toBe("final");
-    expect(statusBucket({ status: "cancelled", kickoff_at: FUTURE })).toBe(
-      "cancelled",
-    );
+    expect(statusBucket({ status: "cancelled", kickoff_at: FUTURE })).toBe("cancelled");
   });
 
   it("buckets scheduled matches as upcoming whether locked or not", () => {
-    expect(statusBucket({ status: "scheduled", kickoff_at: FUTURE })).toBe(
-      "upcoming",
-    );
-    expect(statusBucket({ status: "scheduled", kickoff_at: PAST })).toBe(
-      "upcoming",
-    );
+    expect(statusBucket({ status: "scheduled", kickoff_at: FUTURE })).toBe("upcoming");
+    expect(statusBucket({ status: "scheduled", kickoff_at: PAST })).toBe("upcoming");
   });
 });
 
@@ -312,30 +294,22 @@ describe("isValidTimeZone", () => {
 describe("localDateKey", () => {
   it("buckets a late UTC instant to the previous local day for a negative-offset zone", () => {
     // 02:00 UTC on the 13th = 19:00 on the 12th in Los Angeles (UTC-7 in June).
-    expect(localDateKey("2026-06-13T02:00:00Z", "America/Los_Angeles")).toBe(
-      "2026-06-12",
-    );
+    expect(localDateKey("2026-06-13T02:00:00Z", "America/Los_Angeles")).toBe("2026-06-12");
   });
 
   it("buckets an early UTC instant to the next local day for a positive-offset zone", () => {
     // 22:00 UTC on the 12th = 07:00 on the 13th in Tokyo (UTC+9).
-    expect(localDateKey("2026-06-12T22:00:00Z", "Asia/Tokyo")).toBe(
-      "2026-06-13",
-    );
+    expect(localDateKey("2026-06-12T22:00:00Z", "Asia/Tokyo")).toBe("2026-06-13");
   });
 
   it("matches the UTC key when grouping in UTC", () => {
-    expect(localDateKey("2026-06-13T02:00:00Z", "UTC")).toBe(
-      utcDateKey("2026-06-13T02:00:00Z"),
-    );
+    expect(localDateKey("2026-06-13T02:00:00Z", "UTC")).toBe(utcDateKey("2026-06-13T02:00:00Z"));
   });
 
   it("handles a spring-forward DST boundary without shifting the wrong way", () => {
     // US DST begins 2026-03-08 02:00 local. An instant just after midnight
     // local that day stays on the 8th in Los Angeles.
-    expect(localDateKey("2026-03-08T09:30:00Z", "America/Los_Angeles")).toBe(
-      "2026-03-08",
-    );
+    expect(localDateKey("2026-03-08T09:30:00Z", "America/Los_Angeles")).toBe("2026-03-08");
   });
 });
 
@@ -355,6 +329,37 @@ describe("dayKeyForTimeZone", () => {
     const key = dayKeyForTimeZone("not-a-zone");
     expect(key("2026-06-13T02:00:00Z")).toBe("2026-06-13");
     expect(key).toBe(utcDateKey);
+  });
+});
+
+describe("isClosingSoon", () => {
+  it("is true when kickoff is within the lead window", () => {
+    const kickoff = new Date(FIXED_NOW + 4 * 60_000).toISOString();
+    expect(isClosingSoon(kickoff)).toBe(true);
+  });
+
+  it("is true exactly at the lead-window edge", () => {
+    const kickoff = new Date(FIXED_NOW + LOCK_LEAD_WINDOW_MS).toISOString();
+    expect(isClosingSoon(kickoff)).toBe(true);
+  });
+
+  it("is false when kickoff is further out than the lead window", () => {
+    const kickoff = new Date(FIXED_NOW + LOCK_LEAD_WINDOW_MS + 1_000).toISOString();
+    expect(isClosingSoon(kickoff)).toBe(false);
+  });
+
+  it("is false at kickoff (already locked, not closing soon)", () => {
+    expect(isClosingSoon(new Date(FIXED_NOW).toISOString())).toBe(false);
+  });
+
+  it("is false after kickoff", () => {
+    expect(isClosingSoon(PAST)).toBe(false);
+  });
+
+  it("honors an injected now and lead window", () => {
+    const kickoff = new Date(FIXED_NOW + 90_000).toISOString();
+    expect(isClosingSoon(kickoff, FIXED_NOW, 60_000)).toBe(false);
+    expect(isClosingSoon(kickoff, FIXED_NOW, 120_000)).toBe(true);
   });
 });
 

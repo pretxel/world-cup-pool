@@ -189,6 +189,7 @@
     "rowLocked": "Verrouillé",
     "rowPick": "Prono",
     "rowPicked": "Fait",
+    "rowClosesIn": "ferme dans {time}",
     "emptyTitle": "Tableau vide",
     "emptyBody": "Aucun match chargé pour l'instant. Un admin doit publier le calendrier avant l'ouverture des pronos.",
     "filterLabel": "Filtrer par équipe",

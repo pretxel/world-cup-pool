@@ -189,6 +189,7 @@
     "rowLocked": "Gesperrt",
     "rowPick": "Tippen",
     "rowPicked": "Getippt",
+    "rowClosesIn": "schließt in {time}",
     "emptyTitle": "Leerer Spielplan",
     "emptyBody": "Noch keine Spiele geladen. Ein Admin muss den Spielplan einrichten, bevor Tipps abgegeben werden können.",
     "filterLabel": "Nach Team filtern",
