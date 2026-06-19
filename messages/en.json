@@ -41,7 +41,8 @@
     "result": "Result emails",
     "quiz_reminder": "Quiz reminders",
     "saved": "Preferences updated",
-    "error": "Couldn't update your preferences"
+    "error": "Couldn't update your preferences",
+    "results_digest": "Daily results digest"
   },
   "footer": {
     "tournament": "WC26 Pool · 11 Jun – 19 Jul 2026",
@@ -944,13 +945,15 @@
         "sync_matches": "Score sync",
         "sync_news": "News sync",
         "prediction_reminders": "Prediction reminders",
-        "quiz_reminders": "Quiz reminders"
+        "quiz_reminders": "Quiz reminders",
+        "results_digest": "Results digest"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
         "sync_news": "Refreshes the World Cup news feed",
         "prediction_reminders": "Nudges players with open picks",
-        "quiz_reminders": "Nudges players who haven't answered"
+        "quiz_reminders": "Nudges players who haven't answered",
+        "results_digest": "Daily recap of the leaderboard and movers"
       },
       "status": {
         "success": "Success",
@@ -1149,5 +1152,28 @@
     "ctaLabel": "Make your predictions",
     "footer": "You're getting this because you're playing the World Cup pool. Predictions lock at each match's kickoff.",
     "unsubscribeLabel": "Unsubscribe from daily prediction reminders"
+  },
+  "resultsDigest": {
+    "subject": "Your daily World Cup pool recap",
+    "preheader": "Yesterday's top 5, your rank, and the biggest movers.",
+    "eyebrow": "Daily results digest",
+    "heading": "{name}, here's how the pool moved",
+    "headingNoName": "Here's how the pool moved",
+    "intro": "A quick recap of where the leaderboard stands and who moved the most.",
+    "top5Label": "Top 5",
+    "rankLabel": "Rank",
+    "playerLabel": "Player",
+    "pointsLabel": "Points",
+    "yourRankLabel": "Your standing",
+    "yourPointsLabel": "Points",
+    "deltaUpLabel": "Up",
+    "deltaDownLabel": "Down",
+    "deltaFlatLabel": "No change",
+    "moversLabel": "Biggest movers",
+    "climbedLabel": "Climbed",
+    "droppedLabel": "Dropped",
+    "youLabel": "You",
+    "ctaLabel": "View full leaderboard",
+    "footer": "You're getting this daily recap of your World Cup pool. You can turn it off in your account email preferences."
   }
 }

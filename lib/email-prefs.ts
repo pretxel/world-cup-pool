@@ -1,13 +1,14 @@
 import { z } from "zod";
 
-// The three email types the app sends, each with an independent per-player
-// on/off preference stored in profiles.email_prefs. Single source of truth so
-// the server action, the account-menu toggles, the dispatch paths, and the
-// footer unsubscribe routes can't drift apart.
+// The email types the app sends, each with an independent per-player on/off
+// preference stored in profiles.email_prefs. Single source of truth so the
+// server action, the account-menu toggles, the dispatch paths, and the footer
+// unsubscribe routes can't drift apart.
 export const EMAIL_PREF_KEYS = [
   "prediction_reminder",
   "result",
   "quiz_reminder",
+  "results_digest",
 ] as const;
 
 export type EmailPrefKey = (typeof EMAIL_PREF_KEYS)[number];
@@ -20,6 +21,7 @@ export const DEFAULT_EMAIL_PREFS: EmailPrefs = {
   prediction_reminder: true,
   result: true,
   quiz_reminder: true,
+  results_digest: true,
 };
 
 // Validates the payload the account-menu toggles send to updateEmailPrefs: the
@@ -29,6 +31,7 @@ export const emailPrefsSchema = z
     prediction_reminder: z.boolean(),
     result: z.boolean(),
     quiz_reminder: z.boolean(),
+    results_digest: z.boolean(),
   })
   .partial();
 
@@ -53,5 +56,6 @@ export function normalizeEmailPrefs(prefs: unknown): EmailPrefs {
     prediction_reminder: isOptedIn(prefs, "prediction_reminder"),
     result: isOptedIn(prefs, "result"),
     quiz_reminder: isOptedIn(prefs, "quiz_reminder"),
+    results_digest: isOptedIn(prefs, "results_digest"),
   };
 }

@@ -2,19 +2,21 @@ import "server-only";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/database.types";
 
-// The four background jobs the operations control room observes. Shared by the
-// cron handlers (which record their runs) and the dashboard (which lists them).
+// The background jobs the operations control room observes. Shared by the cron
+// handlers (which record their runs) and the dashboard (which lists them).
 export type OperationKind =
   | "sync_matches"
   | "sync_news"
   | "prediction_reminders"
-  | "quiz_reminders";
+  | "quiz_reminders"
+  | "results_digest";
 
 export const OPERATION_KINDS: readonly OperationKind[] = [
   "sync_matches",
   "sync_news",
   "prediction_reminders",
   "quiz_reminders",
+  "results_digest",
 ] as const;
 
 // How a run was started: the daily schedule, or an admin pressing "Run now".
