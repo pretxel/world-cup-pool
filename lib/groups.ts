@@ -91,7 +91,9 @@ export async function getGroup(groupId: string): Promise<GroupDetail | null> {
 
   const { data: members } = await supabase
     .from("group_members")
-    .select("user_id, role, joined_at, profiles(display_name)")
+    // Disambiguate the profiles embed: group_members now has two FKs to
+    // profiles (user_id + invited_by_user_id), so hint the member relationship.
+    .select("user_id, role, joined_at, profiles!group_members_user_id_fkey(display_name)")
     .eq("group_id", groupId)
     .order("joined_at", { ascending: true });
 
