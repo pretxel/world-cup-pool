@@ -1058,6 +1058,7 @@
     "winnerGdLabel": "Ganador/DG",
     "youLabel": "Tú",
     "ptsSuffix": "pts",
+    "rankDelta": "{direction, select, up {Subiste {count, number} hasta el #{rank, number}.} down {Bajaste {count, number} hasta el #{rank, number}.} same {Mantuviste tu puesto en el #{rank, number}.} other {Ya estás en la tabla: a escalar.}}",
     "outcomes": {
       "exact": "Exacto",
       "winner_gd": "Ganador + DG",

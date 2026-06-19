@@ -24,6 +24,7 @@ const STRINGS: ResultEmailStrings = {
   winnerGdLabel: "Winner/GD",
   youLabel: "You",
   ptsSuffix: "pts",
+  rankDelta: "You moved up 3 to #7.",
   outcomes: {
     exact: "Exact",
     winner_gd: "Winner + GD",
@@ -147,6 +148,67 @@ describe("renderResultEmail", () => {
     );
     expect(out.html).toContain("—");
   });
+
+  it("renders the resolved rank-delta line in both HTML and text", () => {
+    const out = renderResultEmail(
+      makeData({ rankDelta: { direction: "up", magnitude: 3, previousRank: 10 } }),
+    );
+    expect(out.html).toContain("You moved up 3 to #7.");
+    expect(out.text).toContain("You moved up 3 to #7.");
+    // `up` movement uses the pitch-green accent.
+    expect(out.html).toContain("#1B7A4D");
+  });
+
+  it("renders the neutral delta line without a numeric movement", () => {
+    const neutralStrings: ResultEmailStrings = {
+      ...STRINGS,
+      rankDelta: "You are on the board now.",
+    };
+    for (const delta of [
+      { direction: "new" as const, magnitude: 0 },
+      { direction: "same" as const, magnitude: 0, previousRank: 7 },
+      null,
+    ]) {
+      const out = renderResultEmail(
+        makeData({ rankDelta: delta, strings: neutralStrings }),
+      );
+      expect(out.html).toContain("You are on the board now.");
+      expect(out.text).toContain("You are on the board now.");
+      expect(out.html).not.toContain("moved up");
+    }
+  });
+});
+
+describe("computeRankDelta", () => {
+  it("reports an improved (lower) rank as up", () => {
+    expect(computeRankDelta(10, 7)).toEqual({
+      direction: "up",
+      magnitude: 3,
+      previousRank: 10,
+    });
+  });
+
+  it("reports a worse (higher) rank as down", () => {
+    expect(computeRankDelta(5, 8)).toEqual({
+      direction: "down",
+      magnitude: 3,
+      previousRank: 5,
+    });
+  });
+
+  it("reports an unchanged rank as same with magnitude 0", () => {
+    expect(computeRankDelta(4, 4)).toEqual({
+      direction: "same",
+      magnitude: 0,
+      previousRank: 4,
+    });
+  });
+
+  it("reports a missing previous rank as new", () => {
+    expect(computeRankDelta(null, 7)).toEqual({ direction: "new", magnitude: 0 });
+    expect(computeRankDelta(undefined, 7)).toEqual({ direction: "new", magnitude: 0 });
+    expect(computeRankDelta(10, null)).toEqual({ direction: "new", magnitude: 0 });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -156,6 +218,7 @@ describe("renderResultEmail", () => {
 import {
   buildResultEmailStrings,
   computePendingByUser,
+  computeRankDelta,
   filterResultOptIns,
   type PendingRecipient,
   type ScoredFinalRow,
@@ -276,6 +339,9 @@ let boardData: unknown[] = [];
 // Result-email preference rows keyed by profile id; default empty so every
 // affected user is treated as opted-in (the pre-change behavior).
 let prefsData: unknown[] = [];
+// Pre-recompute rank snapshot rows ({ user_id, rank }); default empty so the
+// cron path renders the `new` variant unless a test seeds a baseline.
+let snapshotData: unknown[] = [];
 let resendApiKey: string | null = "re_test";
 // Records the column/value of every `.eq()` applied to the scores query so
 // tests can assert the force path scopes by match_id at the data layer.
@@ -341,6 +407,13 @@ vi.mock("@/lib/supabase/admin", () => ({
           }),
         };
       }
+      if (table === "leaderboard_rank_snapshot") {
+        return {
+          select: () => ({
+            in: () => Promise.resolve({ data: snapshotData, error: null }),
+          }),
+        };
+      }
       throw new Error(`unexpected from(${table})`);
     },
     auth: { admin: { getUserById: getUserByIdMock } },
@@ -370,6 +443,7 @@ beforeEach(() => {
   ];
   ledgerData = [];
   prefsData = [];
+  snapshotData = [];
   scoredEqCalls = [];
   boardData = [
     {
