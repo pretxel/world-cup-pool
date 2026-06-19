@@ -191,6 +191,9 @@
     "needsPickEmptyTitle": "Alles erledigt",
     "needsPickEmptyBody": "Keine offenen Tipps — schau morgen für die nächsten Spiele wieder vorbei.",
     "needsPickEmptyAction": "Alle Spiele ansehen",
+    "pendingPicksNudge": "{count, plural, one {Du hast noch # anstehendes Spiel ohne Tipp.} other {Du hast noch # anstehende Spiele ohne Tipp.}}",
+    "pendingPicksNudgeAction": "Tipps abgeben",
+    "pendingPicksNudgeDismiss": "Hinweis ausblenden",
     "loadFailed": "Spiele konnten nicht geladen werden: {message}"
   },
   "news": {

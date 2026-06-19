@@ -191,6 +191,9 @@
     "needsPickEmptyTitle": "Tout est à jour",
     "needsPickEmptyBody": "Aucun prono en attente — revenez demain pour les prochains matchs.",
     "needsPickEmptyAction": "Voir tous les matchs",
+    "pendingPicksNudge": "{count, plural, one {Il vous reste # match à venir sans prono.} other {Il vous reste # matchs à venir sans prono.}}",
+    "pendingPicksNudgeAction": "Faire vos pronos",
+    "pendingPicksNudgeDismiss": "Masquer le rappel",
     "loadFailed": "Échec du chargement des matchs : {message}"
   },
   "news": {

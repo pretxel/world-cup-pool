@@ -9,6 +9,7 @@ import { MatchStateBadge } from "@/components/match-state-badge";
 import { MatchStatusFilter } from "@/components/match-status-filter";
 import { MatchTeamFilter } from "@/components/match-team-filter";
 import { NeedsPickToggle } from "@/components/needs-pick-toggle";
+import { PendingPicksNudge } from "@/components/pending-picks-nudge";
 import { TeamFlag } from "@/components/team-flag";
 import {
   dayKeyForTimeZone,
@@ -219,6 +220,19 @@ export default async function MatchesPage({
           />
         </Suspense>
       </header>
+
+      {user != null && needsPickCount > 0 && !picksNeeded ? (
+        <div className="mb-4">
+          <Suspense fallback={null}>
+            <PendingPicksNudge
+              count={needsPickCount}
+              message={t("pendingPicksNudge", { count: needsPickCount })}
+              actionLabel={t("pendingPicksNudgeAction")}
+              dismissLabel={t("pendingPicksNudgeDismiss")}
+            />
+          </Suspense>
+        </div>
+      ) : null}
 
       {user ? (
         <div className="mb-4">
