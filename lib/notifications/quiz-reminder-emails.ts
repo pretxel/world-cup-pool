@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { computeStreak } from "@/lib/quiz";
+import { checkEmailSenderConfig } from "./email-sender-config";
 import { renderQuizReminderEmail, type QuizReminderEmailStrings } from "./quiz-reminder-template";
 
 // Resend caps a single batch.send call at 100 messages.
@@ -20,9 +21,25 @@ export interface DispatchSummary {
   emailed: number;
   failed: number;
   skipped: number;
+  // Set when the production email-sender guard detected a misconfiguration
+  // during this run (sandbox default sender and/or missing RESEND_API_KEY).
+  // Optional so healthy runs (and `emailed`/`failed`/`skipped` semantics) are
+  // unchanged; flows through recordRun into the operations record / cron logs.
+  senderMisconfigured?: boolean;
 }
 
 const ZERO: DispatchSummary = { emailed: 0, failed: 0, skipped: 0 };
+
+// Emits one clear warning when the production email sender is misconfigured and
+// reports whether the run should carry the summary flag. Pure detection: never
+// throws, never changes the resolved sender.
+function warnIfSenderMisconfigured(): boolean {
+  const check = checkEmailSenderConfig();
+  if (check.shouldWarn) {
+    console.warn(`[quiz-reminders] dispatch: ${check.message}`);
+  }
+  return check.shouldWarn;
+}
 
 // A user eligible to be reminded, with the bits needed to render + unsubscribe.
 export interface ReminderRecipient {
@@ -201,9 +218,11 @@ export async function dispatchQuizReminders(
   opts?: { force?: boolean },
 ): Promise<DispatchSummary> {
   const force = opts?.force ?? false;
+  const senderMisconfigured = warnIfSenderMisconfigured();
+  const flag = senderMisconfigured ? { senderMisconfigured } : {};
   if (!env.resendApiKey) {
     console.log("[quiz-reminders] RESEND_API_KEY unset — skipping dispatch");
-    return { ...ZERO };
+    return { ...ZERO, ...flag };
   }
 
   const admin = createAdminSupabaseClient();
@@ -220,7 +239,7 @@ export async function dispatchQuizReminders(
   }
   if (!question) {
     console.log(`[quiz-reminders] no active question for ${today} — nothing to send`);
-    return { ...ZERO };
+    return { ...ZERO, ...flag };
   }
   const questionId = question.id as string;
 
@@ -238,7 +257,7 @@ export async function dispatchQuizReminders(
   const pending = computePendingReminders(profiles, answeredUserIds, sentUserIds);
   if (pending.length === 0) {
     console.log(`[quiz-reminders] emailed=0 failed=0 skipped=0 (no pending)`);
-    return { ...ZERO };
+    return { ...ZERO, ...flag };
   }
 
   const streaks = await loadStreaks(
@@ -316,5 +335,5 @@ export async function dispatchQuizReminders(
   }
 
   console.log(`[quiz-reminders] emailed=${emailed} failed=${failed} skipped=${skipped}`);
-  return { emailed, failed, skipped };
+  return { emailed, failed, skipped, ...flag };
 }

@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { isConfirmedMatch, isLocked } from "@/lib/match-utils";
+import { checkEmailSenderConfig } from "./email-sender-config";
 import {
   renderPredictionReminderEmail,
   type PredictionReminderEmailStrings,
@@ -24,9 +25,25 @@ export interface DispatchSummary {
   emailed: number;
   failed: number;
   skipped: number;
+  // Set when the production email-sender guard detected a misconfiguration
+  // during this run (sandbox default sender and/or missing RESEND_API_KEY).
+  // Optional so healthy runs (and `emailed`/`failed`/`skipped` semantics) are
+  // unchanged; flows through recordRun into the operations record / cron logs.
+  senderMisconfigured?: boolean;
 }
 
 const ZERO: DispatchSummary = { emailed: 0, failed: 0, skipped: 0 };
+
+// Emits one clear warning when the production email sender is misconfigured and
+// reports whether the run should carry the summary flag. Pure detection: never
+// throws, never changes the resolved sender.
+function warnIfSenderMisconfigured(): boolean {
+  const check = checkEmailSenderConfig();
+  if (check.shouldWarn) {
+    console.warn(`[prediction-reminders] dispatch: ${check.message}`);
+  }
+  return check.shouldWarn;
+}
 
 // A player eligible to be reminded, with the bits needed to render + unsubscribe.
 export interface PredictionRecipient {
@@ -277,9 +294,11 @@ interface PreparedMessage {
 // are logged and counted, never aborting the rest; ledger rows are written only
 // for messages Resend accepted, so failures retry on a later run the same day.
 export async function dispatchPredictionReminders(fromName?: string): Promise<DispatchSummary> {
+  const senderMisconfigured = warnIfSenderMisconfigured();
+  const flag = senderMisconfigured ? { senderMisconfigured } : {};
   if (!env.resendApiKey) {
     console.log("[prediction-reminders] RESEND_API_KEY unset — skipping dispatch");
-    return { ...ZERO };
+    return { ...ZERO, ...flag };
   }
 
   const admin = createAdminSupabaseClient();
@@ -291,7 +310,7 @@ export async function dispatchPredictionReminders(fromName?: string): Promise<Di
   const todayMatches = await loadTodayOpenMatches(admin, window);
   if (todayMatches.length === 0) {
     console.log(`[prediction-reminders] no open matches for ${today} — nothing to send`);
-    return { ...ZERO };
+    return { ...ZERO, ...flag };
   }
   const matchIds = todayMatches.map((m) => m.id);
 
@@ -311,7 +330,7 @@ export async function dispatchPredictionReminders(fromName?: string): Promise<Di
   );
   if (pending.length === 0) {
     console.log(`[prediction-reminders] emailed=0 failed=0 skipped=0 (no pending)`);
-    return { ...ZERO };
+    return { ...ZERO, ...flag };
   }
 
   const t = (await getTranslations({
@@ -387,5 +406,5 @@ export async function dispatchPredictionReminders(fromName?: string): Promise<Di
   }
 
   console.log(`[prediction-reminders] emailed=${emailed} failed=${failed} skipped=${skipped}`);
-  return { emailed, failed, skipped };
+  return { emailed, failed, skipped, ...flag };
 }
