@@ -17,6 +17,7 @@
   "nav": {
     "matches": "Spiele",
     "standings": "Tabelle",
+    "bracket": "K.-o.-Runde",
     "news": "News",
     "quiz": "Quiz",
     "leaderboard": "Rangliste",
@@ -474,6 +475,19 @@
     "colGoalDiffFull": "Tordifferenz",
     "colPoints": "Pkt",
     "colPointsFull": "Punkte"
+  },
+  "bracket": {
+    "title": "K.-o.-Runde",
+    "description": "Der K.-o.-Baum der Weltmeisterschaft 2026, live aus den aktuellen Gruppentabellen projiziert.",
+    "ogTitle": "K.-o.-Runde · WC26 Pool",
+    "ogDescription": "Der K.-o.-Baum der Weltmeisterschaft 2026, projiziert aus den Live-Gruppentabellen.",
+    "eyebrow": "K.-o.-Runde",
+    "headline": "K.-o.-Baum",
+    "lede": "Der Weg ins Finale, projiziert aus den aktuellen Tabellen. Gruppensieger und Zweite aktualisieren sich live; Drittplatzierten-Plätze und spätere Runden füllen sich, sobald entschieden.",
+    "provisional": "Vorläufig",
+    "thirdPlace": "Spiel um Platz 3",
+    "emptyTitle": "Noch kein Baum",
+    "emptyBody": "Der aktuelle Wettbewerb hat keine K.-o.-Runde."
   },
   "leaderboard": {
     "title": "Leaderboard",

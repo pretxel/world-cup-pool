@@ -17,6 +17,7 @@
   "nav": {
     "matches": "Matchs",
     "standings": "Poules",
+    "bracket": "Tableau",
     "news": "Actualités",
     "quiz": "Quiz",
     "leaderboard": "Classement",
@@ -474,6 +475,19 @@
     "colGoalDiffFull": "Différence de buts",
     "colPoints": "Pts",
     "colPointsFull": "Points"
+  },
+  "bracket": {
+    "title": "Tableau final",
+    "description": "Le tableau à élimination directe de la Coupe du Monde 2026, projeté en direct depuis le classement actuel des groupes.",
+    "ogTitle": "Tableau final · WC26 Pool",
+    "ogDescription": "Le tableau à élimination directe de la Coupe du Monde 2026, projeté depuis le classement en direct.",
+    "eyebrow": "Phase à élimination directe",
+    "headline": "Tableau final",
+    "lede": "La route vers la finale, projetée depuis le classement actuel. Premiers et deuxièmes se mettent à jour en direct ; les places de troisièmes et les tours suivants se remplissent une fois décidés.",
+    "provisional": "Provisoire",
+    "thirdPlace": "Match pour la 3e place",
+    "emptyTitle": "Pas encore de tableau",
+    "emptyBody": "La compétition actuelle n'a pas de phase à élimination directe."
   },
   "leaderboard": {
     "title": "Classement",

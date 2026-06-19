@@ -17,6 +17,7 @@
   "nav": {
     "matches": "Matches",
     "standings": "Standings",
+    "bracket": "Bracket",
     "news": "News",
     "quiz": "Quiz",
     "leaderboard": "Leaderboard",
@@ -474,6 +475,19 @@
     "colGoalDiffFull": "Goal difference",
     "colPoints": "Pts",
     "colPointsFull": "Points"
+  },
+  "bracket": {
+    "title": "Bracket",
+    "description": "The World Cup 2026 knockout bracket, projected live from current group standings — see who's on course to meet whom.",
+    "ogTitle": "Bracket · WC26 Pool",
+    "ogDescription": "The World Cup 2026 knockout bracket, projected from live group standings.",
+    "eyebrow": "Knockout stage",
+    "headline": "Bracket",
+    "lede": "The road to the final, projected from current standings. Group winners and runners-up update live as results come in; third-place slots and later rounds fill once decided.",
+    "provisional": "Provisional",
+    "thirdPlace": "Third-place play-off",
+    "emptyTitle": "No bracket yet",
+    "emptyBody": "The current competition has no knockout stage."
   },
   "leaderboard": {
     "title": "Leaderboard",
