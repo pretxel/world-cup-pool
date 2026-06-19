@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { MinusIcon, PlusIcon, Loader2Icon, CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
+import { ShareButtons } from "@/components/share-buttons";
+import { buildPickSharePath } from "@/lib/share";
+import type { Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { submitPrediction } from "./actions";
@@ -19,6 +22,8 @@ export function PredictionForm({
   kickoffAt,
   initial,
   isAdmin = false,
+  locale,
+  shareBaseUrl,
 }: {
   matchId: string;
   homeTeam: string;
@@ -26,13 +31,22 @@ export function PredictionForm({
   kickoffAt: string;
   initial: { home_goals: number; away_goals: number } | null;
   isAdmin?: boolean;
+  locale: Locale;
+  shareBaseUrl: string;
 }) {
   const t = useTranslations("predictionForm");
+  const tShare = useTranslations("sharePick");
   const [home, setHome] = useState<number>(initial?.home_goals ?? 0);
   const [away, setAway] = useState<number>(initial?.away_goals ?? 0);
   const [touched, setTouched] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [lockedNow, setLockedNow] = useState(false);
+  // Last successfully-saved scoreline. Drives the inline share CTA so it always
+  // advertises what is actually saved, decoupled from the live steppers.
+  const [sharedPick, setSharedPick] = useState<{
+    home: number;
+    away: number;
+  } | null>(null);
 
   useEffect(() => {
     const kickoff = new Date(kickoffAt).getTime();
@@ -70,10 +84,12 @@ export function PredictionForm({
       trackEvent("prediction_submitted", { match_id: matchId });
       toast.success(t("pickLocked"));
       setTouched(false);
+      setSharedPick({ home, away });
     });
   }
 
   return (
+    <>
     <form
       onSubmit={onSubmit}
       className="rounded-xl border border-border bg-card p-5 shadow-sm"
@@ -86,6 +102,7 @@ export function PredictionForm({
           onChange={(v) => {
             setHome(v);
             setTouched(true);
+            setSharedPick(null);
           }}
           disabled={lockedNow || isPending || isAdmin}
           tDecrease={t("decreaseAria", { team: homeTeam })}
@@ -109,6 +126,7 @@ export function PredictionForm({
           onChange={(v) => {
             setAway(v);
             setTouched(true);
+            setSharedPick(null);
           }}
           disabled={lockedNow || isPending || isAdmin}
           align="end"
@@ -168,6 +186,32 @@ export function PredictionForm({
         </Button>
       </div>
     </form>
+
+    {sharedPick ? (
+      <section className="mt-4 rounded-xl border border-border bg-card p-5 shadow-sm motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          {tShare("heading")}
+        </p>
+        <ShareButtons
+          context="pick"
+          shareUrl={`${shareBaseUrl}${buildPickSharePath(locale, matchId, sharedPick.home, sharedPick.away)}`}
+          shareText={tShare("shareText", {
+            home: homeTeam,
+            away: awayTeam,
+            h: sharedPick.home,
+            a: sharedPick.away,
+          })}
+          labels={{
+            x: tShare("shareOnX"),
+            facebook: tShare("shareOnFacebook"),
+            native: tShare("shareNative"),
+            copy: tShare("copyLink"),
+            copied: tShare("copied"),
+          }}
+        />
+      </section>
+    ) : null}
+    </>
   );
 }
 

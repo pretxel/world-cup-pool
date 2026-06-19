@@ -616,6 +616,8 @@ export default async function MatchDetailPage({
             kickoffAt={match.kickoff_at}
             initial={myPrediction}
             isAdmin={isAdmin}
+            locale={locale}
+            shareBaseUrl={env.siteUrl}
           />
         )}
       </section>
