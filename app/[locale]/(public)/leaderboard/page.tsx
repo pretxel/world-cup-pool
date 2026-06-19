@@ -3,12 +3,21 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
+import { LeaderboardSegmentSwitcher } from "@/components/leaderboard-segment-switcher";
 import { LeaderboardViewTracker } from "./leaderboard-view-tracker";
 import { ShareButtons } from "@/components/share-buttons";
 import type { LeaderboardRow } from "@/lib/db";
 import { ArrowRightIcon } from "lucide-react";
 import { buildRankSharePath } from "@/lib/share";
 import { env } from "@/lib/env";
+import { getActiveCompetition } from "@/lib/competition";
+import { getStageLabel, sortedStages } from "@/lib/competition-schema";
+import {
+  currentWeekBoundsUtc,
+  parseSegmentParam,
+  reconcileStageParam,
+  resolveSegment,
+} from "@/lib/leaderboard-segment";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
 export async function generateMetadata({
@@ -33,25 +42,69 @@ export async function generateMetadata({
 
 export default async function LeaderboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ segment?: string | string[]; stage?: string | string[] }>;
 }) {
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
 
+  const { segment: segmentParam, stage: stageParam } = await searchParams;
+
   const t = await getTranslations("leaderboard");
   const tShare = await getTranslations("shareRank");
+
+  // Resolve the active competition's stages so `?stage=` is validated against
+  // the real keys (drop unknowns), mirroring how /matches reconciles params.
+  const activeCompetition = await getActiveCompetition();
+  const format = activeCompetition?.format ?? null;
+  const stageKeys = format ? sortedStages(format).map((s) => s.key) : [];
+  const stageOptions = format
+    ? sortedStages(format).map((s) => ({
+        key: s.key,
+        label: getStageLabel(format, s.key, locale),
+      }))
+    : [];
+
+  // Parse the URL switch, then reconcile against the available stages. A
+  // `stage` segment with no valid stage falls back to overall (no redirect/404).
+  const requestedSegment = parseSegmentParam(segmentParam);
+  const activeStage = reconcileStageParam(stageParam, stageKeys);
+  const segment = resolveSegment(requestedSegment, activeStage);
 
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from("v_leaderboard_overall")
-    .select("*")
-    .order("rank", { ascending: true });
+  // Branch the data source by segment. All three return the LeaderboardRow
+  // shape (same columns and tie-breakers), so the rendering below is identical.
+  let data: LeaderboardRow[] | null = null;
+  let error: { message: string } | null = null;
+  if (segment === "week") {
+    const { fromTs, toTs } = currentWeekBoundsUtc();
+    const res = await supabase.rpc("leaderboard_for_window", {
+      from_ts: fromTs,
+      to_ts: toTs,
+    });
+    data = res.data as LeaderboardRow[] | null;
+    error = res.error;
+  } else if (segment === "stage" && activeStage) {
+    const res = await supabase.rpc("leaderboard_for_stage", {
+      stage_key: activeStage,
+    });
+    data = res.data as LeaderboardRow[] | null;
+    error = res.error;
+  } else {
+    const res = await supabase
+      .from("v_leaderboard_overall")
+      .select("*")
+      .order("rank", { ascending: true });
+    data = res.data as LeaderboardRow[] | null;
+    error = res.error;
+  }
 
   const loadError = error?.message ?? null;
   const rows: LeaderboardRow[] = (data ?? []) as LeaderboardRow[];
@@ -97,6 +150,19 @@ export default async function LeaderboardPage({
           </div>
         ) : null}
       </header>
+
+      <LeaderboardSegmentSwitcher
+        basePath={localePath(locale, "/leaderboard")}
+        activeSegment={segment}
+        activeStage={activeStage}
+        stages={stageOptions}
+        labels={{
+          group: t("segmentGroup"),
+          overall: t("segmentOverall"),
+          week: t("segmentWeek"),
+          stage: t("segmentStage"),
+        }}
+      />
 
       {loadError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">

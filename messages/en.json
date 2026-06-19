@@ -547,7 +547,11 @@
     "notYetBody": "Submit predictions to start banking points.",
     "inviteCtaTitle": "Play with your friends",
     "inviteCtaBody": "Create a group or join one to see how you stack up against the people you know.",
-    "inviteCtaLink": "Invite friends"
+    "inviteCtaLink": "Invite friends",
+    "segmentGroup": "View",
+    "segmentOverall": "Overall",
+    "segmentWeek": "This week",
+    "segmentStage": "By stage"
   },
   "groups": {
     "title": "Groups",
