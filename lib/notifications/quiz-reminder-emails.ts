@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { computeStreak } from "@/lib/quiz";
+import { filterRecipientsAtLocalHour } from "@/lib/match-utils";
 import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
 import { renderQuizReminderEmail, type QuizReminderEmailStrings } from "./quiz-reminder-template";
@@ -47,6 +48,9 @@ export interface ReminderRecipient {
   userId: string;
   displayName: string | null;
   unsubscribeToken: string;
+  // Validated IANA zone from profiles.timezone, or null when unknown/invalid.
+  // Drives local-7am bucketing; null is bucketed as UTC.
+  timezone: string | null;
 }
 
 // Pure: a user is pending when they have NOT answered today's question and have
@@ -150,7 +154,7 @@ async function loadOptedInProfiles(admin: AdminClient): Promise<ReminderRecipien
   for (let offset = 0; ; offset += SUPABASE_PAGE_LIMIT) {
     const { data, error } = await admin
       .from("profiles")
-      .select("id, display_name, unsubscribe_token, email_prefs")
+      .select("id, display_name, unsubscribe_token, email_prefs, timezone")
       .order("id", { ascending: true })
       .range(offset, offset + SUPABASE_PAGE_LIMIT - 1);
     if (error) throw new Error(`[quiz-reminders] load profiles: ${error.message}`);
@@ -161,6 +165,7 @@ async function loadOptedInProfiles(admin: AdminClient): Promise<ReminderRecipien
         userId: p.id as string,
         displayName: (p.display_name as string | null) ?? null,
         unsubscribeToken: p.unsubscribe_token as string,
+        timezone: (p.timezone as string | null) ?? null,
       });
     }
     if (page.length < SUPABASE_PAGE_LIMIT) break;
@@ -258,7 +263,13 @@ export async function dispatchQuizReminders(
       ? Promise.resolve<string[]>([])
       : loadQuestionUserIds(admin, "quiz_reminder_log", questionId),
   ]);
-  const pending = computePendingReminders(profiles, answeredUserIds, sentUserIds);
+  // Local-7am bucketing: on this hourly run, keep only the recipients for whom
+  // it is currently ~7am in their own timezone (UTC fallback when unknown), so
+  // the reminder lands when they are awake instead of one fixed UTC instant.
+  // Applied before the answered/reminded exclusions; the force re-send path
+  // still buckets, since it too should only fire at the user's local 7am.
+  const bucketed = filterRecipientsAtLocalHour(profiles);
+  const pending = computePendingReminders(bucketed, answeredUserIds, sentUserIds);
   if (pending.length === 0) {
     console.log(`[quiz-reminders] emailed=0 failed=0 skipped=0 (no pending)`);
     return { ...ZERO, ...flag };

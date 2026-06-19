@@ -729,6 +729,7 @@ export type Database = {
           is_admin: boolean
           prediction_reminder_opt_out: boolean
           quiz_reminder_opt_out: boolean
+          timezone: string | null
           unsubscribe_token: string
           updated_at: string
           welcome_email_sent_at: string | null
@@ -741,6 +742,7 @@ export type Database = {
           is_admin?: boolean
           prediction_reminder_opt_out?: boolean
           quiz_reminder_opt_out?: boolean
+          timezone?: string | null
           unsubscribe_token?: string
           updated_at?: string
           welcome_email_sent_at?: string | null
@@ -753,6 +755,7 @@ export type Database = {
           is_admin?: boolean
           prediction_reminder_opt_out?: boolean
           quiz_reminder_opt_out?: boolean
+          timezone?: string | null
           unsubscribe_token?: string
           updated_at?: string
           welcome_email_sent_at?: string | null
