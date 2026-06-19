@@ -19,8 +19,9 @@ for f in supabase/migrations/*.sql; do
   "${PSQL[@]}" < "$f"
 done
 
-echo "==> Seeding (admin, matches, quiz)"
-for name in admin matches quiz; do
+echo "==> Seeding (admin, matches, quiz, dev-results)"
+# dev-results MUST follow matches (it UPDATEs the freshly-seeded fixtures).
+for name in admin matches quiz dev-results; do
   f="supabase/seed/${name}.sql"
   echo "    $f"
   "${PSQL[@]}" < "$f"
