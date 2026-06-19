@@ -17,6 +17,7 @@ export const OPERATION_SCHEDULES: Record<OperationKind, { cron: string; hourUtc:
   // after they finish (renders land asynchronously after a match goes final).
   // hourUtc is the soonest of those ticks, used only for the "next run" display.
   recap_digest: { cron: "0 6,14,22 * * *", hourUtc: 6 },
+  comeback_emails: { cron: "0 15 * * *", hourUtc: 15 },
 };
 
 // The next UTC instant this job is scheduled to fire: today at its hour if that

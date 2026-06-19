@@ -9,6 +9,7 @@ import { dispatchPredictionReminders } from "@/lib/notifications/prediction-remi
 import { dispatchQuizReminders } from "@/lib/notifications/quiz-reminder-emails";
 import { dispatchResultsDigest } from "@/lib/notifications/results-digest-emails";
 import { dispatchRecapDigest } from "@/lib/notifications/recap-digest-emails";
+import { dispatchComebackEmails } from "@/lib/notifications/comeback-emails";
 import { runNewsSync } from "@/lib/news-sync";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun, type OperationKind } from "@/lib/operations/record-run";
@@ -69,6 +70,10 @@ const JOB: Record<OperationKind, () => Promise<object>> = {
     const { emailFromName } = await getActiveBranding();
     return dispatchRecapDigest(emailFromName);
   },
+  comeback_emails: async () => {
+    const { emailFromName } = await getActiveBranding();
+    return dispatchComebackEmails(emailFromName);
+  },
 };
 
 // Shared trigger: assert admin, run the job under recordRun(kind, 'manual'), and
@@ -121,4 +126,7 @@ export async function runResultsDigest(formData: FormData) {
 }
 export async function runRecapDigest(formData: FormData) {
   await trigger("recap_digest", formData);
+}
+export async function runComebackEmails(formData: FormData) {
+  await trigger("comeback_emails", formData);
 }

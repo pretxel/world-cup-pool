@@ -53,6 +53,7 @@ describe("GET /api/quiz-reminders/unsubscribe", () => {
         quiz_reminder: false,
         results_digest: true,
         recap_digest: true,
+        comeback: true,
       },
     });
     expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
@@ -73,6 +74,7 @@ describe("GET /api/quiz-reminders/unsubscribe", () => {
         quiz_reminder: false,
         results_digest: true,
         recap_digest: true,
+        comeback: true,
       },
     });
   });
@@ -124,6 +126,7 @@ describe("POST /api/quiz-reminders/unsubscribe", () => {
         quiz_reminder: false,
         results_digest: true,
         recap_digest: true,
+        comeback: true,
       },
     });
     expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);

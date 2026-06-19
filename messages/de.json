@@ -40,6 +40,7 @@
     "prediction_reminder": "Tipp-Erinnerungen",
     "result": "Ergebnis-E-Mails",
     "quiz_reminder": "Quiz-Erinnerungen",
+    "comeback": "Comeback-E-Mails",
     "saved": "Einstellungen aktualisiert",
     "error": "Einstellungen konnten nicht aktualisiert werden",
     "results_digest": "Tägliche Ergebnisübersicht",
@@ -948,7 +949,8 @@
         "prediction_reminders": "Tipp-Erinnerungen",
         "quiz_reminders": "Quiz-Erinnerungen",
         "results_digest": "Ergebnisübersicht",
-        "recap_digest": "Recap-Übersicht"
+        "recap_digest": "Recap-Übersicht",
+        "comeback_emails": "Comeback-E-Mails"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
@@ -956,7 +958,8 @@
         "prediction_reminders": "Erinnert Spieler mit offenen Tipps",
         "quiz_reminders": "Erinnert Spieler, die noch nicht geantwortet haben",
         "results_digest": "Tägliche Zusammenfassung von Tabelle und Aufsteigern",
-        "recap_digest": "Versendet neu erstellte Spiel-Comics"
+        "recap_digest": "Versendet neu erstellte Spiel-Comics",
+        "comeback_emails": "Holt inaktive Spieler mit tippbarem Spiel zurück"
       },
       "status": {
         "success": "Erfolgreich",
@@ -1192,5 +1195,22 @@
     "shareCtaLabel": "Teilen",
     "shareText": "Schau dir diesen Spiel-Recap-Comic an · WM-2026-Pool",
     "footer": "Du erhältst diese Recap-Comic-Übersicht deines WM-Pools. Du kannst sie in den E-Mail-Einstellungen deines Kontos deaktivieren."
+  },
+  "comebackEmail": {
+    "subject": "Deine Tipps fehlen uns — der Pool läuft weiter",
+    "preheader": "Du hast schon eine Weile nicht getippt. Komm zurück vor dem nächsten Anpfiff.",
+    "eyebrow": "Komm zurück",
+    "heading": "{name}, der Pool vermisst dich",
+    "headingNoName": "Der Pool vermisst dich",
+    "intro": "Du warst eine Weile still, aber es gibt noch Spiele zum Tippen und Punkte zu holen. Hier ist dein Stand und was als Nächstes kommt.",
+    "daysInactiveLabel": "{days} Tage seit deinem letzten Tipp",
+    "rankLabel": "Aktuell #{rank}",
+    "unrankedLabel": "Noch nicht platziert",
+    "pointsLabel": "{points} Punkte",
+    "matchesLabel": "Als Nächstes zu tippen",
+    "vs": "vs",
+    "ctaLabel": "Tipps abgeben",
+    "footer": "Du erhältst diese E-Mail, weil du am World Cup Pool teilnimmst und schon eine Weile nicht getippt hast.",
+    "unsubscribeLabel": "Comeback-E-Mails abbestellen"
   }
 }
