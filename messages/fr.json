@@ -523,7 +523,10 @@
     "emptyBody": "Aucun match terminé pour l'instant. Revenez dès que les premiers résultats tombent.",
     "browseMatches": "Voir les matchs",
     "notYetTitle": "Vous n'êtes pas encore au tableau.",
-    "notYetBody": "Envoyez des pronos pour commencer à marquer des points."
+    "notYetBody": "Envoyez des pronos pour commencer à marquer des points.",
+    "inviteCtaTitle": "Jouez avec vos amis",
+    "inviteCtaBody": "Créez un groupe ou rejoignez-en un pour voir comment vous vous situez face aux gens que vous connaissez.",
+    "inviteCtaLink": "Inviter des amis"
   },
   "groups": {
     "title": "Groupes",

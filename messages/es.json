@@ -523,7 +523,10 @@
     "emptyBody": "Todavía no ha terminado ningún partido. Vuelve cuando lleguen los primeros resultados.",
     "browseMatches": "Ver partidos",
     "notYetTitle": "Aún no estás en la tabla.",
-    "notYetBody": "Envía pronósticos para empezar a sumar puntos."
+    "notYetBody": "Envía pronósticos para empezar a sumar puntos.",
+    "inviteCtaTitle": "Juega con tus amigos",
+    "inviteCtaBody": "Crea un grupo o únete a uno para ver cómo te comparas con la gente que conoces.",
+    "inviteCtaLink": "Invitar amigos"
   },
   "groups": {
     "title": "Grupos",
