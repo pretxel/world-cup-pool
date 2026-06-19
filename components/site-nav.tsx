@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logotype } from "@/components/logotype";
 import { getActiveBranding } from "@/lib/competition";
 import { DEFAULT_LOCALE, isLocale, localePath } from "@/lib/i18n";
+import { DEFAULT_EMAIL_PREFS, normalizeEmailPrefs, type EmailPrefs } from "@/lib/email-prefs";
 import { cn } from "@/lib/utils";
 
 export async function SiteNav() {
@@ -25,14 +26,16 @@ export async function SiteNav() {
 
   let isAdmin = false;
   let displayName: string | null = null;
+  let emailPrefs: EmailPrefs = DEFAULT_EMAIL_PREFS;
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("is_admin, display_name")
+      .select("is_admin, display_name, email_prefs")
       .eq("id", user.id)
       .single();
     isAdmin = data?.is_admin ?? false;
     displayName = data?.display_name ?? null;
+    emailPrefs = normalizeEmailPrefs(data?.email_prefs);
   }
 
   const links = [
@@ -67,6 +70,7 @@ export async function SiteNav() {
             <UserMenu
               displayName={displayName}
               email={user.email ?? ""}
+              emailPrefs={emailPrefs}
               signOutPath={lp("/sign-out")}
             />
           ) : (

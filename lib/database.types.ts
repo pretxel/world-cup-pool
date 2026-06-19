@@ -629,6 +629,7 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string | null
+          email_prefs: Json
           id: string
           is_admin: boolean
           prediction_reminder_opt_out: boolean
@@ -640,6 +641,7 @@ export type Database = {
         Insert: {
           created_at?: string
           display_name?: string | null
+          email_prefs?: Json
           id: string
           is_admin?: boolean
           prediction_reminder_opt_out?: boolean
@@ -651,6 +653,7 @@ export type Database = {
         Update: {
           created_at?: string
           display_name?: string | null
+          email_prefs?: Json
           id?: string
           is_admin?: boolean
           prediction_reminder_opt_out?: boolean

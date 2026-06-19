@@ -35,6 +35,14 @@
     "invalid": "Name must be 2–32 characters.",
     "error": "Couldn't update your name"
   },
+  "emailPrefs": {
+    "heading": "Email preferences",
+    "prediction_reminder": "Prediction reminders",
+    "result": "Result emails",
+    "quiz_reminder": "Quiz reminders",
+    "saved": "Preferences updated",
+    "error": "Couldn't update your preferences"
+  },
   "footer": {
     "tournament": "WC26 Pool · 11 Jun – 19 Jul 2026",
     "howItWorks": "How it works",

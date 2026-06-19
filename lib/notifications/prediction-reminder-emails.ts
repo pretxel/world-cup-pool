@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { isConfirmedMatch, isLocked } from "@/lib/match-utils";
+import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
 import {
   renderPredictionReminderEmail,
@@ -168,18 +169,21 @@ function withFromName(emailFrom: string, name?: string): string {
 }
 
 // Opted-in players, paged so the recipient set is complete past the page cap.
+// Reads the single email_prefs jsonb source of truth and keeps anyone whose
+// `prediction_reminder` preference is not explicitly false (absent/unknown is
+// treated as opted-in).
 async function loadOptedInProfiles(admin: AdminClient): Promise<PredictionRecipient[]> {
   const out: PredictionRecipient[] = [];
   for (let offset = 0; ; offset += SUPABASE_PAGE_LIMIT) {
     const { data, error } = await admin
       .from("profiles")
-      .select("id, display_name, unsubscribe_token")
-      .eq("prediction_reminder_opt_out", false)
+      .select("id, display_name, unsubscribe_token, email_prefs")
       .order("id", { ascending: true })
       .range(offset, offset + SUPABASE_PAGE_LIMIT - 1);
     if (error) throw new Error(`[prediction-reminders] load profiles: ${error.message}`);
     const page = data ?? [];
     for (const p of page) {
+      if (!isOptedIn(p.email_prefs, "prediction_reminder")) continue;
       out.push({
         userId: p.id as string,
         displayName: (p.display_name as string | null) ?? null,

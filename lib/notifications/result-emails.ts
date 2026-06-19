@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
+import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
 import type { HitType } from "@/lib/db";
 import {
@@ -88,6 +89,28 @@ export function computePendingByUser(
   }
 
   return [...byUser.values()];
+}
+
+// A player's stored result-email preference, keyed by user id. Used to drop
+// recipients who have opted out of result emails — a type that had no opt-out at
+// all before this change.
+export interface ResultPrefRow {
+  user_id: string;
+  email_prefs: unknown;
+}
+
+// Pure: drops any pending recipient whose `result` preference is explicitly
+// false. A user with no row, or no explicit preference, is treated as opted-in
+// (per isOptedIn semantics) so default behavior is unchanged. Exported for
+// unit testing.
+export function filterResultOptIns(
+  pending: PendingRecipient[],
+  prefs: ResultPrefRow[],
+): PendingRecipient[] {
+  const optedOut = new Set(
+    prefs.filter((p) => !isOptedIn(p.email_prefs, "result")).map((p) => p.user_id),
+  );
+  return pending.filter((p) => !optedOut.has(p.userId));
 }
 
 // Minimal translator shape so this stays decoupled from next-intl internals.
@@ -209,6 +232,27 @@ async function loadScoredFinals(
       away_score: (m.away_score as number | null) ?? 0,
     };
   });
+}
+
+// Reads the result-email preference for the given affected user ids so opted-out
+// players can be dropped before send. Returns one row per user that has a
+// profile; absent users (treated as opted-in) simply don't appear.
+async function loadResultPrefs(
+  admin: AdminClient,
+  userIds: string[],
+): Promise<ResultPrefRow[]> {
+  if (userIds.length === 0) return [];
+  const { data, error } = await admin
+    .from("profiles")
+    .select("id, email_prefs")
+    .in("id", userIds);
+  if (error) {
+    throw new Error(`[result-emails] load prefs: ${error.message}`);
+  }
+  return (data ?? []).map((r) => ({
+    user_id: r.id as string,
+    email_prefs: (r as { email_prefs: unknown }).email_prefs,
+  }));
 }
 
 // Shared send tail: resolve email → render → batch-send → stamp ledger for a
@@ -334,7 +378,14 @@ export async function dispatchResultEmails(
   }
 
   const pending = computePendingByUser(scored, ledgerData ?? []);
-  const summary = await dispatchPending(admin, pending, fromName);
+  // Drop players who opted out of result emails (no opt-out existed before this
+  // change); absent/opted-in players are unaffected.
+  const prefs = await loadResultPrefs(
+    admin,
+    pending.map((p) => p.userId),
+  );
+  const filtered = filterResultOptIns(pending, prefs);
+  const summary = await dispatchPending(admin, filtered, fromName);
   return { ...summary, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
 }
 
@@ -358,7 +409,13 @@ export async function forceDispatchResultEmails(
   const scored = await loadScoredFinals(admin, matchId);
   // Empty ledger → every scored recipient of this match is pending.
   const pending = computePendingByUser(scored, []);
-  const summary = await dispatchPending(admin, pending, fromName);
+  // Honor the result opt-out even on the admin re-send path.
+  const prefs = await loadResultPrefs(
+    admin,
+    pending.map((p) => p.userId),
+  );
+  const filtered = filterResultOptIns(pending, prefs);
+  const summary = await dispatchPending(admin, filtered, fromName);
   return { ...summary, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
 }
 

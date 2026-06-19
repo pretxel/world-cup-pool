@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { computeStreak } from "@/lib/quiz";
+import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
 import { renderQuizReminderEmail, type QuizReminderEmailStrings } from "./quiz-reminder-template";
 
@@ -141,18 +142,21 @@ async function loadStreaks(admin: AdminClient, userIds: string[]): Promise<Map<s
 }
 
 // Opted-in users, paged so the recipient set is complete past the page cap.
+// Reads the single email_prefs jsonb source of truth and keeps anyone whose
+// `quiz_reminder` preference is not explicitly false (absent/unknown is treated
+// as opted-in).
 async function loadOptedInProfiles(admin: AdminClient): Promise<ReminderRecipient[]> {
   const out: ReminderRecipient[] = [];
   for (let offset = 0; ; offset += SUPABASE_PAGE_LIMIT) {
     const { data, error } = await admin
       .from("profiles")
-      .select("id, display_name, unsubscribe_token")
-      .eq("quiz_reminder_opt_out", false)
+      .select("id, display_name, unsubscribe_token, email_prefs")
       .order("id", { ascending: true })
       .range(offset, offset + SUPABASE_PAGE_LIMIT - 1);
     if (error) throw new Error(`[quiz-reminders] load profiles: ${error.message}`);
     const page = data ?? [];
     for (const p of page) {
+      if (!isOptedIn(p.email_prefs, "quiz_reminder")) continue;
       out.push({
         userId: p.id as string,
         displayName: (p.display_name as string | null) ?? null,

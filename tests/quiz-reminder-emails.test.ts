@@ -160,7 +160,9 @@ vi.mock("resend", () => ({
 
 // A paged `.eq().order().range(from, to)` terminal that slices the dataset, so
 // the dispatcher's pagination loop is exercised realistically (and proven not
-// to truncate). `.in()` is the streak query's terminal.
+// to truncate). `.order().range()` (no `.eq()`) is the profiles loader's shape
+// since opt-out is now filtered in JS off email_prefs. `.in()` is the streak
+// query's terminal.
 function pagedSelect(getData: () => unknown[]) {
   return {
     eq: () => ({
@@ -168,6 +170,10 @@ function pagedSelect(getData: () => unknown[]) {
         range: (from: number, to: number) =>
           Promise.resolve({ data: getData().slice(from, to + 1), error: null }),
       }),
+    }),
+    order: () => ({
+      range: (from: number, to: number) =>
+        Promise.resolve({ data: getData().slice(from, to + 1), error: null }),
     }),
     in: () => Promise.resolve({ data: streakData, error: null }),
   };
@@ -245,6 +251,31 @@ describe("dispatchQuizReminders", () => {
       [{ user_id: "u1", question_id: "q1" }],
       expect.objectContaining({ onConflict: "user_id,question_id", ignoreDuplicates: true }),
     );
+  });
+
+  it("excludes a user opted out of quiz reminders via email_prefs", async () => {
+    profileData = [
+      {
+        id: "u1",
+        display_name: "Alex",
+        unsubscribe_token: "tok1",
+        email_prefs: { quiz_reminder: false },
+      },
+    ];
+    const { dispatchQuizReminders } = await import("@/lib/notifications/quiz-reminder-emails");
+    const summary = await dispatchQuizReminders();
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("still emails a user with no explicit quiz_reminder preference", async () => {
+    profileData = [
+      { id: "u1", display_name: "Alex", unsubscribe_token: "tok1", email_prefs: {} },
+    ];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { dispatchQuizReminders } = await import("@/lib/notifications/quiz-reminder-emails");
+    const summary = await dispatchQuizReminders();
+    expect(summary.emailed).toBe(1);
   });
 
   it("sets a List-Unsubscribe header on each message", async () => {

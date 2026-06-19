@@ -35,6 +35,14 @@
     "invalid": "El nombre debe tener entre 2 y 32 caracteres.",
     "error": "No se pudo actualizar el nombre"
   },
+  "emailPrefs": {
+    "heading": "Preferencias de correo",
+    "prediction_reminder": "Recordatorios de pronósticos",
+    "result": "Correos de resultados",
+    "quiz_reminder": "Recordatorios del quiz",
+    "saved": "Preferencias actualizadas",
+    "error": "No se pudieron actualizar las preferencias"
+  },
   "footer": {
     "tournament": "WC26 Pool · 11 jun – 19 jul 2026",
     "howItWorks": "Cómo funciona",
