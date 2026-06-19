@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,14 +20,18 @@ import {
   CheckIcon,
   CopyIcon,
   LogOutIcon,
+  MailIcon,
+  SendIcon,
   Trash2Icon,
   UserMinusIcon,
 } from "lucide-react";
 import {
   deleteGroupAction,
+  inviteToGroupByEmailAction,
   leaveGroupAction,
   removeMemberAction,
   renameGroupAction,
+  type InviteByEmailState,
 } from "../actions";
 
 export function InviteShare({
@@ -94,6 +98,82 @@ export function InviteShare({
           {t("copyLink")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+export function InviteByEmail({
+  groupId,
+  locale,
+}: {
+  groupId: string;
+  locale: string;
+}) {
+  const t = useTranslations("groupInvite");
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, action, pending] = useActionState<InviteByEmailState, FormData>(
+    inviteToGroupByEmailAction,
+    {},
+  );
+
+  // Surface the outcome of the last submission. On a clean success, reset the
+  // textarea so the inviter can send another batch.
+  useEffect(() => {
+    if (state.error) {
+      toast.error(t(state.error));
+      return;
+    }
+    if (state.sent !== undefined) {
+      if (state.sent > 0) {
+        toast.success(t("sentSuccess", { count: state.sent }));
+        formRef.current?.reset();
+      }
+      if (state.failed) {
+        toast.error(t("sentFailed", { count: state.failed }));
+      }
+      if (state.invalid && state.invalid.length > 0) {
+        toast.error(t("invalidAddresses", { addresses: state.invalid.join(", ") }));
+      }
+    }
+  }, [state, t]);
+
+  return (
+    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          {t("inviteLabel")}
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("inviteHint")}</p>
+      </div>
+      <form ref={formRef} action={action} className="flex flex-col gap-2">
+        <input type="hidden" name="group_id" value={groupId} />
+        <input type="hidden" name="locale" value={locale} />
+        <Label htmlFor="invite-recipients" className="sr-only">
+          {t("recipientsLabel")}
+        </Label>
+        <textarea
+          id="invite-recipients"
+          name="recipients"
+          required
+          rows={2}
+          placeholder={t("recipientsPlaceholder")}
+          className="w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+        />
+        <Button
+          type="submit"
+          size="sm"
+          variant="outline"
+          disabled={pending}
+          className="gap-1.5 self-start"
+        >
+          {pending ? (
+            <MailIcon className="size-3.5" />
+          ) : (
+            <SendIcon className="size-3.5" />
+          )}
+          {pending ? t("sending") : t("sendInvite")}
+        </Button>
+      </form>
     </div>
   );
 }
