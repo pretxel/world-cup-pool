@@ -139,22 +139,16 @@ export function MobileNav({
               </p>
               <LocaleList onAfterChange={() => setOpen(false)} />
             </li>
-            <li className="mt-2 border-t border-border pt-3">
-              {signedIn ? (
-                <form action="/sign-out" method="post">
-                  <Button type="submit" variant="outline" size="sm" className="w-full">
-                    Sign out
-                  </Button>
-                </form>
-              ) : (
+            {!signedIn ? (
+              <li className="mt-2 border-t border-border pt-3">
                 <Link
                   href="/sign-in"
                   className={buttonVariants({ size: "sm", className: "w-full" })}
                 >
                   Sign in
                 </Link>
-              )}
-            </li>
+              </li>
+            ) : null}
           </ul>
         </div>
       ) : null}

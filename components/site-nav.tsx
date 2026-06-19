@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { NavLinks, MobileNav } from "@/components/site-nav-client";
+import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logotype } from "@/components/logotype";
@@ -23,13 +24,15 @@ export async function SiteNav() {
   } = await supabase.auth.getUser();
 
   let isAdmin = false;
+  let displayName: string | null = null;
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, display_name")
       .eq("id", user.id)
       .single();
     isAdmin = data?.is_admin ?? false;
+    displayName = data?.display_name ?? null;
   }
 
   const links = [
@@ -61,11 +64,11 @@ export async function SiteNav() {
           <LanguageSwitcher />
           <ThemeToggle />
           {user ? (
-            <form action={lp("/sign-out")} method="post" className="hidden sm:block">
-              <Button type="submit" size="sm" variant="ghost">
-                {tCommon("signOut")}
-              </Button>
-            </form>
+            <UserMenu
+              displayName={displayName}
+              email={user.email ?? ""}
+              signOutPath={lp("/sign-out")}
+            />
           ) : (
             <Link
               href={lp("/sign-in")}
