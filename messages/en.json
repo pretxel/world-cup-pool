@@ -188,6 +188,9 @@
     "filterEmptyTitle": "No matches",
     "filterEmptyBody": "No fixtures match your filters. Clear them to see the full schedule.",
     "filterClear": "Clear filters",
+    "needsPickEmptyTitle": "All caught up",
+    "needsPickEmptyBody": "No picks pending — come back tomorrow for the next fixtures.",
+    "needsPickEmptyAction": "View all matches",
     "loadFailed": "Failed to load matches: {message}"
   },
   "news": {

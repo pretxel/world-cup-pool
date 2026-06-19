@@ -188,6 +188,9 @@
     "filterEmptyTitle": "Keine Spiele",
     "filterEmptyBody": "Keine Spiele entsprechen deinen Filtern. Setze sie zurück, um den gesamten Spielplan zu sehen.",
     "filterClear": "Filter zurücksetzen",
+    "needsPickEmptyTitle": "Alles erledigt",
+    "needsPickEmptyBody": "Keine offenen Tipps — schau morgen für die nächsten Spiele wieder vorbei.",
+    "needsPickEmptyAction": "Alle Spiele ansehen",
     "loadFailed": "Spiele konnten nicht geladen werden: {message}"
   },
   "news": {

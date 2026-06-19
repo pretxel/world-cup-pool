@@ -299,17 +299,25 @@ export default async function MatchesPage({
         {filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-              {isFiltered ? t("filterEmptyTitle") : t("emptyTitle")}
+              {picksNeeded
+                ? t("needsPickEmptyTitle")
+                : isFiltered
+                  ? t("filterEmptyTitle")
+                  : t("emptyTitle")}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm">
-              {isFiltered ? t("filterEmptyBody") : t("emptyBody")}
+              {picksNeeded
+                ? t("needsPickEmptyBody")
+                : isFiltered
+                  ? t("filterEmptyBody")
+                  : t("emptyBody")}
             </p>
             {isFiltered ? (
               <Link
                 href={localePath(locale, "/matches")}
                 className="mt-4 inline-flex items-center rounded-full border border-border bg-card px-3 py-1 font-heading text-xs font-medium tracking-tight text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                {t("filterClear")}
+                {picksNeeded ? t("needsPickEmptyAction") : t("filterClear")}
               </Link>
             ) : null}
           </div>

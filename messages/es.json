@@ -188,6 +188,9 @@
     "filterEmptyTitle": "Sin partidos",
     "filterEmptyBody": "Ningún partido coincide con tus filtros. Quítalos para ver todo el calendario.",
     "filterClear": "Quitar filtros",
+    "needsPickEmptyTitle": "Todo al día",
+    "needsPickEmptyBody": "No tienes pronósticos pendientes — vuelve mañana para los próximos partidos.",
+    "needsPickEmptyAction": "Ver todos los partidos",
     "loadFailed": "No se pudieron cargar los partidos: {message}"
   },
   "news": {
