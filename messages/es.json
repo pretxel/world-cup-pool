@@ -191,6 +191,13 @@
     "needsPickEmptyTitle": "Todo al día",
     "needsPickEmptyBody": "No tienes pronósticos pendientes — vuelve mañana para los próximos partidos.",
     "needsPickEmptyAction": "Ver todos los partidos",
+    "firstPick": {
+      "eyebrow": "Empieza aquí",
+      "title": "Haz tu primer pronóstico",
+      "cta": "Pronosticar {home} vs {away}",
+      "noneTitle": "No hay partidos abiertos ahora mismo",
+      "noneBody": "Todos los partidos están bloqueados o ya jugados por ahora; vuelve pronto para hacer tu primer pronóstico."
+    },
     "loadFailed": "No se pudieron cargar los partidos: {message}"
   },
   "news": {

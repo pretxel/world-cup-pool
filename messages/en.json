@@ -191,6 +191,13 @@
     "needsPickEmptyTitle": "All caught up",
     "needsPickEmptyBody": "No picks pending — come back tomorrow for the next fixtures.",
     "needsPickEmptyAction": "View all matches",
+    "firstPick": {
+      "eyebrow": "Get started",
+      "title": "Make your first pick",
+      "cta": "Pick {home} vs {away}",
+      "noneTitle": "No open matches right now",
+      "noneBody": "Every fixture is locked or done for the moment — check back soon to make your first pick."
+    },
     "loadFailed": "Failed to load matches: {message}"
   },
   "news": {

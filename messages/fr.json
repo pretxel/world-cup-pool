@@ -191,6 +191,13 @@
     "needsPickEmptyTitle": "Tout est à jour",
     "needsPickEmptyBody": "Aucun prono en attente — revenez demain pour les prochains matchs.",
     "needsPickEmptyAction": "Voir tous les matchs",
+    "firstPick": {
+      "eyebrow": "Pour commencer",
+      "title": "Faites votre premier pronostic",
+      "cta": "Pronostiquer {home} vs {away}",
+      "noneTitle": "Aucun match ouvert pour le moment",
+      "noneBody": "Tous les matchs sont verrouillés ou terminés pour l'instant — revenez bientôt pour faire votre premier pronostic."
+    },
     "loadFailed": "Échec du chargement des matchs : {message}"
   },
   "news": {
