@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { normalizeEmailPrefs } from "@/lib/email-prefs";
 
 // One-click unsubscribe for daily prediction reminders. Reached from the email's
 // footer link (GET) and from RFC 8058 one-click clients (POST). No auth: the
@@ -21,9 +22,22 @@ async function optOut(token: string | null): Promise<void> {
   try {
     const admin = createAdminSupabaseClient();
     // Service role bypasses RLS; scope strictly to the matching token.
+    // Read the current email_prefs so the in-app source of truth stays in sync:
+    // a footer opt-out must show as off in the account menu and be reversible
+    // there. The legacy boolean is kept in step for backward compatibility.
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("email_prefs")
+      .eq("unsubscribe_token", token)
+      .maybeSingle();
+    if (!profile) return;
+    const email_prefs = {
+      ...normalizeEmailPrefs(profile.email_prefs),
+      prediction_reminder: false,
+    };
     const { error } = await admin
       .from("profiles")
-      .update({ prediction_reminder_opt_out: true })
+      .update({ prediction_reminder_opt_out: true, email_prefs })
       .eq("unsubscribe_token", token);
     if (error) {
       console.error("[prediction-reminders:unsubscribe] update failed:", error.message);

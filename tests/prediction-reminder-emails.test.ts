@@ -210,6 +210,11 @@ function matchesSelect(getData: () => unknown[]) {
 function eqSelect(getData: () => unknown[]) {
   return { eq: () => ({ order: () => pagedRange(getData) }) };
 }
+// The profiles loader no longer filters with `.eq(opt_out)` — opt-out is applied
+// in JS off email_prefs — so its terminal is `.order().range()` directly.
+function orderSelect(getData: () => unknown[]) {
+  return { order: () => pagedRange(getData) };
+}
 function inSelect(getData: () => unknown[]) {
   return { in: () => ({ order: () => pagedRange(getData) }) };
 }
@@ -218,7 +223,7 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminSupabaseClient: vi.fn(() => ({
     from: (table: string) => {
       if (table === "matches") return { select: () => matchesSelect(() => matchData) };
-      if (table === "profiles") return { select: () => eqSelect(() => profileData) };
+      if (table === "profiles") return { select: () => orderSelect(() => profileData) };
       if (table === "predictions") return { select: () => inSelect(() => predictionData) };
       if (table === "prediction_reminder_log") {
         return { select: () => eqSelect(() => ledgerData), upsert: upsertMock };
@@ -267,6 +272,35 @@ describe("dispatchPredictionReminders", () => {
     const summary = await dispatchPredictionReminders();
     expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
     expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("excludes a player opted out of prediction reminders via email_prefs", async () => {
+    profileData = [
+      {
+        id: "u1",
+        display_name: "Alex",
+        unsubscribe_token: "tok1",
+        email_prefs: { prediction_reminder: false },
+      },
+    ];
+    const { dispatchPredictionReminders } = await import(
+      "@/lib/notifications/prediction-reminder-emails"
+    );
+    const summary = await dispatchPredictionReminders();
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("still emails a player with no explicit prediction_reminder preference", async () => {
+    profileData = [
+      { id: "u1", display_name: "Alex", unsubscribe_token: "tok1", email_prefs: {} },
+    ];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { dispatchPredictionReminders } = await import(
+      "@/lib/notifications/prediction-reminder-emails"
+    );
+    const summary = await dispatchPredictionReminders();
+    expect(summary.emailed).toBe(1);
   });
 
   it("drops locked and placeholder matches before computing recipients", async () => {

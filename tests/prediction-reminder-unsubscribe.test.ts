@@ -2,12 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const updateMock = vi.fn();
-const eqMock = vi.fn();
+const updateEqMock = vi.fn();
+const maybeSingleMock = vi.fn();
 
+// The route reads the current email_prefs by token, then writes both the legacy
+// boolean and the merged email_prefs. Mock both the read and the write chains.
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminSupabaseClient: vi.fn(() => ({
     from: (table: string) => {
-      if (table === "profiles") return { update: updateMock };
+      if (table === "profiles") {
+        return {
+          select: () => ({ eq: () => ({ maybeSingle: maybeSingleMock }) }),
+          update: updateMock,
+        };
+      }
       throw new Error(`unexpected from(${table})`);
     },
   })),
@@ -18,8 +26,13 @@ function req(url: string): NextRequest {
 }
 
 beforeEach(() => {
-  eqMock.mockReset().mockResolvedValue({ error: null });
-  updateMock.mockReset().mockImplementation(() => ({ eq: eqMock }));
+  updateEqMock.mockReset().mockResolvedValue({ error: null });
+  updateMock.mockReset().mockImplementation(() => ({ eq: updateEqMock }));
+  // A profile exists with all-on prefs by default.
+  maybeSingleMock.mockReset().mockResolvedValue({
+    data: { email_prefs: { prediction_reminder: true, result: true, quiz_reminder: true } },
+    error: null,
+  });
 });
 
 afterEach(() => {
@@ -29,14 +42,30 @@ afterEach(() => {
 describe("GET /api/prediction-reminders/unsubscribe", () => {
   const TOKEN = "11111111-2222-4333-8444-555555555555";
 
-  it("opts the player out by token, touching only the prediction flag", async () => {
+  it("opts the player out, setting the prediction flag and email_prefs key", async () => {
     const { GET } = await import("@/app/api/prediction-reminders/unsubscribe/route");
     const res = await GET(
       req(`http://localhost/api/prediction-reminders/unsubscribe?token=${TOKEN}`),
     );
     expect(res.status).toBe(200);
-    expect(updateMock).toHaveBeenCalledWith({ prediction_reminder_opt_out: true });
-    expect(eqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
+    expect(updateMock).toHaveBeenCalledWith({
+      prediction_reminder_opt_out: true,
+      email_prefs: { prediction_reminder: false, result: true, quiz_reminder: true },
+    });
+    expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
+  });
+
+  it("leaves the other email_prefs keys untouched", async () => {
+    maybeSingleMock.mockResolvedValue({
+      data: { email_prefs: { prediction_reminder: true, result: false, quiz_reminder: false } },
+      error: null,
+    });
+    const { GET } = await import("@/app/api/prediction-reminders/unsubscribe/route");
+    await GET(req(`http://localhost/api/prediction-reminders/unsubscribe?token=${TOKEN}`));
+    expect(updateMock).toHaveBeenCalledWith({
+      prediction_reminder_opt_out: true,
+      email_prefs: { prediction_reminder: false, result: false, quiz_reminder: false },
+    });
   });
 
   it("is idempotent across repeated calls", async () => {
@@ -63,6 +92,16 @@ describe("GET /api/prediction-reminders/unsubscribe", () => {
     expect(res.status).toBe(200);
     expect(updateMock).not.toHaveBeenCalled();
   });
+
+  it("no-ops when no profile matches the token", async () => {
+    maybeSingleMock.mockResolvedValue({ data: null, error: null });
+    const { GET } = await import("@/app/api/prediction-reminders/unsubscribe/route");
+    const res = await GET(
+      req(`http://localhost/api/prediction-reminders/unsubscribe?token=${TOKEN}`),
+    );
+    expect(res.status).toBe(200);
+    expect(updateMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("POST /api/prediction-reminders/unsubscribe", () => {
@@ -74,7 +113,10 @@ describe("POST /api/prediction-reminders/unsubscribe", () => {
       req(`http://localhost/api/prediction-reminders/unsubscribe?token=${TOKEN}`),
     );
     expect(res.status).toBe(200);
-    expect(updateMock).toHaveBeenCalledWith({ prediction_reminder_opt_out: true });
-    expect(eqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
+    expect(updateMock).toHaveBeenCalledWith({
+      prediction_reminder_opt_out: true,
+      email_prefs: { prediction_reminder: false, result: true, quiz_reminder: true },
+    });
+    expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
   });
 });

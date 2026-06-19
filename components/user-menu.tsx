@@ -2,13 +2,20 @@
 
 import * as React from "react";
 import { Popover } from "@base-ui/react/popover";
+import { Switch } from "@base-ui/react/switch";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CheckIcon, LogOutIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateDisplayName } from "@/app/[locale]/profile-actions";
+import { updateDisplayName, updateEmailPrefs } from "@/app/[locale]/profile-actions";
+import {
+  EMAIL_PREF_KEYS,
+  normalizeEmailPrefs,
+  type EmailPrefKey,
+  type EmailPrefs,
+} from "@/lib/email-prefs";
 import { cn } from "@/lib/utils";
 
 function initialOf(name: string | null, email: string): string {
@@ -21,18 +28,42 @@ function initialOf(name: string | null, email: string): string {
 export function UserMenu({
   displayName,
   email,
+  emailPrefs,
   signOutPath,
 }: {
   displayName: string | null;
   email: string;
+  emailPrefs: EmailPrefs;
   signOutPath: string;
 }) {
   const t = useTranslations("profileMenu");
   const tCommon = useTranslations("common");
+  const tPrefs = useTranslations("emailPrefs");
   const [name, setName] = React.useState(displayName ?? "");
   const [value, setValue] = React.useState(displayName ?? "");
   const [pending, startTransition] = React.useTransition();
+  const [prefs, setPrefs] = React.useState<EmailPrefs>(() =>
+    normalizeEmailPrefs(emailPrefs),
+  );
+  const [prefsPending, startPrefsTransition] = React.useTransition();
   const fieldId = React.useId();
+  const prefsId = React.useId();
+
+  function onTogglePref(key: EmailPrefKey, next: boolean) {
+    const previous = prefs;
+    // Optimistic flip; revert to the last persisted value on failure.
+    setPrefs((p) => ({ ...p, [key]: next }));
+    startPrefsTransition(async () => {
+      const res = await updateEmailPrefs({ [key]: next });
+      if (res.ok) {
+        setPrefs(res.prefs);
+        toast.success(tPrefs("saved"));
+      } else {
+        setPrefs(previous);
+        toast.error(tPrefs("error"));
+      }
+    });
+  }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -114,6 +145,31 @@ export function UserMenu({
                 </Button>
               </div>
             </form>
+
+            <div className="mt-3 space-y-2 border-t border-border pt-3">
+              <p className="text-xs text-muted-foreground">{tPrefs("heading")}</p>
+              <ul className="space-y-1.5">
+                {EMAIL_PREF_KEYS.map((key) => {
+                  const id = `${prefsId}-${key}`;
+                  return (
+                    <li key={key} className="flex items-center justify-between gap-2">
+                      <Label htmlFor={id} className="text-sm font-normal text-foreground">
+                        {tPrefs(key)}
+                      </Label>
+                      <Switch.Root
+                        id={id}
+                        checked={prefs[key]}
+                        disabled={prefsPending}
+                        onCheckedChange={(checked) => onTogglePref(key, checked)}
+                        className="relative h-5 w-9 shrink-0 cursor-pointer rounded-full bg-foreground/20 p-0.5 transition-colors outline-none data-checked:bg-pitch focus-visible:ring-2 focus-visible:ring-pitch/40 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Switch.Thumb className="block size-4 rounded-full bg-background shadow-sm transition-transform data-checked:translate-x-4" />
+                      </Switch.Root>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
 
             <form action={signOutPath} method="post" className="mt-3 border-t border-border pt-3">
               <Button type="submit" variant="outline" size="sm" className="w-full">

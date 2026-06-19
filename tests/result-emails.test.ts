@@ -156,6 +156,8 @@ describe("renderResultEmail", () => {
 import {
   buildResultEmailStrings,
   computePendingByUser,
+  filterResultOptIns,
+  type PendingRecipient,
   type ScoredFinalRow,
 } from "@/lib/notifications/result-emails";
 
@@ -213,6 +215,32 @@ describe("computePendingByUser", () => {
   });
 });
 
+describe("filterResultOptIns", () => {
+  function pending(userId: string): PendingRecipient {
+    return { userId, matchIds: ["m1"], matches: [] };
+  }
+
+  it("drops a recipient whose result preference is explicitly false", () => {
+    const out = filterResultOptIns(
+      [pending("u1"), pending("u2")],
+      [{ user_id: "u1", email_prefs: { result: false } }],
+    );
+    expect(out.map((p) => p.userId)).toEqual(["u2"]);
+  });
+
+  it("keeps recipients who opted in, have no row, or have no explicit preference", () => {
+    const out = filterResultOptIns(
+      [pending("u1"), pending("u2"), pending("u3")],
+      [
+        { user_id: "u1", email_prefs: { result: true } },
+        { user_id: "u2", email_prefs: {} },
+        // u3 has no prefs row at all.
+      ],
+    );
+    expect(out.map((p) => p.userId)).toEqual(["u1", "u2", "u3"]);
+  });
+});
+
 describe("buildResultEmailStrings", () => {
   const t = (key: string, values?: Record<string, unknown>) =>
     values ? `${key}:${JSON.stringify(values)}` : key;
@@ -245,6 +273,9 @@ const getUserByIdMock = vi.fn();
 let scoredData: unknown[] = [];
 let ledgerData: unknown[] = [];
 let boardData: unknown[] = [];
+// Result-email preference rows keyed by profile id; default empty so every
+// affected user is treated as opted-in (the pre-change behavior).
+let prefsData: unknown[] = [];
 let resendApiKey: string | null = "re_test";
 // Records the column/value of every `.eq()` applied to the scores query so
 // tests can assert the force path scopes by match_id at the data layer.
@@ -303,6 +334,13 @@ vi.mock("@/lib/supabase/admin", () => ({
           }),
         };
       }
+      if (table === "profiles") {
+        return {
+          select: () => ({
+            in: () => Promise.resolve({ data: prefsData, error: null }),
+          }),
+        };
+      }
       throw new Error(`unexpected from(${table})`);
     },
     auth: { admin: { getUserById: getUserByIdMock } },
@@ -331,6 +369,7 @@ beforeEach(() => {
     },
   ];
   ledgerData = [];
+  prefsData = [];
   scoredEqCalls = [];
   boardData = [
     {
@@ -399,6 +438,22 @@ describe("dispatchResultEmails", () => {
     const summary = await dispatchResultEmails();
     expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
     expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("excludes a player who opted out of result emails", async () => {
+    prefsData = [{ id: "u1", email_prefs: { result: false } }];
+    const { dispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    const summary = await dispatchResultEmails();
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("still emails a player with no explicit result preference", async () => {
+    prefsData = [{ id: "u1", email_prefs: {} }];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { dispatchResultEmails } = await import("@/lib/notifications/result-emails");
+    const summary = await dispatchResultEmails();
+    expect(summary.emailed).toBe(1);
   });
 });
 
