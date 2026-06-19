@@ -3,22 +3,38 @@ import { flagSlug } from "@/lib/team-flag";
 
 export type LockReason = "final" | "cancelled" | "live" | "kickoff";
 
-export function isLocked(match: {
-  kickoff_at: string;
-  status: string;
-}): boolean {
+export function isLocked(match: { kickoff_at: string; status: string }): boolean {
   return lockReason(match) !== null;
 }
 
-export function lockReason(match: {
-  kickoff_at: string;
-  status: string;
-}): LockReason | null {
+export function lockReason(match: { kickoff_at: string; status: string }): LockReason | null {
   if (match.status === "final") return "final";
   if (match.status === "cancelled") return "cancelled";
   if (match.status === "live") return "live";
   if (new Date(match.kickoff_at).getTime() <= Date.now()) return "kickoff";
   return null;
+}
+
+// The lead window for the closing-soon urgency state on the public /matches
+// list: a still-pickable (scheduled, unlocked) row whose kickoff is within this
+// many milliseconds shows a live "closes in mm:ss" countdown badge instead of
+// the static "Pick" label. 5 minutes mirrors the "se cierra en 5 min" copy in
+// análisis.md M1. Single constant so it can be tuned without touching markup.
+export const LOCK_LEAD_WINDOW_MS = 5 * 60_000;
+
+// True when a fixture's kickoff is imminent — strictly ahead but within the
+// lead window — so the closing-soon badge should show. Past-kickoff fixtures
+// (remaining <= 0) are excluded; those are locked, not closing soon. `now` is
+// injectable so the same decision can be unit-tested and run on the client
+// clock. Kept lock-rule-agnostic: callers gate on the row being scheduled and
+// unlocked before consulting this.
+export function isClosingSoon(
+  kickoffAt: string,
+  now: number = Date.now(),
+  leadWindowMs: number = LOCK_LEAD_WINDOW_MS,
+): boolean {
+  const remaining = new Date(kickoffAt).getTime() - now;
+  return remaining > 0 && remaining <= leadWindowMs;
 }
 
 export function statusLabel(status: string): string {
@@ -103,9 +119,7 @@ export function localDateKey(iso: string, timeZone: string): string {
 // Pick the day-key function for a request: local-day grouping when we have a
 // valid timezone, else UTC. Never throws — an absent/invalid timezone yields
 // the UTC fallback so a garbage cookie can't break the list.
-export function dayKeyForTimeZone(
-  timeZone: string | null | undefined,
-): (iso: string) => string {
+export function dayKeyForTimeZone(timeZone: string | null | undefined): (iso: string) => string {
   if (timeZone && isValidTimeZone(timeZone)) {
     return (iso) => localDateKey(iso, timeZone);
   }
@@ -162,10 +176,7 @@ export function filterableTeams(matches: TeamPair[]): string[] {
 // with the known filterable teams. Returns canonical team names in
 // `available` order, so an all-unknown `?team=` collapses to an empty (= "All")
 // selection.
-export function reconcileSelectedTeams(
-  selected: Set<string>,
-  available: string[],
-): string[] {
+export function reconcileSelectedTeams(selected: Set<string>, available: string[]): string[] {
   return available.filter((team) => selected.has(team.toLowerCase()));
 }
 
@@ -173,10 +184,7 @@ export function reconcileSelectedTeams(
 // side). An empty selection matches every fixture.
 export function matchInvolvesTeam(match: TeamPair, selected: Set<string>): boolean {
   if (selected.size === 0) return true;
-  return (
-    selected.has(match.home_team.toLowerCase()) ||
-    selected.has(match.away_team.toLowerCase())
-  );
+  return selected.has(match.home_team.toLowerCase()) || selected.has(match.away_team.toLowerCase());
 }
 
 // --- Status + needs-pick filters (ephemeral, URL-driven) ------------------
@@ -190,9 +198,7 @@ const STATUS_FILTERS: readonly MatchStatusFilter[] = ["upcoming", "live", "final
 
 // Normalize a `?status=` value. Single-select: a repeated param keeps the
 // first recognized value; anything unknown yields null (= no status filter).
-export function parseStatusParam(
-  raw: string | string[] | undefined,
-): MatchStatusFilter | null {
+export function parseStatusParam(raw: string | string[] | undefined): MatchStatusFilter | null {
   if (!raw) return null;
   for (const value of Array.isArray(raw) ? raw : [raw]) {
     const key = value.trim().toLowerCase();
@@ -238,9 +244,10 @@ export function needsPick(
 // the user could still predict (unpicked and unlocked, per needsPick), or null
 // when none is open. Reuses needsPick so "pickable" can't drift from the lock
 // rules used elsewhere; assumes the input is already ordered by kickoff_at ASC.
-export function soonestPickableMatch<
-  T extends { id: string; kickoff_at: string; status: string },
->(matches: readonly T[], pickedIds: ReadonlySet<string>): T | null {
+export function soonestPickableMatch<T extends { id: string; kickoff_at: string; status: string }>(
+  matches: readonly T[],
+  pickedIds: ReadonlySet<string>,
+): T | null {
   for (const match of matches) {
     if (needsPick(match, pickedIds)) return match;
   }

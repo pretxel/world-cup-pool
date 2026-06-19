@@ -189,6 +189,7 @@
     "rowLocked": "Locked",
     "rowPick": "Pick",
     "rowPicked": "Picked",
+    "rowClosesIn": "closes in {time}",
     "emptyTitle": "Empty bracket",
     "emptyBody": "No matches loaded yet. An admin needs to seed the fixture list before picks can open.",
     "filterLabel": "Filter by team",

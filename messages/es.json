@@ -189,6 +189,7 @@
     "rowLocked": "Cerrado",
     "rowPick": "Pronosticar",
     "rowPicked": "Hecho",
+    "rowClosesIn": "cierra en {time}",
     "emptyTitle": "Cuadro vacío",
     "emptyBody": "Aún no hay partidos cargados. Un admin necesita publicar el calendario antes de abrir los pronósticos.",
     "filterLabel": "Filtrar por equipo",
