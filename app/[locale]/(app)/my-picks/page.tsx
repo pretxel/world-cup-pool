@@ -13,7 +13,8 @@ import { groupStageKey } from "@/lib/competition-schema";
 import { paginate, parsePageParam } from "@/lib/pagination";
 import { sortPicksByKickoff } from "@/lib/picks-order";
 import { isLocked } from "@/lib/match-utils";
-import { ArrowRightIcon, PencilLineIcon } from "lucide-react";
+import { computePredictionStreak } from "@/lib/prediction-streak";
+import { ArrowRightIcon, FlameIcon, PencilLineIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -75,6 +76,12 @@ export default async function MyPicksPage({
   const totalPoints = (scores ?? []).reduce((sum, s) => sum + (s.points ?? 0), 0);
   const exactCount = (scores ?? []).filter((s) => s.hit_type === "exact").length;
 
+  // Prediction streak from the predictions already fetched above (no extra
+  // query). Counts consecutive UTC days with ≥1 pick within the current week.
+  const streak = computePredictionStreak(
+    (picks ?? []).map((p) => p.submitted_at),
+  );
+
   // Simulated group stage from the user's own predictions. Fetch every group
   // fixture, then derive each group's table from the picks already loaded above
   // (only predicted matches contribute; unpredicted groups show empty). Real
@@ -130,10 +137,26 @@ export default async function MyPicksPage({
             {t("lede")}
           </p>
         </div>
-        <dl className="grid grid-cols-3 gap-2 sm:gap-3">
+        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           <Stat label={t("statPicks")} value={picks?.length ?? 0} />
           <Stat label={t("statExact")} value={exactCount} accent="flag" />
           <Stat label={t("statPoints")} value={totalPoints} accent="pitch" />
+          <Stat
+            label={t("statStreak")}
+            value={
+              <span className="flex items-center gap-1.5">
+                <FlameIcon
+                  className={cn(
+                    "size-5",
+                    streak > 0 ? "text-orange-500" : "text-muted-foreground/50",
+                  )}
+                  aria-hidden
+                />
+                {streak}
+              </span>
+            }
+            hint={t("statStreakHint")}
+          />
         </dl>
       </header>
 
@@ -274,10 +297,12 @@ function Stat({
   label,
   value,
   accent,
+  hint,
 }: {
   label: string;
-  value: number;
+  value: React.ReactNode;
   accent?: "pitch" | "flag";
+  hint?: string;
 }) {
   return (
     <div className="rounded-md border border-border bg-card px-3 py-2">
@@ -293,6 +318,11 @@ function Stat({
       >
         {value}
       </dd>
+      {hint ? (
+        <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }

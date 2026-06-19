@@ -429,6 +429,8 @@
     "statPicks": "Tipps",
     "statExact": "Exakt",
     "statPoints": "Punkte",
+    "statStreak": "Serie",
+    "statStreakHint": "Tage in Folge diese Woche",
     "emptyEyebrow": "Noch keine Tipps",
     "emptyBody": "Du hast noch keine Ergebnisse getippt. Öffne ein Spiel und gib deinen ersten Tipp ab.",
     "browseMatches": "Spiele durchsuchen",
