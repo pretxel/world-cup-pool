@@ -142,7 +142,8 @@
     "newsCta": "Leer las noticias",
     "quizTitle": "Reto Diario",
     "quizCopy": "Una pregunta de trivia del Mundial al día. Responde antes de medianoche UTC, mantén tu racha y sube en la clasificación.",
-    "quizCta": "Jugar la pregunta de hoy"
+    "quizCta": "Jugar la pregunta de hoy",
+    "standingEyebrow": "Tu posición"
   },
   "howItWorks": {
     "title": "Cómo funciona",
@@ -440,6 +441,7 @@
     "browseMatches": "Ver partidos",
     "rowPick": "Pronóstico",
     "rowFinal": "Final",
+    "rowPending": "Pendiente",
     "rowEdit": "Editar",
     "loadFailed": "No se pudieron cargar los pronósticos: {message}",
     "ptsSingular": "pt",
@@ -448,6 +450,30 @@
     "pagePosition": "Página {current} de {total}",
     "prevPage": "Anterior",
     "nextPage": "Siguiente"
+  },
+  "standingCards": {
+    "ariaLabel": "Tu posición",
+    "points": "Puntos",
+    "exact": "Exactos",
+    "picks": "Pronósticos",
+    "rank": "Posición",
+    "unranked": "Sin clasificar",
+    "deltaNew": "Nuevo",
+    "deltaSame": "Sin cambio de posición",
+    "deltaUp": "Sube {n} puestos",
+    "deltaDown": "Baja {n} puestos",
+    "accuracyTitle": "Pronósticos vs. resultados",
+    "accuracyExact": "Exactos",
+    "accuracyWinner": "Ganador",
+    "accuracyMiss": "Fallos",
+    "accuracyEmpty": "La precisión aparece cuando terminan los partidos."
+  },
+  "picksVsResults": {
+    "eyebrow": "Lado a lado",
+    "heading": "Mis pronósticos vs. resultados reales",
+    "lede": "Tus tablas de grupo simuladas junto a la clasificación real, construida con los resultados de los partidos.",
+    "picksLabel": "Mis pronósticos",
+    "resultsLabel": "Resultados reales"
   },
   "groupSimulation": {
     "groupHeading": "Grupo {code}",

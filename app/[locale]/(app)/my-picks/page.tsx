@@ -5,9 +5,14 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LocalTime } from "@/components/local-time";
 import { MatchStateBadge } from "@/components/match-state-badge";
 import { TeamFlag } from "@/components/team-flag";
-import { AllGroupsSimulation } from "@/components/group-standings-table";
+import { PicksVsResults } from "@/components/picks-vs-results";
+import { StandingCards } from "@/components/standing-cards";
+import { StandingCardsTracker } from "@/components/standing-cards-tracker";
+import { PicksVsResultsTracker } from "@/components/picks-vs-results-tracker";
 import { PaginationControls } from "@/components/pagination-controls";
 import { simulateAllGroups } from "@/lib/group-standings";
+import { getStandingSummary } from "@/lib/standing-summary";
+import { getGroupTables } from "@/lib/group-table";
 import { getActiveCompetition } from "@/lib/competition";
 import { groupStageKey } from "@/lib/competition-schema";
 import { paginate, parsePageParam } from "@/lib/pagination";
@@ -110,6 +115,15 @@ export default async function MyPicksPage({
     predictionsByMatchId,
   );
 
+  // Real, results-derived group tables for the side-by-side split. Read-only;
+  // built from actual `final` results. `hasGroupStage` is false when no group
+  // stage is active, in which case the split is hidden below.
+  const realGroups = await getGroupTables();
+
+  // One shared, read-only standing summary feeds the cards here and on the
+  // signed-in landing. Never recomputes or writes competitive scoring.
+  const standingSummary = await getStandingSummary(user.id);
+
   // Order the full pick set by match kickoff (earliest first) BEFORE paging, so
   // the pages partition one global kickoff order. The DB does not sort this for
   // us — the query's embedded match cannot order the parent predictions — so it
@@ -159,6 +173,9 @@ export default async function MyPicksPage({
           />
         </dl>
       </header>
+
+      <StandingCardsTracker />
+      <StandingCards summary={standingSummary} className="mb-8" />
 
       {(picks?.length ?? 0) === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
@@ -237,7 +254,15 @@ export default async function MyPicksPage({
                           {m.home_score}–{m.away_score}
                         </span>
                       </>
-                    ) : null}
+                    ) : (
+                      <>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-muted-foreground">{t("rowFinal")}</span>
+                        <span className="italic text-muted-foreground/70">
+                          {t("rowPending")}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -286,8 +311,15 @@ export default async function MyPicksPage({
         </>
       )}
 
-      {groupKey ? (
-        <AllGroupsSimulation groups={simulatedGroups} className="mt-12" />
+      {groupKey && realGroups.hasGroupStage ? (
+        <>
+          <PicksVsResultsTracker />
+          <PicksVsResults
+            pickGroups={simulatedGroups}
+            resultGroups={realGroups.groups}
+            className="mt-12"
+          />
+        </>
       ) : null}
     </main>
   );

@@ -142,7 +142,8 @@
     "newsCta": "Lire les actualités",
     "quizTitle": "Défi du Jour",
     "quizCopy": "Une question de quiz Coupe du monde par jour. Répondez avant minuit UTC, gardez votre série et grimpez au classement.",
-    "quizCta": "Jouer la question du jour"
+    "quizCta": "Jouer la question du jour",
+    "standingEyebrow": "Votre classement"
   },
   "howItWorks": {
     "title": "Fonctionnement",
@@ -440,6 +441,7 @@
     "browseMatches": "Voir les matchs",
     "rowPick": "Prono",
     "rowFinal": "Final",
+    "rowPending": "En attente",
     "rowEdit": "Modifier",
     "loadFailed": "Échec du chargement des pronos : {message}",
     "ptsSingular": "pt",
@@ -448,6 +450,30 @@
     "pagePosition": "Page {current} sur {total}",
     "prevPage": "Précédent",
     "nextPage": "Suivant"
+  },
+  "standingCards": {
+    "ariaLabel": "Votre classement",
+    "points": "Points",
+    "exact": "Exacts",
+    "picks": "Pronostics",
+    "rank": "Rang",
+    "unranked": "Non classé",
+    "deltaNew": "Nouveau",
+    "deltaSame": "Pas de changement de rang",
+    "deltaUp": "Monte de {n} places",
+    "deltaDown": "Descend de {n} places",
+    "accuracyTitle": "Pronostics vs. résultats",
+    "accuracyExact": "Exacts",
+    "accuracyWinner": "Vainqueur",
+    "accuracyMiss": "Ratés",
+    "accuracyEmpty": "La précision s'affiche au fil des matchs terminés."
+  },
+  "picksVsResults": {
+    "eyebrow": "Côte à côte",
+    "heading": "Mes pronostics vs. résultats réels",
+    "lede": "Vos tableaux de groupe simulés à côté du classement réel, construit à partir des vrais résultats.",
+    "picksLabel": "Mes pronostics",
+    "resultsLabel": "Résultats réels"
   },
   "groupSimulation": {
     "groupHeading": "Groupe {code}",
