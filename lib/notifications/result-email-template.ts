@@ -49,6 +49,17 @@ export interface EmailStanding {
   winnerGdHits: number;
 }
 
+// Movement of a player's overall rank since the previous sync run.
+// `up`/`down` carry a positive magnitude and the previous rank; `same` carries
+// magnitude 0; `new` (first appearance / no prior snapshot) carries neither.
+export type RankDeltaDirection = "up" | "down" | "same" | "new";
+
+export interface RankDelta {
+  direction: RankDeltaDirection;
+  magnitude: number;
+  previousRank?: number;
+}
+
 // All copy is resolved by the caller (next-intl) and passed in — value-bearing
 // strings (subject, heading) arrive already interpolated.
 export interface ResultEmailStrings {
@@ -66,6 +77,9 @@ export interface ResultEmailStrings {
   winnerGdLabel: string;
   youLabel: string;
   ptsSuffix: string;
+  // Resolved, localized rank-movement line ("you moved up 3 to #7", or the
+  // neutral variant for `same`/`new`). Already interpolated by the caller.
+  rankDelta: string;
   outcomes: Record<EmailOutcome, string>;
   ctaLabel: string;
   footer: string;
@@ -74,6 +88,9 @@ export interface ResultEmailStrings {
 export interface ResultEmailData {
   displayName: string | null;
   standing: EmailStanding;
+  // Rank movement since the previous run. `null` (admin force-resend, no
+  // snapshot) renders the neutral variant, same as `same`/`new`.
+  rankDelta?: RankDelta | null;
   matches: EmailFinishedMatch[];
   strings: ResultEmailStrings;
   leaderboardUrl: string;
@@ -236,8 +253,20 @@ function renderStanding(data: ResultEmailData): string {
             <td style="padding:12px 14px;text-align:right;font-family:${MONO};font-size:14px;color:${C.muted};">${standing.winnerGdHits}</td>
           </tr>
         </table>
+        ${renderRankDeltaLine(data)}
       </td>
     </tr>`;
+}
+
+// Rank-movement line under the standing table. `up`/`down` use the pitch/live
+// accent; the neutral variant (`same`/`new`/null) stays muted. Always present so
+// the section never collapses; the copy itself is resolved by the caller.
+function renderRankDeltaLine(data: ResultEmailData): string {
+  const dir = data.rankDelta?.direction ?? "new";
+  const color = dir === "up" ? C.pitch : dir === "down" ? C.live : C.muted;
+  return `<p style="margin:10px 2px 0 2px;font-family:${SANS};font-size:13px;line-height:1.5;font-weight:600;color:${color};">${escapeHtml(
+    data.strings.rankDelta,
+  )}</p>`;
 }
 
 function renderCta(data: ResultEmailData): string {
@@ -319,6 +348,7 @@ function renderText(data: ResultEmailData): string {
   lines.push(
     `  ${s.rankLabel} ${rankText} · ${s.pointsLabel} ${data.standing.totalPoints} · ${s.exactLabel} ${data.standing.exactHits} · ${s.winnerGdLabel} ${data.standing.winnerGdHits}`,
   );
+  lines.push(`  ${s.rankDelta}`);
   lines.push("");
   lines.push(`${s.ctaLabel}: ${data.leaderboardUrl}`);
   lines.push("");
