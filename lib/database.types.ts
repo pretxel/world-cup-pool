@@ -831,7 +831,7 @@ export type Database = {
           },
         ]
       }
-      leaderboard_rank_snapshot: {
+      leaderboard_rank_daily: {
         Row: {
           rank: number
           snapshot_date: string
@@ -849,7 +849,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "leaderboard_rank_snapshot_user_id_fkey"
+            foreignKeyName: "leaderboard_rank_daily_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

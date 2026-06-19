@@ -231,7 +231,7 @@ export async function dispatchResultsDigest(fromName?: string): Promise<Dispatch
   // Upsert today's snapshot so tomorrow has a baseline, then load the most
   // recent PRIOR snapshot (any date before today) to compute deltas + movers.
   const { error: snapErr } = await admin
-    .from("leaderboard_rank_snapshot")
+    .from("leaderboard_rank_daily")
     .upsert(
       board.map((b) => ({ snapshot_date: digestDate, user_id: b.user_id, rank: b.rank })),
       { onConflict: "snapshot_date,user_id" },
@@ -243,7 +243,7 @@ export async function dispatchResultsDigest(fromName?: string): Promise<Dispatch
   }
 
   const { data: priorRows, error: priorErr } = await admin
-    .from("leaderboard_rank_snapshot")
+    .from("leaderboard_rank_daily")
     .select("user_id, rank, snapshot_date")
     .lt("snapshot_date", digestDate)
     .order("snapshot_date", { ascending: false });

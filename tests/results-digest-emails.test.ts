@@ -151,7 +151,7 @@ vi.mock("@/lib/supabase/admin", () => ({
           }),
         };
       }
-      if (table === "leaderboard_rank_snapshot") {
+      if (table === "leaderboard_rank_daily") {
         return {
           upsert: snapshotUpsertMock,
           select: () => ({

@@ -65,11 +65,11 @@ The system SHALL persist a per-day, per-recipient dedupe ledger `results_digest_
 - **THEN** the current day is pre-marked as sent for all players so the next cron does not blast a same-day digest
 
 ### Requirement: Per-day rank snapshot for deltas and movers
-The system SHALL persist a per-day rank snapshot `leaderboard_rank_snapshot` with primary key `(snapshot_date, user_id)` and a `rank` column, used as the baseline for day-over-day rank deltas and the biggest-movers section. Before computing movers and sending, the dispatcher SHALL upsert today's snapshot from `v_leaderboard_overall`. Day-over-day delta SHALL be computed as the difference between today's rank and the most recent prior snapshot's rank. The snapshot table SHALL have RLS enabled with no policies (service-role access only). When no prior snapshot exists, deltas and movers SHALL be omitted from that day's digest.
+The system SHALL persist a per-day rank snapshot `leaderboard_rank_daily` with primary key `(snapshot_date, user_id)` and a `rank` column, used as the baseline for day-over-day rank deltas and the biggest-movers section. Before computing movers and sending, the dispatcher SHALL upsert today's snapshot from `v_leaderboard_overall`. Day-over-day delta SHALL be computed as the difference between today's rank and the most recent prior snapshot's rank. The snapshot table SHALL have RLS enabled with no policies (service-role access only). When no prior snapshot exists, deltas and movers SHALL be omitted from that day's digest.
 
 #### Scenario: Snapshot upserted each run
 - **WHEN** the dispatcher runs for a day
-- **THEN** today's rank for each player in `v_leaderboard_overall` is upserted into `leaderboard_rank_snapshot` keyed by `(snapshot_date, user_id)`
+- **THEN** today's rank for each player in `v_leaderboard_overall` is upserted into `leaderboard_rank_daily` keyed by `(snapshot_date, user_id)`
 
 #### Scenario: Delta computed from prior snapshot
 - **WHEN** a prior-day snapshot exists for a recipient

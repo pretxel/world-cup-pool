@@ -2,7 +2,7 @@
 
 - [x] 1.1 Add a Supabase migration under `supabase/migrations/` (timestamped filename, e.g. `20260620000000_results_digest_log.sql`) creating `public.results_digest_log (digest_date date not null, user_id uuid not null references public.profiles(id) on delete cascade, sent_at timestamptz not null default now(), primary key (digest_date, user_id))`; enable RLS with no policies (service-role only), matching `result_email_log`.
 - [x] 1.2 In the same (or an adjacent timestamped) migration, backfill `results_digest_log` for the current UTC date for all players so the first deploy does not blast a same-day digest.
-- [x] 1.3 Add a Supabase migration creating `public.leaderboard_rank_snapshot (snapshot_date date not null, user_id uuid not null references public.profiles(id) on delete cascade, rank int not null, primary key (snapshot_date, user_id))`; enable RLS with no policies (service-role only). Document the comment that it is written only by the service-role digest dispatcher.
+- [x] 1.3 Add a Supabase migration creating `public.leaderboard_rank_daily (snapshot_date date not null, user_id uuid not null references public.profiles(id) on delete cascade, rank int not null, primary key (snapshot_date, user_id))`; enable RLS with no policies (service-role only). Document the comment that it is written only by the service-role digest dispatcher.
 - [x] 1.4 Add a Supabase migration adding the `results_digest` key (default `true`) to the `profiles.email_prefs` jsonb default; existing rows are safe because a missing key reads as opted-in.
 
 ## 2. Email preferences plumbing
@@ -22,7 +22,7 @@
 - [x] 4.1 Create `lib/notifications/results-digest-emails.ts` (`server-only`) exporting `dispatchResultsDigest(fromName?: string): Promise<DispatchSummary>`, modeled on `dispatchResultEmails` in `result-emails.ts` (share `DispatchSummary`/`isSendableEmail`/the `resolveEmail` pattern/`checkEmailSenderConfig`).
 - [x] 4.2 No-op (log + zero summary) when `env.resendApiKey` is unset; call `checkEmailSenderConfig` and carry `senderMisconfigured` on the summary when the prod sender is misconfigured, without changing the resolved sender.
 - [x] 4.3 Load standings from `v_leaderboard_overall` (rank, display_name, total_points, user_id); derive the top 5 and the active-recipient set.
-- [x] 4.4 Upsert today's `leaderboard_rank_snapshot` from the standings, then load the most recent prior snapshot to compute per-user deltas and the day's biggest movers; omit deltas/movers when no prior snapshot exists.
+- [x] 4.4 Upsert today's `leaderboard_rank_daily` from the standings, then load the most recent prior snapshot to compute per-user deltas and the day's biggest movers; omit deltas/movers when no prior snapshot exists.
 - [x] 4.5 Load today's `results_digest_log` rows and drop already-sent recipients; load `profiles.email_prefs` for the candidates and drop those with `results_digest === false` via `isOptedIn`.
 - [x] 4.6 Resolve each recipient's email via the admin `getUserById` pattern; skip missing/undeliverable addresses (`isSendableEmail`), counting them as `skipped`.
 - [x] 4.7 Build localized copy via `getTranslations({ locale: DEFAULT_LOCALE, namespace: "resultsDigest" })`; build the `/leaderboard` URL from `env.siteUrl` + `localePath(DEFAULT_LOCALE, "/leaderboard")`; resolve the sender via `env.emailFrom` with the optional `fromName` override.
