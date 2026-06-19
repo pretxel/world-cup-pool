@@ -547,7 +547,11 @@
     "notYetBody": "Envía pronósticos para empezar a sumar puntos.",
     "inviteCtaTitle": "Juega con tus amigos",
     "inviteCtaBody": "Crea un grupo o únete a uno para ver cómo te comparas con la gente que conoces.",
-    "inviteCtaLink": "Invitar amigos"
+    "inviteCtaLink": "Invitar amigos",
+    "segmentGroup": "Ver",
+    "segmentOverall": "General",
+    "segmentWeek": "Esta semana",
+    "segmentStage": "Por fase"
   },
   "groups": {
     "title": "Grupos",

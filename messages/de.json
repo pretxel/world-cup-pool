@@ -547,7 +547,11 @@
     "notYetBody": "Geben Sie Tipps ab, um Punkte zu sammeln.",
     "inviteCtaTitle": "Spielen Sie mit Ihren Freunden",
     "inviteCtaBody": "Erstellen Sie eine Gruppe oder treten Sie einer bei, um zu sehen, wie Sie im Vergleich zu Bekannten abschneiden.",
-    "inviteCtaLink": "Freunde einladen"
+    "inviteCtaLink": "Freunde einladen",
+    "segmentGroup": "Ansicht",
+    "segmentOverall": "Gesamt",
+    "segmentWeek": "Diese Woche",
+    "segmentStage": "Nach Phase"
   },
   "groups": {
     "title": "Groups",

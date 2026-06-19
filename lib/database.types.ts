@@ -890,6 +890,32 @@ export type Database = {
           winner_hits: number
         }[]
       }
+      leaderboard_for_window: {
+        Args: { from_ts: string; to_ts: string }
+        Returns: {
+          display_name: string
+          exact_hits: number
+          first_submit: string
+          rank: number
+          total_points: number
+          user_id: string
+          winner_gd_hits: number
+          winner_hits: number
+        }[]
+      }
+      leaderboard_for_stage: {
+        Args: { stage_key: string }
+        Returns: {
+          display_name: string
+          exact_hits: number
+          first_submit: string
+          rank: number
+          total_points: number
+          user_id: string
+          winner_gd_hits: number
+          winner_hits: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

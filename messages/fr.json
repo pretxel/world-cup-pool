@@ -547,7 +547,11 @@
     "notYetBody": "Envoyez des pronos pour commencer à marquer des points.",
     "inviteCtaTitle": "Jouez avec vos amis",
     "inviteCtaBody": "Créez un groupe ou rejoignez-en un pour voir comment vous vous situez face aux gens que vous connaissez.",
-    "inviteCtaLink": "Inviter des amis"
+    "inviteCtaLink": "Inviter des amis",
+    "segmentGroup": "Affichage",
+    "segmentOverall": "Général",
+    "segmentWeek": "Cette semaine",
+    "segmentStage": "Par phase"
   },
   "groups": {
     "title": "Groupes",
