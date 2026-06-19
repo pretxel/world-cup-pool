@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { LeaderboardTable } from "@/components/leaderboard-table";
+import { LeaderboardLive } from "@/components/leaderboard-live";
 import { LeaderboardViewTracker } from "./leaderboard-view-tracker";
 import { ShareButtons } from "@/components/share-buttons";
 import type { LeaderboardRow } from "@/lib/db";
@@ -118,8 +118,8 @@ export default async function LeaderboardPage({
           </Link>
         </div>
       ) : (
-        <LeaderboardTable
-          rows={topRows}
+        <LeaderboardLive
+          initialRows={topRows}
           currentUserId={user?.id}
           labels={{
             rank: t("headerRank"),
