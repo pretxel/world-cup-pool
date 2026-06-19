@@ -1081,6 +1081,24 @@
     "footer": "Recibes esto porque participas en la quiniela del Mundial. El quiz se reinicia cada día a medianoche UTC.",
     "unsubscribeLabel": "Cancelar los recordatorios del quiz diario"
   },
+  "welcomeEmail": {
+    "subject": "Bienvenido a la quiniela del Mundial",
+    "preheader": "Tus primeros pronósticos, el quiz diario y la clasificación te esperan.",
+    "eyebrow": "Ya estás dentro",
+    "heading": "¡Bienvenido, {name}!",
+    "headingNoName": "¡Bienvenido a la quiniela!",
+    "intro": "Ya está todo listo. Aquí tienes las tres primeras cosas que hacer — cada una lleva menos de un minuto.",
+    "quizTitle": "Responde el quiz diario",
+    "quizBlurb": "Una pregunta de trivia del Mundial cada día. Crea una racha y suma puntos.",
+    "quizCta": "Jugar el quiz de hoy",
+    "groupsTitle": "Crea o únete a un grupo",
+    "groupsBlurb": "Compite mano a mano con tus amigos en tu propia miniliga privada.",
+    "groupsCta": "Encuentra a tus amigos",
+    "leaderboardTitle": "Mira la clasificación",
+    "leaderboardBlurb": "Comprueba tu posición frente a los demás y escala puestos.",
+    "leaderboardCta": "Ver la clasificación",
+    "footer": "Recibes esto porque acabas de unirte a la quiniela del Mundial. Nos vemos en el campo."
+  },
   "predictionEmail": {
     "subject": "Los partidos de hoy — envía tus pronósticos",
     "preheader": "Aún te faltan pronósticos antes del inicio. No te pierdas los puntos.",
