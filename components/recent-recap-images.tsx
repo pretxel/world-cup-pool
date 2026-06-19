@@ -11,32 +11,43 @@ import { localePath, type Locale } from "@/lib/i18n";
 // when there are none.
 
 const RECAP_BUCKET = "match-recap-images";
+// Shown count, ordered by match date (most recent match first).
 const MAX_ITEMS = 5;
+// Safety cap on the render fetch: the active-only RLS yields one render per
+// match, so this stays well above any real tournament's match count.
+const SAFETY_LIMIT = 200;
 
 function recapImagePublicUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? env.supabaseUrl;
   return `${base}/storage/v1/object/public/${RECAP_BUCKET}/${path}`;
 }
 
-type GalleryItem = { matchId: string; home: string; away: string; url: string };
+type GalleryItem = {
+  matchId: string;
+  home: string;
+  away: string;
+  url: string;
+  kickoffAt: string;
+  createdAt: string;
+};
 
 export async function RecentRecapImages({ locale }: { locale: Locale }) {
   const supabase = await createServerSupabaseClient();
 
-  // Newest completed renders first (active-only via RLS).
+  // All completed renders (active-only via RLS → one per match). Ordering is by
+  // match date below, so this is a bounded fetch, not a pre-limited one.
   const { data: renders } = await supabase
     .from("match_summary_images")
     .select("storage_path, match_id, created_at")
     .eq("status", "complete")
-    .order("created_at", { ascending: false })
-    .limit(MAX_ITEMS);
+    .limit(SAFETY_LIMIT);
   const rows = renders ?? [];
   if (rows.length === 0) return null;
 
-  // Resolve team names for the cards/links (anon-readable matches).
+  // Resolve team names + kickoff for ordering and the cards/links.
   const { data: matchRows } = await supabase
     .from("matches")
-    .select("id, home_team, away_team")
+    .select("id, home_team, away_team, kickoff_at")
     .in(
       "id",
       rows.map((r) => r.match_id),
@@ -52,11 +63,23 @@ export async function RecentRecapImages({ locale }: { locale: Locale }) {
         home: m.home_team,
         away: m.away_team,
         url: recapImagePublicUrl(r.storage_path),
+        kickoffAt: m.kickoff_at,
+        createdAt: r.created_at,
       };
     })
     .filter((x): x is GalleryItem => x !== null);
 
   if (items.length === 0) return null;
+
+  // Most recent match first; tie-break on render time, then match id, so the
+  // order is stable. Then cap to the shown count.
+  items.sort(
+    (a, b) =>
+      b.kickoffAt.localeCompare(a.kickoffAt) ||
+      b.createdAt.localeCompare(a.createdAt) ||
+      a.matchId.localeCompare(b.matchId),
+  );
+  const shown = items.slice(0, MAX_ITEMS);
 
   const t = await getTranslations("home");
 
@@ -75,7 +98,7 @@ export async function RecentRecapImages({ locale }: { locale: Locale }) {
       </div>
 
       <ul className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {items.map((item) => (
+        {shown.map((item) => (
           <li key={item.matchId}>
             <Link
               href={localePath(locale, `/matches/${item.matchId}`)}
