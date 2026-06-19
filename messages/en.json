@@ -429,6 +429,8 @@
     "statPicks": "Picks",
     "statExact": "Exact",
     "statPoints": "Points",
+    "statStreak": "Streak",
+    "statStreakHint": "Days in a row this week",
     "emptyEyebrow": "No picks yet",
     "emptyBody": "You haven't locked in any scores yet. Open a match and submit your first pick.",
     "browseMatches": "Browse matches",

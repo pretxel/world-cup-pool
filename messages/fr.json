@@ -429,6 +429,8 @@
     "statPicks": "Pronos",
     "statExact": "Exacts",
     "statPoints": "Points",
+    "statStreak": "Série",
+    "statStreakHint": "Jours d'affilée cette semaine",
     "emptyEyebrow": "Pas encore de prono",
     "emptyBody": "Vous n'avez encore verrouillé aucun score. Ouvrez un match et envoyez votre premier prono.",
     "browseMatches": "Voir les matchs",

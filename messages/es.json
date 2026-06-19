@@ -429,6 +429,8 @@
     "statPicks": "Pronósticos",
     "statExact": "Exactos",
     "statPoints": "Puntos",
+    "statStreak": "Racha",
+    "statStreakHint": "Días seguidos esta semana",
     "emptyEyebrow": "Aún no hay pronósticos",
     "emptyBody": "Todavía no has registrado ningún marcador. Abre un partido y envía tu primer pronóstico.",
     "browseMatches": "Ver partidos",
