@@ -38,6 +38,20 @@ export function buildQuizSharePath(locale: Locale, userId: string): string {
   return localePath(locale, `/share/quiz/${userId}`);
 }
 
+// Canonicalize a head-to-head pair into a single deterministic order
+// (lexicographic by user_id). `a/b` and `b/a` collapse to the same ordered
+// tuple so one rivalry maps to one URL and one cacheable OG card.
+export function canonicalH2HPair(idA: string, idB: string): readonly [string, string] {
+  return idA <= idB ? [idA, idB] : [idB, idA];
+}
+
+export function buildH2HPath(locale: Locale, idA: string, idB: string): string {
+  // The landing page and OG card re-derive both standings live from
+  // v_leaderboard_overall + scores, so the URL only identifies the two users.
+  const [first, second] = canonicalH2HPair(idA, idB);
+  return localePath(locale, `/h2h/${first}/${second}`);
+}
+
 export function buildTweetIntentUrl(text: string, url: string): string {
   const params = new URLSearchParams({ text, url });
   return `https://twitter.com/intent/tweet?${params.toString()}`;
