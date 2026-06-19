@@ -7,6 +7,7 @@ import { MinusIcon, PlusIcon, Loader2Icon, CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KickoffCountdown } from "@/components/kickoff-countdown";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { submitPrediction } from "./actions";
 
 const MAX_GOALS = 20;
@@ -66,6 +67,7 @@ export function PredictionForm({
         toast.error(result.error);
         return;
       }
+      trackEvent("prediction_submitted", { match_id: matchId });
       toast.success(t("pickLocked"));
       setTouched(false);
     });

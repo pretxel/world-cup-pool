@@ -4,6 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { CheckIcon, LinkIcon, Share2Icon } from "lucide-react";
 import { buildFacebookShareUrl, buildTweetIntentUrl } from "@/lib/share";
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 // Generic social share actions for any pre-built share URL + text. All data
@@ -14,6 +15,7 @@ export function ShareButtons({
   shareUrl,
   shareText,
   labels,
+  context,
 }: {
   shareUrl: string;
   shareText: string;
@@ -24,6 +26,10 @@ export function ShareButtons({
     copy: string;
     copied: string;
   };
+  // Identifies what is being shared (e.g. "pick" | "rank" | "quiz") so the
+  // emitted `share_click` events can be distinguished across call sites.
+  // Optional so existing callers keep compiling.
+  context?: string;
 }) {
   // navigator.share is feature-detected after mount so server and first
   // client render agree (no hydration mismatch).
@@ -37,7 +43,12 @@ export function ShareButtons({
     }
   }, []);
 
+  function trackShare(platform: string) {
+    trackEvent("share_click", context ? { platform, context } : { platform });
+  }
+
   async function onNativeShare() {
+    trackShare("native");
     try {
       await navigator.share({ text: shareText, url: shareUrl });
     } catch {
@@ -46,6 +57,7 @@ export function ShareButtons({
   }
 
   async function onCopy() {
+    trackShare("copy");
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -65,6 +77,7 @@ export function ShareButtons({
         href={buildTweetIntentUrl(shareText, shareUrl)}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackShare("x")}
         className={chipClass}
       >
         <XLogo className="size-3.5" />
@@ -74,6 +87,7 @@ export function ShareButtons({
         href={buildFacebookShareUrl(shareUrl)}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackShare("facebook")}
         className={chipClass}
       >
         <FacebookLogo className="size-3.5" />

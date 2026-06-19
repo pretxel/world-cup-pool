@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { CheckCircle2Icon, XCircleIcon, Loader2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { submitQuizAnswer } from "./actions";
 
 type Answered = {
@@ -45,6 +46,7 @@ export function AnswerCard({
     startTransition(async () => {
       const res = await submitQuizAnswer({ questionId, choice: i });
       if (res.ok) {
+        trackEvent("quiz_answered", { question_id: questionId, correct: res.isCorrect });
         setAnswered({ choice: i, isCorrect: res.isCorrect, correctIndex: res.correctIndex });
       } else if (res.error === "already-answered") {
         setError(t("alreadyAnswered"));

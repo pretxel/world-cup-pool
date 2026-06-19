@@ -494,6 +494,7 @@ export default async function MatchDetailPage({
                 {tShareRecap("heading")}
               </p>
               <ShareButtons
+                context="recap"
                 shareUrl={`${env.siteUrl}${localePath(locale, `/matches/${match.id}`)}`}
                 shareText={tShareRecap("shareText", {
                   home: match.home_team,
@@ -625,6 +626,7 @@ export default async function MatchDetailPage({
             {tShare("heading")}
           </p>
           <ShareButtons
+            context="pick"
             shareUrl={`${env.siteUrl}${buildPickSharePath(locale, match.id, myPrediction.home_goals, myPrediction.away_goals)}`}
             shareText={tShare("shareText", {
               home: match.home_team,

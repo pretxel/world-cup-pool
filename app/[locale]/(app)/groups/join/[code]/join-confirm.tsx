@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, TicketIcon } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 import { joinGroupAction, type GroupActionState } from "../../actions";
 
 const INITIAL: GroupActionState = {};
@@ -22,6 +23,17 @@ export function JoinConfirmForm({
   useEffect(() => {
     if (state.error) toast.error(t(state.error));
   }, [state, t]);
+
+  // A successful join `redirect`s, so fire `group_joined` when a submit settles
+  // without an error. `wasPending` keys off an actual submit (never initial
+  // mount); no raw join code is included in the event.
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) {
+      trackEvent("group_joined");
+    }
+    wasPending.current = pending;
+  }, [pending, state.error]);
 
   return (
     <form action={formAction}>

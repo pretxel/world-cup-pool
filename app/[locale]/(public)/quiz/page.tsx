@@ -153,6 +153,7 @@ export default async function QuizPage({
             {tShare("heading")}
           </p>
           <ShareButtons
+            context="quiz"
             shareUrl={`${env.siteUrl}${buildQuizSharePath(locale, user.id)}`}
             shareText={tShare("shareText", {
               rank: quizShare.row.rank ?? 0,
