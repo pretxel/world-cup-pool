@@ -73,7 +73,11 @@ export default async function GroupDetailPage({
         </p>
       </header>
 
-      <InviteShare code={group.joinCode} locale={locale} />
+      <InviteShare
+        code={group.joinCode}
+        locale={locale}
+        currentUserId={group.currentUserId}
+      />
 
       <section className="mt-8">
         <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">

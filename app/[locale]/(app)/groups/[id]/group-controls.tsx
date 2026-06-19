@@ -33,9 +33,11 @@ import {
 export function InviteShare({
   code,
   locale,
+  currentUserId,
 }: {
   code: string;
   locale: string;
+  currentUserId?: string | null;
 }) {
   const t = useTranslations("groups");
   const [copied, setCopied] = useState<"code" | "link" | null>(null);
@@ -48,9 +50,13 @@ export function InviteShare({
     });
   }
 
+  // Tag the invite link with the sharer as inviter (`?ref=`) so the join flow
+  // can credit a referral. The RPC drops a ref that is not a real member.
   const link =
     typeof window !== "undefined"
-      ? `${window.location.origin}/${locale}/groups/join/${code}`
+      ? `${window.location.origin}/${locale}/groups/join/${code}${
+          currentUserId ? `?ref=${currentUserId}` : ""
+        }`
       : "";
 
   return (

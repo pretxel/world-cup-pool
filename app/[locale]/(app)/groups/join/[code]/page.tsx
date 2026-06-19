@@ -13,12 +13,20 @@ export const metadata: Metadata = {
 
 export default async function JoinGroupPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; code: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { locale: raw, code } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
+
+  // Inviter from the invite link (`?ref=`). Forwarded as-is; the join action
+  // validates it as a UUID and the RPC drops anything that is not a real,
+  // distinct member of the group.
+  const { ref } = await searchParams;
+  const invitedBy = typeof ref === "string" ? ref : undefined;
 
   const t = await getTranslations("groups");
   const preview = await getGroupPreview(code);
@@ -50,7 +58,7 @@ export default async function JoinGroupPage({
             {t("joinConfirmBody", { name: preview.name })}
           </p>
           <div className="mt-6">
-            <JoinConfirmForm code={code} locale={locale} />
+            <JoinConfirmForm code={code} locale={locale} invitedBy={invitedBy} />
           </div>
         </div>
       ) : (

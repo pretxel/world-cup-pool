@@ -56,9 +56,15 @@ export async function joinGroupAction(
   const parsed = codeSchema.safeParse(formData.get("code"));
   if (!parsed.success) return { error: "errorInvalidCode" };
 
+  // Optional inviter from an invite link (`?ref=` threaded through a hidden
+  // field). Drop it silently if malformed; the RPC defaults it to null. The
+  // RPC enforces self-credit / already-member / once-per-pair guards.
+  const invitedBy = idSchema.safeParse(formData.get("invited_by"));
+
   const { supabase } = await requireUserClient();
   const { data: groupId, error } = await supabase.rpc("join_group", {
     p_code: parsed.data,
+    ...(invitedBy.success ? { p_invited_by: invitedBy.data } : {}),
   });
   if (error) {
     return {

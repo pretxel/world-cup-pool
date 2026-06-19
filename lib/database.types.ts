@@ -147,18 +147,21 @@ export type Database = {
       group_members: {
         Row: {
           group_id: string
+          invited_by_user_id: string | null
           joined_at: string
           role: string
           user_id: string
         }
         Insert: {
           group_id: string
+          invited_by_user_id?: string | null
           joined_at?: string
           role?: string
           user_id: string
         }
         Update: {
           group_id?: string
+          invited_by_user_id?: string | null
           joined_at?: string
           role?: string
           user_id?: string
@@ -172,8 +175,64 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "group_members_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "group_members_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_referrals: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          points: number
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          points: number
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_referrals_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_referrals_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_referrals_inviter_id_fkey"
+            columns: ["inviter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -858,7 +917,10 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_group_member: { Args: { p_group_id: string }; Returns: boolean }
       is_group_owner: { Args: { p_group_id: string }; Returns: boolean }
-      join_group: { Args: { p_code: string }; Returns: string }
+      join_group: {
+        Args: { p_code: string; p_invited_by?: string }
+        Returns: string
+      }
       leaderboard_for_group: {
         Args: { p_group_id: string }
         Returns: {

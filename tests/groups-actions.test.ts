@@ -110,6 +110,34 @@ describe("joinGroupAction", () => {
     ).rejects.toThrow(`REDIRECT:/en/groups/${GROUP_ID}`);
     expect(rpcMock).toHaveBeenCalledWith("join_group", { p_code: "WC-ABCDE" });
   });
+
+  it("forwards a valid inviter id as p_invited_by", async () => {
+    const { joinGroupAction } = await importActions();
+    await expect(
+      joinGroupAction({}, fd({ code: "WC-ABCDE", invited_by: USER_ID })),
+    ).rejects.toThrow(`REDIRECT:/en/groups/${GROUP_ID}`);
+    expect(rpcMock).toHaveBeenCalledWith("join_group", {
+      p_code: "WC-ABCDE",
+      p_invited_by: USER_ID,
+    });
+  });
+
+  it("drops a malformed inviter id (no p_invited_by sent)", async () => {
+    const { joinGroupAction } = await importActions();
+    await expect(
+      joinGroupAction({}, fd({ code: "WC-ABCDE", invited_by: "not-a-uuid" })),
+    ).rejects.toThrow(`REDIRECT:/en/groups/${GROUP_ID}`);
+    expect(rpcMock).toHaveBeenCalledWith("join_group", { p_code: "WC-ABCDE" });
+  });
+
+  it("omits p_invited_by entirely for a manual (no-inviter) join", async () => {
+    const { joinGroupAction } = await importActions();
+    await expect(
+      joinGroupAction({}, fd({ code: "WC-ABCDE" })),
+    ).rejects.toThrow(`REDIRECT:/en/groups/${GROUP_ID}`);
+    const call = rpcMock.mock.calls.find((c) => c[0] === "join_group");
+    expect(call?.[1]).not.toHaveProperty("p_invited_by");
+  });
 });
 
 describe("leaveGroupAction", () => {
