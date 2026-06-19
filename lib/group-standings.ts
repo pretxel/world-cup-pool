@@ -156,3 +156,47 @@ export function simulateAllGroups(
     rows: simulateGroup(fixtures, predictionsByMatchId),
   }));
 }
+
+// One group-stage match as the *real* standings need it: the four fields the
+// staleness scan reads (so the page can opportunistically resync — structurally
+// a `StalenessShape`) plus the id, group code, and actual scores the table is
+// built from. Kept here in the pure engine so it stays DB-free and testable.
+export interface GroupTableMatch {
+  id: string;
+  home_team: string;
+  away_team: string;
+  group_code: string | null;
+  home_score: number | null;
+  away_score: number | null;
+  status: string;
+  kickoff_at: string;
+}
+
+// Build the real group tables from actual match results. Counts a match toward
+// the table only when it is `final` with both scores recorded; every other
+// status (and a final with a missing score) contributes nothing, so points
+// reflect completed games only. Every team named in a fixture is still seeded,
+// so all four appear even before any result. Pure — same 3/1/0 engine as the
+// predictions path, just fed real scorelines.
+export function buildGroupTables(
+  matches: GroupTableMatch[],
+): SimulatedGroup[] {
+  const fixtures: GroupStageFixture[] = matches.map((m) => ({
+    id: m.id,
+    home_team: m.home_team,
+    away_team: m.away_team,
+    group_code: m.group_code,
+  }));
+
+  const resultsByMatchId = new Map<string, PredictedScore>();
+  for (const m of matches) {
+    if (m.status !== "final") continue;
+    if (m.home_score == null || m.away_score == null) continue;
+    resultsByMatchId.set(m.id, {
+      home_goals: m.home_score,
+      away_goals: m.away_score,
+    });
+  }
+
+  return simulateAllGroups(fixtures, resultsByMatchId);
+}

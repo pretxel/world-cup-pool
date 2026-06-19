@@ -3,21 +3,35 @@ import { TeamFlag } from "@/components/team-flag";
 import type { GroupTeamRow, SimulatedGroup } from "@/lib/group-standings";
 import { cn } from "@/lib/utils";
 
-// One group's simulated table, built from the viewer's predictions. Async
-// server component so it can pull its own `groupSimulation` translations; both
-// call sites (match detail, My Picks) are server components.
+// Where a table's numbers come from. `"picks"` is the personal what-if table
+// (`groupSimulation` copy); `"results"` is the real, synced standings
+// (`groupStandings` copy). Both namespaces share the same key names, so the
+// markup below is source-agnostic.
+export type StandingsSource = "picks" | "results";
+
+const NAMESPACE: Record<StandingsSource, "groupSimulation" | "groupStandings"> =
+  {
+    picks: "groupSimulation",
+    results: "groupStandings",
+  };
+
+// One group's standings table. Async server component so it can pull its own
+// translations; every call site (match detail, My Picks, /standings) is a
+// server component.
 export async function GroupStandingsTable({
   groupCode,
   rows,
   highlightTeams,
   className,
+  source = "picks",
 }: {
   groupCode: string;
   rows: GroupTeamRow[];
   highlightTeams?: string[];
   className?: string;
+  source?: StandingsSource;
 }) {
-  const t = await getTranslations("groupSimulation");
+  const t = await getTranslations(NAMESPACE[source]);
   const hasPicks = rows.some((r) => r.played > 0);
   const highlight = new Set(
     (highlightTeams ?? []).map((team) => team.toLowerCase()),
@@ -35,7 +49,7 @@ export async function GroupStandingsTable({
           {t("groupHeading", { code: groupCode })}
         </h3>
         <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {t("fromYourPicks")}
+          {t("caption")}
         </span>
       </div>
 
@@ -140,15 +154,19 @@ export async function GroupStandingsTable({
   );
 }
 
-// All twelve simulated groups in a responsive grid (A→L), for the My Picks page.
+// All groups in a responsive grid (A→L). Used for the My Picks what-if tables
+// (`source="picks"`, the default) and the public /standings real tables
+// (`source="results"`).
 export async function AllGroupsSimulation({
   groups,
   className,
+  source = "picks",
 }: {
   groups: SimulatedGroup[];
   className?: string;
+  source?: StandingsSource;
 }) {
-  const t = await getTranslations("groupSimulation");
+  const t = await getTranslations(NAMESPACE[source]);
   if (groups.length === 0) return null;
 
   return (
@@ -173,6 +191,7 @@ export async function AllGroupsSimulation({
             key={group.groupCode}
             groupCode={group.groupCode}
             rows={group.rows}
+            source={source}
           />
         ))}
       </div>
