@@ -42,7 +42,8 @@
     "quiz_reminder": "Rappels du quiz",
     "saved": "Préférences mises à jour",
     "error": "Impossible de mettre à jour les préférences",
-    "results_digest": "Résumé quotidien des résultats"
+    "results_digest": "Résumé quotidien des résultats",
+    "recap_digest": "Résumé des BD de match"
   },
   "footer": {
     "tournament": "WC26 Pool · 11 juin – 19 juil. 2026",
@@ -946,14 +947,16 @@
         "sync_news": "Synchro des actus",
         "prediction_reminders": "Rappels de pronostics",
         "quiz_reminders": "Rappels du quiz",
-        "results_digest": "Résumé des résultats"
+        "results_digest": "Résumé des résultats",
+        "recap_digest": "Résumé des récaps"
       },
       "jobsDesc": {
         "sync_matches": "Récupère les résultats et recalcule le classement",
         "sync_news": "Actualise le fil d'actus de la Coupe du monde",
         "prediction_reminders": "Relance les joueurs aux pronostics ouverts",
         "quiz_reminders": "Relance les joueurs sans réponse",
-        "results_digest": "Récapitulatif quotidien du classement et des plus fortes progressions"
+        "results_digest": "Récapitulatif quotidien du classement et des plus fortes progressions",
+        "recap_digest": "Envoie les BD de match nouvellement générées"
       },
       "status": {
         "success": "Succès",
@@ -1176,5 +1179,18 @@
     "youLabel": "Vous",
     "ctaLabel": "Voir le classement complet",
     "footer": "Vous recevez ce récap quotidien de votre pool Coupe du Monde. Vous pouvez le désactiver dans les préférences e-mail de votre compte."
+  },
+  "recapDigest": {
+    "subject": "Nouvelles BD de match du pool",
+    "preheader": "Des BD de récap fraîchement dessinées des derniers matchs.",
+    "eyebrow": "BD de match",
+    "heading": "{name}, de nouvelles BD viennent d'arriver",
+    "headingNoName": "De nouvelles BD viennent d'arriver",
+    "intro": "Nous avons transformé les derniers matchs en BD de récap. Jetez-y un œil et partagez vos préférées.",
+    "vsLabel": "vs",
+    "matchCtaLabel": "Voir le match",
+    "shareCtaLabel": "Partager",
+    "shareText": "Regardez cette BD de récap de match · Pool Coupe du Monde 2026",
+    "footer": "Vous recevez ce résumé de BD de récap de votre pool Coupe du Monde. Vous pouvez le désactiver dans les préférences e-mail de votre compte."
   }
 }

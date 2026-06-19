@@ -13,6 +13,10 @@ export const OPERATION_SCHEDULES: Record<OperationKind, { cron: string; hourUtc:
   prediction_reminders: { cron: "0 12 * * *", hourUtc: 12 },
   quiz_reminders: { cron: "0 13 * * *", hourUtc: 13 },
   results_digest: { cron: "0 11 * * *", hourUtc: 11 },
+  // Runs a few times daily so completed comic renders are picked up shortly
+  // after they finish (renders land asynchronously after a match goes final).
+  // hourUtc is the soonest of those ticks, used only for the "next run" display.
+  recap_digest: { cron: "0 6,14,22 * * *", hourUtc: 6 },
 };
 
 // The next UTC instant this job is scheduled to fire: today at its hour if that

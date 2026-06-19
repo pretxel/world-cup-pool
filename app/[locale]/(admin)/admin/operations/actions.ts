@@ -8,6 +8,7 @@ import { dispatchResultEmails } from "@/lib/notifications/result-emails";
 import { dispatchPredictionReminders } from "@/lib/notifications/prediction-reminder-emails";
 import { dispatchQuizReminders } from "@/lib/notifications/quiz-reminder-emails";
 import { dispatchResultsDigest } from "@/lib/notifications/results-digest-emails";
+import { dispatchRecapDigest } from "@/lib/notifications/recap-digest-emails";
 import { runNewsSync } from "@/lib/news-sync";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun, type OperationKind } from "@/lib/operations/record-run";
@@ -64,6 +65,10 @@ const JOB: Record<OperationKind, () => Promise<object>> = {
     const { emailFromName } = await getActiveBranding();
     return dispatchResultsDigest(emailFromName);
   },
+  recap_digest: async () => {
+    const { emailFromName } = await getActiveBranding();
+    return dispatchRecapDigest(emailFromName);
+  },
 };
 
 // Shared trigger: assert admin, run the job under recordRun(kind, 'manual'), and
@@ -113,4 +118,7 @@ export async function runQuizReminders(formData: FormData) {
 }
 export async function runResultsDigest(formData: FormData) {
   await trigger("results_digest", formData);
+}
+export async function runRecapDigest(formData: FormData) {
+  await trigger("recap_digest", formData);
 }
