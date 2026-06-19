@@ -11,7 +11,7 @@ import { localePath, type Locale } from "@/lib/i18n";
 // when there are none.
 
 const RECAP_BUCKET = "match-recap-images";
-const MAX_ITEMS = 8;
+const MAX_ITEMS = 5;
 
 function recapImagePublicUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? env.supabaseUrl;
@@ -74,7 +74,7 @@ export async function RecentRecapImages({ locale }: { locale: Locale }) {
         </h2>
       </div>
 
-      <ul className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <ul className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {items.map((item) => (
           <li key={item.matchId}>
             <Link

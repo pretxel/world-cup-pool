@@ -1,8 +1,5 @@
-# landing-recent-recap-images Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change landing-recent-recap-images. Update Purpose after archive.
-## Requirements
 ### Requirement: Landing gallery of recent recap images
 
 The landing page SHALL display a gallery of the most recently generated match recap
@@ -22,14 +19,3 @@ incomplete renders SHALL NOT appear.
 
 - **WHEN** more than 5 completed renders exist
 - **THEN** only the 5 most recent (by render time) are shown
-
-### Requirement: Hidden when empty
-
-When no active completed recap renders exist, the landing page SHALL render no gallery
-section (no heading, no empty placeholder) and the rest of the page SHALL be unaffected.
-
-#### Scenario: No comics yet
-
-- **WHEN** the landing page loads and no match has an active completed render
-- **THEN** the gallery section is absent and the page renders normally
-
