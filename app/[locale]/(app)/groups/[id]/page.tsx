@@ -6,6 +6,7 @@ import { getGroup, getGroupBoard } from "@/lib/groups";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import {
   DeleteGroupButton,
+  InviteByEmail,
   InviteShare,
   LeaveGroupButton,
   RemoveMemberButton,
@@ -78,6 +79,9 @@ export default async function GroupDetailPage({
         locale={locale}
         currentUserId={group.currentUserId}
       />
+      {group.currentUserId ? (
+        <InviteByEmail groupId={group.id} locale={locale} />
+      ) : null}
 
       <section className="mt-8">
         <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">

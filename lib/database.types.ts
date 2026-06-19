@@ -190,6 +190,42 @@ export type Database = {
           },
         ]
       }
+      group_invite_log: {
+        Row: {
+          group_id: string
+          inviter_id: string
+          recipient_email: string
+          sent_at: string
+        }
+        Insert: {
+          group_id: string
+          inviter_id: string
+          recipient_email: string
+          sent_at?: string
+        }
+        Update: {
+          group_id?: string
+          inviter_id?: string
+          recipient_email?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_invite_log_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_invite_log_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_referrals: {
         Row: {
           created_at: string
