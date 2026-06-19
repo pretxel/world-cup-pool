@@ -275,6 +275,42 @@ export type Database = {
           },
         ]
       }
+      leaderboard_rank_snapshot: {
+        Row: {
+          captured_at: string
+          competition_id: string
+          rank: number
+          user_id: string
+        }
+        Insert: {
+          captured_at?: string
+          competition_id: string
+          rank: number
+          user_id: string
+        }
+        Update: {
+          captured_at?: string
+          competition_id?: string
+          rank?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_rank_snapshot_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_rank_snapshot_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_questions: {
         Row: {
           active_on: string

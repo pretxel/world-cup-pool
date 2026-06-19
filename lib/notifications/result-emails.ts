@@ -10,6 +10,7 @@ import type { HitType } from "@/lib/db";
 import {
   renderResultEmail,
   type EmailFinishedMatch,
+  type RankDelta,
   type ResultEmailData,
   type ResultEmailStrings,
 } from "./result-email-template";
@@ -91,6 +92,25 @@ export function computePendingByUser(
   return [...byUser.values()];
 }
 
+// Pure: derives a player's rank movement from the previous-run snapshot rank
+// and the new rank read from v_leaderboard_overall during this dispatch. A
+// lower rank number is a better position, so previousRank > newRank is `up`.
+// No snapshot (first appearance / admin force-resend with no baseline) → `new`.
+// Exported for unit testing.
+export function computeRankDelta(
+  previousRank: number | null | undefined,
+  newRank: number | null | undefined,
+): RankDelta {
+  if (previousRank == null || newRank == null) return { direction: "new", magnitude: 0 };
+  const diff = previousRank - newRank;
+  if (diff === 0) return { direction: "same", magnitude: 0, previousRank };
+  return {
+    direction: diff > 0 ? "up" : "down",
+    magnitude: Math.abs(diff),
+    previousRank,
+  };
+}
+
 // A player's stored result-email preference, keyed by user id. Used to drop
 // recipients who have opted out of result emails — a type that had no opt-out at
 // all before this change.
@@ -119,8 +139,16 @@ type Translator = (key: string, values?: Record<string, unknown>) => string;
 // Builds the resolved, value-bearing copy for one recipient's email.
 export function buildResultEmailStrings(
   t: Translator,
-  opts: { displayName: string | null; earnedPoints: number },
+  opts: {
+    displayName: string | null;
+    earnedPoints: number;
+    // Rank movement + the new rank to interpolate into the delta line. `null`
+    // (no snapshot / force-resend) resolves to the neutral `new` variant.
+    rankDelta?: RankDelta | null;
+    newRank?: number | null;
+  },
 ): ResultEmailStrings {
+  const delta = opts.rankDelta ?? { direction: "new" as const, magnitude: 0 };
   return {
     subject: t("subject", { points: opts.earnedPoints }),
     preheader: t("preheader"),
@@ -136,6 +164,11 @@ export function buildResultEmailStrings(
     winnerGdLabel: t("winnerGdLabel"),
     youLabel: t("youLabel"),
     ptsSuffix: t("ptsSuffix"),
+    rankDelta: t("rankDelta", {
+      direction: delta.direction,
+      count: delta.magnitude,
+      rank: opts.newRank ?? 0,
+    }),
     outcomes: {
       exact: t("outcomes.exact"),
       winner_gd: t("outcomes.winner_gd"),
@@ -255,6 +288,25 @@ async function loadResultPrefs(
   }));
 }
 
+// Reads the pre-recompute snapshot rank for the given affected user ids so the
+// dispatch can compute each player's movement against the new rank. Returns a
+// map user_id → previous rank; users with no snapshot row (first appearance)
+// simply don't appear, and resolve to the `new` variant downstream.
+async function loadSnapshotRanks(
+  admin: AdminClient,
+  userIds: string[],
+): Promise<Map<string, number>> {
+  if (userIds.length === 0) return new Map();
+  const { data, error } = await admin
+    .from("leaderboard_rank_snapshot")
+    .select("user_id, rank")
+    .in("user_id", userIds);
+  if (error) {
+    throw new Error(`[result-emails] load rank snapshot: ${error.message}`);
+  }
+  return new Map((data ?? []).map((r) => [r.user_id as string, r.rank as number]));
+}
+
 // Shared send tail: resolve email → render → batch-send → stamp ledger for a
 // set of already-computed pending recipients. Both the cron path (ledger
 // respected) and the admin force path (ledger ignored) funnel through here, so
@@ -265,6 +317,10 @@ async function dispatchPending(
   admin: AdminClient,
   pending: PendingRecipient[],
   fromName?: string,
+  // When true (cron path), compute a rank delta from the pre-recompute snapshot.
+  // The admin force path passes false — an ad-hoc resend has no fresh baseline,
+  // so every recipient renders the neutral (no-delta) variant.
+  withRankDelta = false,
 ): Promise<DispatchSummary> {
   if (pending.length === 0) return { ...ZERO };
 
@@ -280,6 +336,12 @@ async function dispatchPending(
     throw new Error(`[result-emails] load standings: ${boardErr.message}`);
   }
   const board = new Map((boardData ?? []).map((b) => [b.user_id as string, b]));
+
+  // Previous-run ranks, captured by the cron before runSync() recomputed scores.
+  // Absent for first appearances (and never read on the force path) → `new`.
+  const snapshotRanks = withRankDelta
+    ? await loadSnapshotRanks(admin, userIds)
+    : new Map<string, number>();
 
   const t = (await getTranslations({
     locale: DEFAULT_LOCALE,
@@ -303,18 +365,27 @@ async function dispatchPending(
       continue;
     }
     const b = board.get(p.userId);
+    const newRank = (b?.rank as number | null) ?? null;
+    // Only the cron path has a fresh snapshot; force-resend leaves rankDelta null
+    // so the template renders the neutral variant.
+    const rankDelta: RankDelta | null = withRankDelta
+      ? computeRankDelta(snapshotRanks.get(p.userId) ?? null, newRank)
+      : null;
     const data: ResultEmailData = {
       displayName: (b?.display_name as string | null) ?? null,
       standing: {
-        rank: (b?.rank as number | null) ?? null,
+        rank: newRank,
         totalPoints: (b?.total_points as number | null) ?? 0,
         exactHits: (b?.exact_hits as number | null) ?? 0,
         winnerGdHits: (b?.winner_gd_hits as number | null) ?? 0,
       },
+      rankDelta,
       matches: p.matches,
       strings: buildResultEmailStrings(t, {
         displayName: (b?.display_name as string | null) ?? null,
         earnedPoints: p.matches.reduce((sum, m) => sum + m.points, 0),
+        rankDelta,
+        newRank,
       }),
       leaderboardUrl,
     };
@@ -385,7 +456,8 @@ export async function dispatchResultEmails(
     pending.map((p) => p.userId),
   );
   const filtered = filterResultOptIns(pending, prefs);
-  const summary = await dispatchPending(admin, filtered, fromName);
+  // Cron path: render the rank delta from the pre-recompute snapshot.
+  const summary = await dispatchPending(admin, filtered, fromName, true);
   return { ...summary, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
 }
 

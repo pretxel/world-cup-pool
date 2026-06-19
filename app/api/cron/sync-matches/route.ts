@@ -4,6 +4,7 @@ import { availableProviders, runSync } from "@/lib/result-sync/core";
 import { syncLiveEvents } from "@/lib/result-sync/events";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { dispatchResultEmails } from "@/lib/notifications/result-emails";
+import { captureRankSnapshot } from "@/lib/notifications/rank-snapshot";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
 import { generatePendingSummaries } from "@/lib/matches/match-summary";
@@ -37,6 +38,17 @@ export async function GET(request: NextRequest) {
   // recorded (status='error') and RE-THROWN, so the route still 500s exactly as
   // before. The recorded summary is the same object returned to the caller.
   const { summary: response } = await recordRun("sync_matches", "cron", async () => {
+    // Snapshot every ranked player's current overall rank BEFORE runSync()
+    // recomputes scores — this MUST run first, since after the recompute
+    // v_leaderboard_overall reflects the new standing and the previous-rank
+    // baseline (used to render "you moved up N to #X") would be lost. Isolated:
+    // a failure is logged and never aborts the sync.
+    try {
+      await captureRankSnapshot(createAdminSupabaseClient());
+    } catch (err) {
+      console.error("[cron:sync-matches] rank snapshot failed:", err);
+    }
+
     const summary = await runSync();
 
     // Ingest ESPN play-by-play for any match the sync left live. Isolated:

@@ -1061,6 +1061,7 @@
     "winnerGdLabel": "Vainqueur/Diff",
     "youLabel": "Vous",
     "ptsSuffix": "pts",
+    "rankDelta": "{direction, select, up {Vous avez gagné {count, number} places jusqu'au #{rank, number}.} down {Vous avez perdu {count, number} places jusqu'au #{rank, number}.} same {Vous avez conservé votre place au #{rank, number}.} other {Vous voilà au classement : à vous de grimper.}}",
     "outcomes": {
       "exact": "Exact",
       "winner_gd": "Vainqueur + diff",

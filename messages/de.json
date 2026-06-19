@@ -1061,6 +1061,7 @@
     "winnerGdLabel": "Sieger/Tordiff.",
     "youLabel": "Du",
     "ptsSuffix": "Pkt.",
+    "rankDelta": "{direction, select, up {Du bist {count, number} Plätze auf #{rank, number} geklettert.} down {Du bist {count, number} Plätze auf #{rank, number} gerutscht.} same {Du hast deinen Platz auf #{rank, number} gehalten.} other {Du bist in der Rangliste – jetzt nach oben.}}",
     "outcomes": {
       "exact": "Exakt",
       "winner_gd": "Sieger + Tordiff.",

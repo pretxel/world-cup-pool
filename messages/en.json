@@ -1061,6 +1061,7 @@
     "winnerGdLabel": "Winner/GD",
     "youLabel": "You",
     "ptsSuffix": "pts",
+    "rankDelta": "{direction, select, up {You moved up {count, number} to #{rank, number}.} down {You slipped {count, number} to #{rank, number}.} same {You held your spot at #{rank, number}.} other {You're on the board — let's climb.}}",
     "outcomes": {
       "exact": "Exact",
       "winner_gd": "Winner + GD",
