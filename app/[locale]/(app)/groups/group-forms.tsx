@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2Icon, PlusIcon, TicketIcon } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 import {
   createGroupAction,
   joinGroupAction,
@@ -75,6 +76,19 @@ export function JoinGroupForm({
   useEffect(() => {
     if (state.error) toast.error(t(state.error));
   }, [state, t]);
+
+  // A successful join `redirect`s, so the client never sees an explicit success
+  // return. Fire `group_joined` when a submit settles without an error (the
+  // inverse of the error effect above). `wasPending` ensures we key off an
+  // actual submit and never fire on initial mount; the redirect-driven unmount
+  // race may slightly undercount, which is acceptable.
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) {
+      trackEvent("group_joined");
+    }
+    wasPending.current = pending;
+  }, [pending, state.error]);
 
   return (
     <form action={formAction} className="flex flex-col gap-2">

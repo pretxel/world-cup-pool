@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LeaderboardTable } from "@/components/leaderboard-table";
+import { LeaderboardViewTracker } from "./leaderboard-view-tracker";
 import { ShareButtons } from "@/components/share-buttons";
 import type { LeaderboardRow } from "@/lib/db";
 import { ArrowRightIcon } from "lucide-react";
@@ -62,6 +63,7 @@ export default async function LeaderboardPage({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      <LeaderboardViewTracker />
       <header className="mb-6 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
@@ -138,6 +140,7 @@ export default async function LeaderboardPage({
             {tShare("heading")}
           </p>
           <ShareButtons
+            context="rank"
             shareUrl={`${env.siteUrl}${buildRankSharePath(locale, myRow.user_id)}`}
             shareText={tShare("shareText", {
               rank: myRow.rank ?? 0,
