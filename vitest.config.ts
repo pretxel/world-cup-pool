@@ -8,6 +8,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    setupFiles: ["./tests/setup-env.ts"],
     // The `server-only` marker package throws on import outside a React Server
     // Component; alias it to an empty shim so server modules (cron route,
     // notifications) import cleanly under the node test env.
