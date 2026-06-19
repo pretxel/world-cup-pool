@@ -26,6 +26,15 @@
     "admin": "Admin",
     "brandTag": "Pool"
   },
+  "profileMenu": {
+    "openMenu": "Open account menu",
+    "account": "Account",
+    "nameLabel": "Display name",
+    "save": "Save",
+    "saved": "Display name updated",
+    "invalid": "Name must be 2–32 characters.",
+    "error": "Couldn't update your name"
+  },
   "footer": {
     "tournament": "WC26 Pool · 11 Jun – 19 Jul 2026",
     "howItWorks": "How it works",
