@@ -191,6 +191,9 @@
     "needsPickEmptyTitle": "Todo al día",
     "needsPickEmptyBody": "No tienes pronósticos pendientes — vuelve mañana para los próximos partidos.",
     "needsPickEmptyAction": "Ver todos los partidos",
+    "pendingPicksNudge": "{count, plural, one {Aún tienes # partido próximo sin pronóstico.} other {Aún tienes # partidos próximos sin pronóstico.}}",
+    "pendingPicksNudgeAction": "Haz tus pronósticos",
+    "pendingPicksNudgeDismiss": "Descartar aviso",
     "loadFailed": "No se pudieron cargar los partidos: {message}"
   },
   "news": {

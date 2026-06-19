@@ -191,6 +191,9 @@
     "needsPickEmptyTitle": "All caught up",
     "needsPickEmptyBody": "No picks pending — come back tomorrow for the next fixtures.",
     "needsPickEmptyAction": "View all matches",
+    "pendingPicksNudge": "{count, plural, one {You still have # upcoming match needing a pick.} other {You still have # upcoming matches needing a pick.}}",
+    "pendingPicksNudgeAction": "Make your picks",
+    "pendingPicksNudgeDismiss": "Dismiss reminder",
     "loadFailed": "Failed to load matches: {message}"
   },
   "news": {
