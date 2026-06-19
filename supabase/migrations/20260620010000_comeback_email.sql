@@ -47,7 +47,12 @@ alter table public.comeback_email_log enable row level security;
 -- ---------------------------------------------------------------------------
 alter table public.profiles
   alter column email_prefs set default
-    '{"prediction_reminder":true,"result":true,"quiz_reminder":true,"comeback":true}'::jsonb;
+    '{"prediction_reminder":true,"result":true,"quiz_reminder":true,"results_digest":true,"recap_digest":true,"comeback":true}'::jsonb;
+
+-- Backfill comeback into existing rows (default-on, explicit).
+update public.profiles
+set email_prefs = email_prefs || '{"comeback":true}'::jsonb
+where not (email_prefs ? 'comeback');
 
 -- ---------------------------------------------------------------------------
 -- Allow the new operation kind in the operation_runs ledger so the comeback
@@ -58,5 +63,6 @@ alter table public.operation_runs
   drop constraint operation_runs_kind_check;
 alter table public.operation_runs
   add constraint operation_runs_kind_check check (kind in (
-    'sync_matches', 'sync_news', 'prediction_reminders', 'quiz_reminders', 'comeback_emails'
+    'sync_matches', 'sync_news', 'prediction_reminders', 'quiz_reminders',
+    'results_digest', 'recap_digest', 'comeback_emails'
   ));
