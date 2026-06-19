@@ -28,7 +28,7 @@ import {
   soonestPickableMatch,
   statusBucket,
 } from "@/lib/match-utils";
-import { readTimeZoneCookie } from "@/lib/timezone";
+import { persistTimeZoneForCurrentUser, readTimeZoneCookie } from "@/lib/timezone";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { maybeScheduleOpportunisticSync } from "@/lib/result-sync/opportunistic";
 import { getActiveCompetition } from "@/lib/competition";
@@ -178,6 +178,9 @@ export default async function MatchesPage({
   // for a deterministic first render. Source order is kickoff_at ASC, so the
   // Map's insertion order keeps the day sections chronological.
   const timeZone = await readTimeZoneCookie();
+  // Best-effort: mirror the detected zone onto the signed-in user's profile so
+  // the reminder crons can bucket them to ~7am local. Never blocks the render.
+  await persistTimeZoneForCurrentUser(timeZone);
   const dayKey = dayKeyForTimeZone(timeZone);
   const byDay = new Map<string, MatchRow[]>();
   for (const m of filtered) {

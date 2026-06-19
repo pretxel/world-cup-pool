@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   dayKeyForTimeZone,
+  filterRecipientsAtLocalHour,
   filterableTeams,
   formatDayKeyLabel,
   isClosingSoon,
@@ -9,6 +10,7 @@ import {
   LOCK_LEAD_WINDOW_MS,
   isValidTimeZone,
   localDateKey,
+  localHourForTimeZone,
   lockReason,
   matchInvolvesTeam,
   needsPick,
@@ -376,5 +378,62 @@ describe("formatDayKeyLabel", () => {
 
   it("localizes the heading", () => {
     expect(formatDayKeyLabel("2026-06-12", "es")).toContain("jun");
+  });
+});
+
+describe("localHourForTimeZone", () => {
+  it("returns the wall-clock hour in the given zone", () => {
+    const now = new Date("2026-06-15T11:00:00Z");
+    expect(localHourForTimeZone("America/New_York", now)).toBe(7); // EDT -04
+    expect(localHourForTimeZone("Europe/Madrid", now)).toBe(13); // CEST +02
+    expect(localHourForTimeZone("Asia/Tokyo", now)).toBe(20); // JST +09
+  });
+
+  it("falls back to the UTC hour for a null/empty/invalid zone", () => {
+    const now = new Date("2026-06-15T07:00:00Z");
+    expect(localHourForTimeZone(null, now)).toBe(7);
+    expect(localHourForTimeZone(undefined, now)).toBe(7);
+    expect(localHourForTimeZone("", now)).toBe(7);
+    expect(localHourForTimeZone("Not/AZone", now)).toBe(7);
+  });
+});
+
+describe("filterRecipientsAtLocalHour", () => {
+  const r = (id: string, timezone: string | null) => ({ id, timezone });
+
+  it("keeps each user only at the instant that is 7am in their own zone", () => {
+    const ny = r("ny", "America/New_York");
+    const madrid = r("madrid", "Europe/Madrid");
+    const tokyo = r("tokyo", "Asia/Tokyo");
+    const all = [ny, madrid, tokyo];
+
+    // 7am EDT = 11:00 UTC
+    expect(filterRecipientsAtLocalHour(all, new Date("2026-06-15T11:00:00Z"))).toEqual([ny]);
+    // 7am CEST = 05:00 UTC
+    expect(filterRecipientsAtLocalHour(all, new Date("2026-06-15T05:00:00Z"))).toEqual([madrid]);
+    // 7am JST = 22:00 UTC (previous calendar day)
+    expect(filterRecipientsAtLocalHour(all, new Date("2026-06-15T22:00:00Z"))).toEqual([tokyo]);
+  });
+
+  it("buckets a null/invalid timezone as UTC 7am", () => {
+    const a = r("a", null);
+    const b = r("b", "Bogus/Zone");
+    const all = [a, b];
+    expect(filterRecipientsAtLocalHour(all, new Date("2026-06-15T07:00:00Z"))).toEqual([a, b]);
+    expect(filterRecipientsAtLocalHour(all, new Date("2026-06-15T08:00:00Z"))).toEqual([]);
+  });
+
+  it("excludes users whose local hour is not the target", () => {
+    const madrid = r("madrid", "Europe/Madrid");
+    // 12:00 UTC = 14:00 CEST — nowhere near 7am.
+    expect(filterRecipientsAtLocalHour([madrid], new Date("2026-06-15T12:00:00Z"))).toEqual([]);
+  });
+
+  it("honors a custom target hour", () => {
+    const madrid = r("madrid", "Europe/Madrid");
+    // 12:00 UTC = 14:00 CEST
+    expect(filterRecipientsAtLocalHour([madrid], new Date("2026-06-15T12:00:00Z"), 14)).toEqual([
+      madrid,
+    ]);
   });
 });

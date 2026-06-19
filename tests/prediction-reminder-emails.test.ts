@@ -99,7 +99,7 @@ import {
 } from "@/lib/notifications/prediction-reminder-emails";
 
 function recip(id: string): PredictionRecipient {
-  return { userId: id, displayName: id, unsubscribeToken: `tok-${id}` };
+  return { userId: id, displayName: id, unsubscribeToken: `tok-${id}`, timezone: null };
 }
 
 const M1: TodayMatch = { id: "m1", home_team: "Brazil", away_team: "Mexico", kickoff_at: "x" };
@@ -169,6 +169,10 @@ const upsertMock = vi.fn();
 const getUserByIdMock = vi.fn();
 
 const FUTURE = "2030-06-01T12:00:00.000Z";
+// The dispatcher buckets recipients to ~7am local: with a null timezone the
+// fallback is UTC, so the run must be at 07:00 UTC (same day as FUTURE) for the
+// eligibility tests below to send. Frozen via fake timers in beforeEach.
+const RUN_NOW = new Date("2030-06-01T07:00:00.000Z");
 let matchData: unknown[] = [];
 let profileData: unknown[] = [];
 let predictionData: unknown[] = [];
@@ -235,6 +239,8 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(RUN_NOW);
   batchSendMock.mockReset();
   upsertMock.mockReset().mockResolvedValue({ error: null });
   getUserByIdMock
@@ -251,6 +257,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks();
+  vi.useRealTimers();
 });
 
 describe("dispatchPredictionReminders", () => {
@@ -419,5 +426,55 @@ describe("dispatchPredictionReminders", () => {
     const summary = await dispatchPredictionReminders();
     expect(summary.emailed).toBe(1500);
     expect(batchSendMock).toHaveBeenCalledTimes(15);
+  });
+
+  // --- Local-7am bucketing under the hourly schedule ----------------------
+  // RUN_NOW is 07:00 UTC. A user is emailed only when it is ~7am in their zone.
+
+  it("excludes a user whose local hour is not 7 at the run instant", async () => {
+    // At 07:00 UTC it is 09:00 in Europe/Madrid (CEST, +02) — NOT their 7am.
+    profileData = [
+      { id: "u1", display_name: "Alex", unsubscribe_token: "tok1", timezone: "Europe/Madrid" },
+    ];
+    const { dispatchPredictionReminders } = await import(
+      "@/lib/notifications/prediction-reminder-emails"
+    );
+    const summary = await dispatchPredictionReminders();
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
+  });
+
+  it("emails a user for whom the run hour is their local 7am", async () => {
+    // Atlantic/Reykjavik is UTC+0 year-round, so 07:00 UTC == 07:00 local.
+    profileData = [
+      { id: "u1", display_name: "Alex", unsubscribe_token: "tok1", timezone: "Atlantic/Reykjavik" },
+    ];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { dispatchPredictionReminders } = await import(
+      "@/lib/notifications/prediction-reminder-emails"
+    );
+    const summary = await dispatchPredictionReminders();
+    expect(summary.emailed).toBe(1);
+  });
+
+  it("emails a null-timezone user via the UTC fallback at 07:00 UTC", async () => {
+    profileData = [{ id: "u1", display_name: "Alex", unsubscribe_token: "tok1", timezone: null }];
+    batchSendMock.mockResolvedValue({ data: { data: [] }, error: null });
+    const { dispatchPredictionReminders } = await import(
+      "@/lib/notifications/prediction-reminder-emails"
+    );
+    const summary = await dispatchPredictionReminders();
+    expect(summary.emailed).toBe(1);
+  });
+
+  it("does not email a null-timezone user off the UTC fallback hour", async () => {
+    vi.setSystemTime(new Date("2030-06-01T10:00:00.000Z"));
+    profileData = [{ id: "u1", display_name: "Alex", unsubscribe_token: "tok1", timezone: null }];
+    const { dispatchPredictionReminders } = await import(
+      "@/lib/notifications/prediction-reminder-emails"
+    );
+    const summary = await dispatchPredictionReminders();
+    expect(summary).toEqual({ emailed: 0, failed: 0, skipped: 0 });
+    expect(batchSendMock).not.toHaveBeenCalled();
   });
 });

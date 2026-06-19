@@ -126,6 +126,49 @@ export function dayKeyForTimeZone(timeZone: string | null | undefined): (iso: st
   return utcDateKey;
 }
 
+// --- Local-hour bucketing (timezone-aware reminders) ----------------------
+// The reminder crons run hourly and email each user on the run nearest 7am in
+// their own timezone. Given an instant and an IANA zone, this returns the wall-
+// clock hour (0–23) in that zone, using the same Intl primitive family as
+// localDateKey. A null/invalid zone (per isValidTimeZone) falls back to the UTC
+// hour, so a user with no stored timezone is bucketed as if they were in UTC
+// rather than silently excluded.
+
+// The local hour (0–23) of `now` in `timeZone`. Pure; never throws. Falls back
+// to the UTC hour when the zone is absent or unresolvable.
+export function localHourForTimeZone(timeZone: string | null | undefined, now: Date): number {
+  if (timeZone && isValidTimeZone(timeZone)) {
+    const part = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(now)
+      .find((p) => p.type === "hour")?.value;
+    if (part !== undefined) {
+      const hour = Number.parseInt(part, 10);
+      if (Number.isInteger(hour)) return hour;
+    }
+  }
+  return now.getUTCHours();
+}
+
+// The single wall-clock hour at which a user should be reminded — ~7am local.
+export const REMINDER_LOCAL_HOUR = 7;
+
+// Pure: keep only the recipients whose current local hour equals the target
+// hour. Each recipient carries an optional IANA `timezone`; a null/invalid one
+// is bucketed as UTC via localHourForTimeZone. Generic over the recipient shape
+// so both reminder dispatchers can share it; mirrors the computePending*
+// helpers (pure, exported, unit-testable over (recipients, now)).
+export function filterRecipientsAtLocalHour<T extends { timezone: string | null }>(
+  recipients: readonly T[],
+  now: Date = new Date(),
+  targetHour: number = REMINDER_LOCAL_HOUR,
+): T[] {
+  return recipients.filter((r) => localHourForTimeZone(r.timezone, now) === targetHour);
+}
+
 // Localized heading for a day section, e.g. "Fri, Jun 12, 2026". The key
 // already names the visitor's local calendar day, so a noon-UTC instant
 // formatted in UTC renders exactly that date with no timezone shift, in the
