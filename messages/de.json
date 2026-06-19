@@ -523,7 +523,10 @@
     "emptyBody": "Noch keine abgeschlossenen Spiele. Schauen Sie wieder vorbei, sobald die ersten Ergebnisse vorliegen.",
     "browseMatches": "Spiele durchsuchen",
     "notYetTitle": "Sie stehen noch nicht in der Tabelle.",
-    "notYetBody": "Geben Sie Tipps ab, um Punkte zu sammeln."
+    "notYetBody": "Geben Sie Tipps ab, um Punkte zu sammeln.",
+    "inviteCtaTitle": "Spielen Sie mit Ihren Freunden",
+    "inviteCtaBody": "Erstellen Sie eine Gruppe oder treten Sie einer bei, um zu sehen, wie Sie im Vergleich zu Bekannten abschneiden.",
+    "inviteCtaLink": "Freunde einladen"
   },
   "groups": {
     "title": "Groups",

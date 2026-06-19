@@ -523,7 +523,10 @@
     "emptyBody": "No completed matches yet. Check back once the first results are in.",
     "browseMatches": "Browse matches",
     "notYetTitle": "You're not yet on the board.",
-    "notYetBody": "Submit predictions to start banking points."
+    "notYetBody": "Submit predictions to start banking points.",
+    "inviteCtaTitle": "Play with your friends",
+    "inviteCtaBody": "Create a group or join one to see how you stack up against the people you know.",
+    "inviteCtaLink": "Invite friends"
   },
   "groups": {
     "title": "Groups",

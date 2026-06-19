@@ -172,6 +172,21 @@ export default async function LeaderboardPage({
           </Link>
         </div>
       ) : null}
+
+      {user ? (
+        <div className="mt-6 flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card p-5 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-medium">{t("inviteCtaTitle")}</p>
+            <p className="mt-1 text-muted-foreground">{t("inviteCtaBody")}</p>
+          </div>
+          <Link
+            href={localePath(locale, "/groups")}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline-offset-4 hover:text-pitch hover:underline"
+          >
+            {t("inviteCtaLink")} <ArrowRightIcon className="size-3.5" />
+          </Link>
+        </div>
+      ) : null}
     </main>
   );
 }
