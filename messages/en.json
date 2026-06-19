@@ -142,7 +142,8 @@
     "newsCta": "Read the news",
     "quizTitle": "Daily Call",
     "quizCopy": "One World Cup trivia question a day. Answer before midnight UTC, keep your streak, and climb the quiz board.",
-    "quizCta": "Play today's question"
+    "quizCta": "Play today's question",
+    "standingEyebrow": "Your standing"
   },
   "howItWorks": {
     "title": "How it works",
@@ -440,6 +441,7 @@
     "browseMatches": "Browse matches",
     "rowPick": "Pick",
     "rowFinal": "Final",
+    "rowPending": "Pending",
     "rowEdit": "Edit",
     "loadFailed": "Failed to load picks: {message}",
     "ptsSingular": "pt",
@@ -448,6 +450,30 @@
     "pagePosition": "Page {current} of {total}",
     "prevPage": "Previous",
     "nextPage": "Next"
+  },
+  "standingCards": {
+    "ariaLabel": "Your standing",
+    "points": "Points",
+    "exact": "Exact",
+    "picks": "Picks",
+    "rank": "Rank",
+    "unranked": "Unranked",
+    "deltaNew": "New",
+    "deltaSame": "No change in rank",
+    "deltaUp": "Up {n} places",
+    "deltaDown": "Down {n} places",
+    "accuracyTitle": "Picks vs. results",
+    "accuracyExact": "Exact",
+    "accuracyWinner": "Winner",
+    "accuracyMiss": "Miss",
+    "accuracyEmpty": "Accuracy appears as matches finish."
+  },
+  "picksVsResults": {
+    "eyebrow": "Side by side",
+    "heading": "My picks vs. real results",
+    "lede": "Your simulated group tables next to the actual standings, built from real match results.",
+    "picksLabel": "My picks",
+    "resultsLabel": "Real results"
   },
   "groupSimulation": {
     "groupHeading": "Group {code}",

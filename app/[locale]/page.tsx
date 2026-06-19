@@ -19,6 +19,10 @@ import { TeamFlag } from "@/components/team-flag";
 import { Logotype } from "@/components/logotype";
 import { TournamentCountdown } from "@/components/tournament-countdown";
 import { RecentRecapImages } from "@/components/recent-recap-images";
+import { StandingCards } from "@/components/standing-cards";
+import { StandingCardsTracker } from "@/components/standing-cards-tracker";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getStandingSummary } from "@/lib/standing-summary";
 
 export async function generateMetadata({
   params,
@@ -42,8 +46,28 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations("home");
 
+  // Signed-in visitors get a real standing-cards strip above the hero. Anonymous
+  // visitors hit no authed query and see the static marketing landing unchanged,
+  // preserving the public page's SEO/perf characteristics.
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const standingSummary = user ? await getStandingSummary(user.id) : null;
+
   return (
     <main>
+      {standingSummary ? (
+        <section className="border-b border-border/70 bg-muted/30">
+          <div className="mx-auto max-w-6xl px-4 py-6">
+            <StandingCardsTracker />
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+              {t("standingEyebrow")}
+            </p>
+            <StandingCards summary={standingSummary} />
+          </div>
+        </section>
+      ) : null}
       <Hero locale={locale} t={t} />
       <TournamentCountdown />
       <ScoringSection locale={locale} t={t} />
