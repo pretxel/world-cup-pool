@@ -188,6 +188,9 @@
     "filterEmptyTitle": "Aucun match",
     "filterEmptyBody": "Aucun match ne correspond à vos filtres. Retirez-les pour voir tout le calendrier.",
     "filterClear": "Retirer les filtres",
+    "needsPickEmptyTitle": "Tout est à jour",
+    "needsPickEmptyBody": "Aucun prono en attente — revenez demain pour les prochains matchs.",
+    "needsPickEmptyAction": "Voir tous les matchs",
     "loadFailed": "Échec du chargement des matchs : {message}"
   },
   "news": {
