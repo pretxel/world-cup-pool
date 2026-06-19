@@ -40,6 +40,7 @@
     "prediction_reminder": "Prediction reminders",
     "result": "Result emails",
     "quiz_reminder": "Quiz reminders",
+    "comeback": "Comeback emails",
     "saved": "Preferences updated",
     "error": "Couldn't update your preferences"
   },
@@ -944,13 +945,15 @@
         "sync_matches": "Score sync",
         "sync_news": "News sync",
         "prediction_reminders": "Prediction reminders",
-        "quiz_reminders": "Quiz reminders"
+        "quiz_reminders": "Quiz reminders",
+        "comeback_emails": "Comeback emails"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
         "sync_news": "Refreshes the World Cup news feed",
         "prediction_reminders": "Nudges players with open picks",
-        "quiz_reminders": "Nudges players who haven't answered"
+        "quiz_reminders": "Nudges players who haven't answered",
+        "comeback_emails": "Wins back inactive players with a pickable match"
       },
       "status": {
         "success": "Success",
@@ -1149,5 +1152,22 @@
     "ctaLabel": "Make your predictions",
     "footer": "You're getting this because you're playing the World Cup pool. Predictions lock at each match's kickoff.",
     "unsubscribeLabel": "Unsubscribe from daily prediction reminders"
+  },
+  "comebackEmail": {
+    "subject": "We miss your picks — the pool is still on",
+    "preheader": "You haven't predicted in a while. Jump back in before the next kickoff.",
+    "eyebrow": "Come back",
+    "heading": "{name}, the pool misses you",
+    "headingNoName": "The pool misses you",
+    "intro": "You've gone quiet, but there are still matches to predict and points to climb. Here's where you stand and what's next.",
+    "daysInactiveLabel": "{days} days since your last pick",
+    "rankLabel": "Currently #{rank}",
+    "unrankedLabel": "Not ranked yet",
+    "pointsLabel": "{points} points",
+    "matchesLabel": "Next up to predict",
+    "vs": "vs",
+    "ctaLabel": "Make your picks",
+    "footer": "You're getting this because you're playing the World Cup pool and haven't predicted in a while.",
+    "unsubscribeLabel": "Unsubscribe from comeback emails"
   }
 }

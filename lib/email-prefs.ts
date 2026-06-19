@@ -8,6 +8,7 @@ export const EMAIL_PREF_KEYS = [
   "prediction_reminder",
   "result",
   "quiz_reminder",
+  "comeback",
 ] as const;
 
 export type EmailPrefKey = (typeof EMAIL_PREF_KEYS)[number];
@@ -20,6 +21,7 @@ export const DEFAULT_EMAIL_PREFS: EmailPrefs = {
   prediction_reminder: true,
   result: true,
   quiz_reminder: true,
+  comeback: true,
 };
 
 // Validates the payload the account-menu toggles send to updateEmailPrefs: the
@@ -29,6 +31,7 @@ export const emailPrefsSchema = z
     prediction_reminder: z.boolean(),
     result: z.boolean(),
     quiz_reminder: z.boolean(),
+    comeback: z.boolean(),
   })
   .partial();
 
@@ -53,5 +56,6 @@ export function normalizeEmailPrefs(prefs: unknown): EmailPrefs {
     prediction_reminder: isOptedIn(prefs, "prediction_reminder"),
     result: isOptedIn(prefs, "result"),
     quiz_reminder: isOptedIn(prefs, "quiz_reminder"),
+    comeback: isOptedIn(prefs, "comeback"),
   };
 }

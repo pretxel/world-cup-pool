@@ -40,6 +40,7 @@
     "prediction_reminder": "Recordatorios de pronósticos",
     "result": "Correos de resultados",
     "quiz_reminder": "Recordatorios del quiz",
+    "comeback": "Correos de regreso",
     "saved": "Preferencias actualizadas",
     "error": "No se pudieron actualizar las preferencias"
   },
@@ -944,13 +945,15 @@
         "sync_matches": "Sincronización de resultados",
         "sync_news": "Sincronización de noticias",
         "prediction_reminders": "Recordatorios de pronósticos",
-        "quiz_reminders": "Recordatorios del quiz"
+        "quiz_reminders": "Recordatorios del quiz",
+        "comeback_emails": "Correos de regreso"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
         "sync_news": "Actualiza las noticias del Mundial",
         "prediction_reminders": "Avisa a quienes tienen pronósticos abiertos",
-        "quiz_reminders": "Avisa a quienes no han respondido"
+        "quiz_reminders": "Avisa a quienes no han respondido",
+        "comeback_emails": "Recupera a jugadores inactivos con un partido por pronosticar"
       },
       "status": {
         "success": "Éxito",
@@ -1149,5 +1152,22 @@
     "ctaLabel": "Hacer mis pronósticos",
     "footer": "Recibes esto porque participas en la quiniela del Mundial. Los pronósticos se cierran al inicio de cada partido.",
     "unsubscribeLabel": "Cancelar los recordatorios de pronósticos diarios"
+  },
+  "comebackEmail": {
+    "subject": "Echamos de menos tus pronósticos — la quiniela sigue",
+    "preheader": "Hace tiempo que no pronosticas. Vuelve antes del próximo partido.",
+    "eyebrow": "Vuelve",
+    "heading": "{name}, la quiniela te echa de menos",
+    "headingNoName": "La quiniela te echa de menos",
+    "intro": "Llevas un tiempo sin aparecer, pero aún quedan partidos por pronosticar y puntos por escalar. Aquí está tu posición y lo que viene.",
+    "daysInactiveLabel": "{days} días desde tu último pronóstico",
+    "rankLabel": "Actualmente #{rank}",
+    "unrankedLabel": "Aún sin clasificación",
+    "pointsLabel": "{points} puntos",
+    "matchesLabel": "Próximos por pronosticar",
+    "vs": "vs",
+    "ctaLabel": "Hacer mis pronósticos",
+    "footer": "Recibes esto porque participas en la quiniela del Mundial y hace tiempo que no pronosticas.",
+    "unsubscribeLabel": "Cancelar los correos de regreso"
   }
 }

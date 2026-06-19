@@ -12,6 +12,7 @@ export const OPERATION_SCHEDULES: Record<OperationKind, { cron: string; hourUtc:
   sync_matches: { cron: "0 9 * * *", hourUtc: 9 },
   prediction_reminders: { cron: "0 12 * * *", hourUtc: 12 },
   quiz_reminders: { cron: "0 13 * * *", hourUtc: 13 },
+  comeback_emails: { cron: "0 15 * * *", hourUtc: 15 },
 };
 
 // The next UTC instant this job is scheduled to fire: today at its hour if that

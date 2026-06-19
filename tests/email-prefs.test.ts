@@ -34,6 +34,7 @@ describe("normalizeEmailPrefs", () => {
       prediction_reminder: true,
       result: false,
       quiz_reminder: true,
+      comeback: true,
     });
   });
 

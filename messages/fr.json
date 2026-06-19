@@ -40,6 +40,7 @@
     "prediction_reminder": "Rappels de pronostics",
     "result": "E-mails de résultats",
     "quiz_reminder": "Rappels du quiz",
+    "comeback": "E-mails de retour",
     "saved": "Préférences mises à jour",
     "error": "Impossible de mettre à jour les préférences"
   },
@@ -944,13 +945,15 @@
         "sync_matches": "Synchro des scores",
         "sync_news": "Synchro des actus",
         "prediction_reminders": "Rappels de pronostics",
-        "quiz_reminders": "Rappels du quiz"
+        "quiz_reminders": "Rappels du quiz",
+        "comeback_emails": "E-mails de retour"
       },
       "jobsDesc": {
         "sync_matches": "Récupère les résultats et recalcule le classement",
         "sync_news": "Actualise le fil d'actus de la Coupe du monde",
         "prediction_reminders": "Relance les joueurs aux pronostics ouverts",
-        "quiz_reminders": "Relance les joueurs sans réponse"
+        "quiz_reminders": "Relance les joueurs sans réponse",
+        "comeback_emails": "Relance les joueurs inactifs ayant un match à pronostiquer"
       },
       "status": {
         "success": "Succès",
@@ -1149,5 +1152,22 @@
     "ctaLabel": "Faire mes pronostics",
     "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde. Les pronostics se ferment au coup d'envoi de chaque match.",
     "unsubscribeLabel": "Se désabonner des rappels de pronostics quotidiens"
+  },
+  "comebackEmail": {
+    "subject": "Vos pronostics nous manquent — le pool continue",
+    "preheader": "Vous n'avez pas pronostiqué depuis un moment. Revenez avant le prochain coup d'envoi.",
+    "eyebrow": "Revenez",
+    "heading": "{name}, le pool vous attend",
+    "headingNoName": "Le pool vous attend",
+    "intro": "Vous vous êtes fait discret, mais il reste des matchs à pronostiquer et des points à grappiller. Voici votre position et la suite.",
+    "daysInactiveLabel": "{days} jours depuis votre dernier pronostic",
+    "rankLabel": "Actuellement #{rank}",
+    "unrankedLabel": "Pas encore classé",
+    "pointsLabel": "{points} points",
+    "matchesLabel": "Prochains à pronostiquer",
+    "vs": "vs",
+    "ctaLabel": "Faire mes pronostics",
+    "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde et n'avez pas pronostiqué depuis un moment.",
+    "unsubscribeLabel": "Se désabonner des e-mails de retour"
   }
 }
