@@ -6,6 +6,11 @@ import { getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isConfirmedMatch } from "@/lib/match-utils";
 import { isCurrentUserAdmin } from "@/lib/admin/current-user";
+import {
+  foldCounts,
+  REACTION_TYPES,
+  type ReactionType,
+} from "@/lib/recap-reactions";
 
 const schema = z.object({
   matchId: z.string().uuid(),
@@ -94,4 +99,60 @@ export async function submitPrediction(input: unknown): Promise<SubmitResult> {
   revalidatePath("/es/my-picks");
   revalidatePath("/fr/my-picks");
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Recap reactions: toggle an emoji reaction on the active recap of a final
+// match. RLS enforces own-row + active/final scoping; the SECURITY DEFINER RPC
+// (toggle_recap_reaction) adds the per-user rate limit, re-checks the allowlist
+// + active/final scope server-side, and returns the authoritative per-type
+// counts so the client reconciles its optimistic update. Reactions carry no
+// points and never touch scoring.
+// ---------------------------------------------------------------------------
+
+const reactionSchema = z.object({
+  summaryId: z.string().uuid(),
+  reaction: z.enum(REACTION_TYPES),
+  on: z.boolean(),
+});
+
+export type ToggleReactionResult =
+  | { ok: true; counts: Record<ReactionType, number> }
+  | { ok: false; error: string };
+
+export async function toggleRecapReaction(
+  input: unknown,
+): Promise<ToggleReactionResult> {
+  const t = await getTranslations("recapReactions");
+  const parsed = reactionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: t("errorInvalid") };
+  }
+  const { summaryId, reaction, on } = parsed.data;
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { ok: false, error: t("errorNotSignedIn") };
+  }
+
+  const { data, error } = await supabase.rpc("toggle_recap_reaction", {
+    p_summary_id: summaryId,
+    p_reaction: reaction,
+    p_on: on,
+  });
+
+  if (error) {
+    if (/rate limit/i.test(error.message)) {
+      return { ok: false, error: t("errorRateLimited") };
+    }
+    if (/not reactable|not allowed/i.test(error.message)) {
+      return { ok: false, error: t("errorNotReactable") };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true, counts: foldCounts(data ?? []) };
 }

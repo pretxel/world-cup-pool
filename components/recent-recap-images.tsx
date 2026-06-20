@@ -2,6 +2,7 @@ import "server-only";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getRecapReactionTotalsByMatch } from "@/lib/recap-reactions-server";
 import { env } from "@/lib/env";
 import { localePath, type Locale } from "@/lib/i18n";
 
@@ -29,6 +30,7 @@ type GalleryItem = {
   url: string;
   kickoffAt: string;
   createdAt: string;
+  reactionCount: number;
 };
 
 export async function RecentRecapImages({ locale }: { locale: Locale }) {
@@ -54,6 +56,12 @@ export async function RecentRecapImages({ locale }: { locale: Locale }) {
     );
   const matchById = new Map((matchRows ?? []).map((m) => [m.id, m]));
 
+  // Social-proof aggregate: summed reaction count per active recap, one bounded
+  // read. Matches with no reactions are absent → the card shows no badge.
+  const reactionTotals = await getRecapReactionTotalsByMatch(
+    rows.map((r) => r.match_id),
+  );
+
   const items: GalleryItem[] = rows
     .map((r): GalleryItem | null => {
       const m = matchById.get(r.match_id);
@@ -65,6 +73,7 @@ export async function RecentRecapImages({ locale }: { locale: Locale }) {
         url: recapImagePublicUrl(r.storage_path),
         kickoffAt: m.kickoff_at,
         createdAt: r.created_at,
+        reactionCount: reactionTotals.get(r.match_id) ?? 0,
       };
     })
     .filter((x): x is GalleryItem => x !== null);
@@ -110,8 +119,16 @@ export async function RecentRecapImages({ locale }: { locale: Locale }) {
                 alt={t("recapImageAlt", { home: item.home, away: item.away })}
                 className="aspect-[2/3] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               />
-              <div className="px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                {item.home} <span className="text-muted-foreground/50">vs</span> {item.away}
+              <div className="flex items-center justify-between gap-2 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                <span className="min-w-0 truncate">
+                  {item.home} <span className="text-muted-foreground/50">vs</span>{" "}
+                  {item.away}
+                </span>
+                {item.reactionCount > 0 ? (
+                  <span className="shrink-0 normal-case tracking-normal text-foreground/80">
+                    {t("recapReactionCount", { count: item.reactionCount })}
+                  </span>
+                ) : null}
               </div>
             </Link>
           </li>

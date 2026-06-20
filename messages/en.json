@@ -132,6 +132,7 @@
     "recapGalleryEyebrow": "04 · Match comics",
     "recapGalleryHeadline": "Recent matches, drawn.",
     "recapImageAlt": "Comic recap of {home} vs {away}",
+    "recapReactionCount": "{count, plural, one {# reaction} other {# reactions}}",
     "featuresEyebrow": "03 · More to play",
     "featuresHeadline": "Beyond the bracket.",
     "groupsTitle": "Friends groups",
@@ -338,6 +339,24 @@
     "summaryHeading": "Match recap",
     "summaryDisclaimer": "AI-generated summary",
     "recapImageAlt": "Comic recap of {home} vs {away}"
+  },
+  "recapReactions": {
+    "heading": "React to this recap",
+    "toggleAria": "{label} ({count})",
+    "signInPrompt": "Sign in to react.",
+    "signInCta": "Sign in",
+    "errorInvalid": "That reaction isn't allowed.",
+    "errorNotSignedIn": "You need to be signed in to react.",
+    "errorRateLimited": "You're reacting too fast — give it a moment.",
+    "errorNotReactable": "Reactions are only open on the recap of a finished match.",
+    "labels": {
+      "fire": "Fire",
+      "goal": "Golazo",
+      "shock": "Shocking",
+      "laugh": "Hilarious",
+      "clap": "Applause",
+      "sad": "Heartbreak"
+    }
   },
   "predictionForm": {
     "adminBlocked": "Admin accounts don't compete in the pool.",

@@ -132,6 +132,7 @@
     "recapGalleryEyebrow": "04 · BD des matchs",
     "recapGalleryHeadline": "Matchs récents, en BD.",
     "recapImageAlt": "Résumé BD de {home} contre {away}",
+    "recapReactionCount": "{count, plural, one {# réaction} other {# réactions}}",
     "featuresEyebrow": "03 · Encore plus à jouer",
     "featuresHeadline": "Au-delà du tableau.",
     "groupsTitle": "Groupes d'amis",
@@ -338,6 +339,24 @@
     "summaryHeading": "Résumé du match",
     "summaryDisclaimer": "Résumé généré par IA",
     "recapImageAlt": "Résumé BD de {home} contre {away}"
+  },
+  "recapReactions": {
+    "heading": "Réagissez à ce résumé",
+    "toggleAria": "{label} ({count})",
+    "signInPrompt": "Connectez-vous pour réagir.",
+    "signInCta": "Se connecter",
+    "errorInvalid": "Cette réaction n'est pas autorisée.",
+    "errorNotSignedIn": "Vous devez être connecté pour réagir.",
+    "errorRateLimited": "Vous réagissez trop vite — patientez un instant.",
+    "errorNotReactable": "Les réactions ne sont ouvertes que sur le résumé d'un match terminé.",
+    "labels": {
+      "fire": "Feu",
+      "goal": "Golazo",
+      "shock": "Choquant",
+      "laugh": "Hilarant",
+      "clap": "Applaudissements",
+      "sad": "Crève-cœur"
+    }
   },
   "predictionForm": {
     "adminBlocked": "Les comptes administrateur ne participent pas au pool.",
