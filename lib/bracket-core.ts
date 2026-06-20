@@ -178,17 +178,29 @@ function groupParticipant(
   };
 }
 
-// The 8 qualifying group letters when every group is complete: rank all 12
-// third-placed rows by the standard tie-break and take the top 8 groups.
-function qualifyingThirdGroups(ctx: GroupContext): string[] | null {
-  if (!ctx.allGroupsComplete) return null;
+// The 8 qualifying group letters from the current standings: rank every group's
+// current third-placed row by the standard tie-break and take the top 8 groups.
+// Computed once every group has at least one result (so each group's current
+// third is real), returning a `provisional` flag — true until all groups
+// complete, when the set and order are final. Returns null (→ placeholder)
+// before every group has a result.
+function qualifyingThirdGroups(
+  ctx: GroupContext,
+): { groups: string[]; provisional: boolean } | null {
   const thirds: { code: string; row: GroupTeamRow }[] = [];
   for (const [code, rows] of ctx.rowsByCode) {
-    if (rows[2]) thirds.push({ code, row: rows[2] });
+    if (ctx.hasResults.has(code) && rows[2]) {
+      thirds.push({ code, row: rows[2] });
+    }
   }
-  if (thirds.length < 8) return null;
+  // Require every group to have a results-backed third, and at least 8, so the
+  // ranking is over each group's real current third rather than a partial set.
+  if (thirds.length !== ctx.rowsByCode.size || thirds.length < 8) return null;
   thirds.sort((a, b) => compareTeamRows(a.row, b.row));
-  return thirds.slice(0, 8).map((t) => t.code);
+  return {
+    groups: thirds.slice(0, 8).map((t) => t.code),
+    provisional: !ctx.allGroupsComplete,
+  };
 }
 
 export type BracketSlotMatch = {
@@ -220,9 +232,12 @@ export function buildBracket(matches: BracketMatchInput[]): Bracket {
 
   const ctx = buildGroupContext(groupMatches);
   const { numberById, matchByNumber } = assignMatchNumbers(matches);
-  const thirdAlloc = (() => {
+  const { thirdAlloc, thirdsProvisional } = (() => {
     const q = qualifyingThirdGroups(ctx);
-    return q ? allocateBestThirds(q) : null;
+    return {
+      thirdAlloc: q ? allocateBestThirds(q.groups) : null,
+      thirdsProvisional: q ? q.provisional : false,
+    };
   })();
 
   // Winner/loser of a numbered, decisively-final fixture (resolving the
@@ -277,8 +292,13 @@ export function buildBracket(matches: BracketMatchInput[]): Bracket {
         ) {
           const group = thirdAlloc[sib.group as ThirdSlotWinner];
           const p = groupParticipant(group, 3, ctx, original);
-          // Allocation only runs when all groups complete → confirmed.
-          return p.team ? { ...p, status: "confirmed" } : p;
+          // The whole best-third set can reshuffle as any group's standings
+          // change, so the status follows the set-level flag (provisional until
+          // all groups complete, then confirmed) — broader than one group's
+          // own completeness.
+          return p.team
+            ? { ...p, status: thirdsProvisional ? "provisional" : "confirmed" }
+            : p;
         }
         return { team: null, label: original, status: "placeholder" };
       }
