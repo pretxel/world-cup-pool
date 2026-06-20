@@ -3,7 +3,10 @@ import { env } from "@/lib/env";
 import { availableProviders, runSync } from "@/lib/result-sync/core";
 import { syncLiveEvents } from "@/lib/result-sync/events";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { dispatchResultEmails } from "@/lib/notifications/result-emails";
+import {
+  dispatchResultEmails,
+  dispatchStandingChangedPush,
+} from "@/lib/notifications/result-emails";
 import { captureRankSnapshot } from "@/lib/notifications/rank-snapshot";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
@@ -73,6 +76,17 @@ export async function GET(request: NextRequest) {
       console.error("[cron:sync-matches] result-email dispatch failed:", err);
     }
 
+    // Standing-changed Web Push rides the SAME finalize moment, reusing the
+    // already-snapshotted rank delta. Isolated: any failure is logged and never
+    // aborts the sync or the result-email send. No-ops when VAPID is unset.
+    let pushed = 0;
+    try {
+      const push = await dispatchStandingChangedPush();
+      pushed = push.pushed;
+    } catch (err) {
+      console.error("[cron:sync-matches] standing-changed push failed:", err);
+    }
+
     // Generate AI recaps for matches that just went final. Isolated like the
     // steps above: score/match writes have already committed, and any failure
     // is logged, never thrown. No-ops when OPENROUTER_API_KEY is unset.
@@ -84,7 +98,7 @@ export async function GET(request: NextRequest) {
       console.error("[cron:sync-matches] summary generation failed:", err);
     }
 
-    return { ...summary, events, emailed, summaries };
+    return { ...summary, events, emailed, pushed, summaries };
   });
 
   console.log(`[cron:sync-matches] summary:`, JSON.stringify(response));

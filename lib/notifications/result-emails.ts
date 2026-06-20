@@ -6,6 +6,13 @@ import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
+import {
+  dispatchPushTargets,
+  ZERO_PUSH,
+  type PushDispatchSummary,
+  type PushTarget,
+} from "./push-dispatch";
+import { isWebPushConfigured } from "./web-push";
 import type { HitType } from "@/lib/db";
 import {
   renderResultEmail,
@@ -489,6 +496,102 @@ export async function forceDispatchResultEmails(
   const filtered = filterResultOptIns(pending, prefs);
   const summary = await dispatchPending(admin, filtered, fromName);
   return { ...summary, ...(senderMisconfigured ? { senderMisconfigured } : {}) };
+}
+
+// Cron path (phase 3): sends a "your standing changed" Web Push to each
+// affected, push-opted-in player who has a subscription, after a match
+// finalizes. Reuses the SAME audience + rank machinery as the result email
+// (loadScoredFinals → computePendingByUser → computeRankDelta against the
+// pre-recompute snapshot) — no new rank computation. Idempotent per (match,
+// user) via the sibling result_push_log ledger (independent of the email
+// ledger), so re-running sync-matches never re-pushes. No-ops when VAPID is
+// unset. Isolated by the caller: a failure never aborts the sync or the
+// result-email send.
+export async function dispatchStandingChangedPush(): Promise<PushDispatchSummary> {
+  if (!isWebPushConfigured()) {
+    console.log("[result-emails] VAPID unset — skipping push");
+    return { ...ZERO_PUSH };
+  }
+
+  const admin = createAdminSupabaseClient();
+  const scored = await loadScoredFinals(admin);
+
+  // Push-specific ledger: a (match,user) is pending for PUSH when scored on a
+  // final match and not yet in result_push_log.
+  const { data: ledgerData, error: ledgerErr } = await admin
+    .from("result_push_log")
+    .select("match_id, user_id");
+  if (ledgerErr) {
+    throw new Error(`[result-emails] load push ledger: ${ledgerErr.message}`);
+  }
+
+  const pending = computePendingByUser(scored, ledgerData ?? []);
+  if (pending.length === 0) {
+    return { ...ZERO_PUSH };
+  }
+
+  const userIds = pending.map((p) => p.userId);
+
+  // New rank from the leaderboard view + previous rank from the pre-recompute
+  // snapshot → the same delta the email renders.
+  const { data: boardData, error: boardErr } = await admin
+    .from("v_leaderboard_overall")
+    .select("user_id, rank")
+    .in("user_id", userIds);
+  if (boardErr) {
+    throw new Error(`[result-emails] load standings (push): ${boardErr.message}`);
+  }
+  const newRankByUser = new Map(
+    (boardData ?? []).map((b) => [b.user_id as string, (b.rank as number | null) ?? null]),
+  );
+  const snapshotRanks = await loadSnapshotRanks(admin, userIds);
+
+  const t = (await getTranslations({
+    locale: DEFAULT_LOCALE,
+    namespace: "pushNotifications",
+  })) as Translator;
+  const url = `${env.siteUrl}${localePath(DEFAULT_LOCALE, "/leaderboard")}`;
+
+  // Map a (match,user)-grained pending set to one push per user, carrying every
+  // match id so the ledger can stamp all of them after a successful send.
+  const matchIdsByUser = new Map<string, string[]>(pending.map((p) => [p.userId, p.matchIds]));
+
+  const targets: PushTarget[] = pending.map((p) => {
+    const newRank = newRankByUser.get(p.userId) ?? null;
+    const delta = computeRankDelta(snapshotRanks.get(p.userId) ?? null, newRank);
+    return {
+      userId: p.userId,
+      payload: {
+        title: t("standingChanged.title"),
+        body: t("standingChanged.body", {
+          direction: delta.direction,
+          count: delta.magnitude,
+          rank: newRank ?? 0,
+        }),
+        url,
+        tag: "standing-changed",
+      },
+    };
+  });
+
+  const summary = await dispatchPushTargets(admin, targets, async (userId) => {
+    const rows = (matchIdsByUser.get(userId) ?? []).map((match_id) => ({
+      match_id,
+      user_id: userId,
+    }));
+    if (rows.length === 0) return;
+    const { error } = await admin
+      .from("result_push_log")
+      .upsert(rows, { onConflict: "match_id,user_id", ignoreDuplicates: true });
+    if (error) {
+      console.error("[result-emails] push ledger write failed:", error.message);
+    }
+  });
+
+  console.log(
+    `[result-emails] push pushed=${summary.pushed} failed=${summary.failed} pruned=${summary.pruned} skipped=${summary.skipped}`,
+  );
+  return summary;
 }
 
 // Player emails live only in auth.users — reachable via the service-role admin

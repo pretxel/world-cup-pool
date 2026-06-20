@@ -44,7 +44,21 @@
     "saved": "Einstellungen aktualisiert",
     "error": "Einstellungen konnten nicht aktualisiert werden",
     "results_digest": "Tägliche Ergebnisübersicht",
-    "recap_digest": "Spiel-Comic-Übersicht"
+    "recap_digest": "Spiel-Comic-Übersicht",
+    "push": "Push-Benachrichtigungen",
+    "pushUnsupported": "Push wird von diesem Browser nicht unterstützt",
+    "pushDenied": "Die Benachrichtigungsberechtigung wurde verweigert",
+    "pushHint": "Füge diese Seite auf dem iPhone zum Startbildschirm hinzu, um Push zu aktivieren."
+  },
+  "pushNotifications": {
+    "matchNeeded": {
+      "title": "Verpasse die heutigen Tipps nicht",
+      "body": "{count, plural, one {# Spiel wartet heute auf deinen Tipp} other {# Spiele warten heute auf deinen Tipp}}"
+    },
+    "standingChanged": {
+      "title": "Deine Platzierung hat sich geändert",
+      "body": "{direction, select, up {Du bist {count, number} Plätze auf #{rank, number} gestiegen.} down {Du bist {count, number} Plätze auf #{rank, number} gefallen.} same {Du hast deinen Platz auf #{rank, number} gehalten.} other {Deine Platzierung wurde aktualisiert — schau in die Rangliste.}}"
+    }
   },
   "footer": {
     "tournament": "WC26 Pool · 11. Jun – 19. Jul 2026",

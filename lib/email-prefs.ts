@@ -11,6 +11,13 @@ export const EMAIL_PREF_KEYS = [
   "results_digest",
   "recap_digest",
   "comeback",
+  // Web Push opt-in. Lives in email_prefs (not a separate column) so the
+  // account-menu toggles, the dispatch gates, and the unsubscribe surfaces that
+  // all iterate EMAIL_PREF_KEYS pick it up for free. A single `push` key gates
+  // BOTH push triggers (match-needed + standing-changed). Default opted-IN; a
+  // player with no stored subscription still receives nothing, so default-on is
+  // harmless.
+  "push",
 ] as const;
 
 export type EmailPrefKey = (typeof EMAIL_PREF_KEYS)[number];
@@ -26,6 +33,7 @@ export const DEFAULT_EMAIL_PREFS: EmailPrefs = {
   results_digest: true,
   recap_digest: true,
   comeback: true,
+  push: true,
 };
 
 // Validates the payload the account-menu toggles send to updateEmailPrefs: the
@@ -38,6 +46,7 @@ export const emailPrefsSchema = z
     results_digest: z.boolean(),
     recap_digest: z.boolean(),
     comeback: z.boolean(),
+    push: z.boolean(),
   })
   .partial();
 
@@ -65,5 +74,6 @@ export function normalizeEmailPrefs(prefs: unknown): EmailPrefs {
     results_digest: isOptedIn(prefs, "results_digest"),
     recap_digest: isOptedIn(prefs, "recap_digest"),
     comeback: isOptedIn(prefs, "comeback"),
+    push: isOptedIn(prefs, "push"),
   };
 }
