@@ -549,6 +549,33 @@ export type Database = {
           },
         ]
       }
+      recap_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          reaction: string
+          summary_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          reaction: string
+          summary_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          reaction?: string
+          summary_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_summary_images: {
         Row: {
           created_at: string
@@ -1044,6 +1071,15 @@ export type Database = {
         }
         Relationships: []
       }
+      v_recap_reaction_counts: {
+        Row: {
+          count: number | null
+          match_id: string | null
+          reaction: string | null
+          summary_id: string | null
+        }
+        Relationships: []
+      }
       v_quiz_leaderboard: {
         Row: {
           display_name: string | null
@@ -1087,6 +1123,10 @@ export type Database = {
       answer_quiz: {
         Args: { p_question_id: string; p_choice: number }
         Returns: { is_correct: boolean; correct_index: number }[]
+      }
+      toggle_recap_reaction: {
+        Args: { p_summary_id: string; p_reaction: string; p_on: boolean }
+        Returns: { reaction: string; count: number }[]
       }
       active_competition_id: { Args: never; Returns: string }
       compute_match_scores: { Args: { p_match_id: string }; Returns: undefined }

@@ -132,6 +132,7 @@
     "recapGalleryEyebrow": "04 · Cómics del partido",
     "recapGalleryHeadline": "Partidos recientes, dibujados.",
     "recapImageAlt": "Resumen cómic de {home} vs {away}",
+    "recapReactionCount": "{count, plural, one {# reacción} other {# reacciones}}",
     "featuresEyebrow": "03 · Más para jugar",
     "featuresHeadline": "Más allá del cuadro.",
     "groupsTitle": "Grupos de amigos",
@@ -338,6 +339,24 @@
     "summaryHeading": "Resumen del partido",
     "summaryDisclaimer": "Resumen generado por IA",
     "recapImageAlt": "Resumen cómic de {home} vs {away}"
+  },
+  "recapReactions": {
+    "heading": "Reacciona a este resumen",
+    "toggleAria": "{label} ({count})",
+    "signInPrompt": "Inicia sesión para reaccionar.",
+    "signInCta": "Iniciar sesión",
+    "errorInvalid": "Esa reacción no está permitida.",
+    "errorNotSignedIn": "Necesitas iniciar sesión para reaccionar.",
+    "errorRateLimited": "Estás reaccionando demasiado rápido — espera un momento.",
+    "errorNotReactable": "Las reacciones solo están abiertas en el resumen de un partido finalizado.",
+    "labels": {
+      "fire": "Fuego",
+      "goal": "Golazo",
+      "shock": "Impactante",
+      "laugh": "Divertidísimo",
+      "clap": "Aplausos",
+      "sad": "Desgarrador"
+    }
   },
   "predictionForm": {
     "adminBlocked": "Las cuentas de administrador no participan en la quiniela.",

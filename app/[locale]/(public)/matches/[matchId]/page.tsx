@@ -29,6 +29,9 @@ import { buildPickSharePath } from "@/lib/share";
 import { env } from "@/lib/env";
 import { GroupStandingsTable } from "@/components/group-standings-table";
 import { simulateGroup, type GroupTeamRow } from "@/lib/group-standings";
+import { RecapReactions } from "@/components/recap-reactions";
+import { getRecapReactionSummary } from "@/lib/recap-reactions-server";
+import { emptyCounts, type ReactionType } from "@/lib/recap-reactions";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -256,16 +259,28 @@ export default async function MatchDetailPage({
   }
   // AI recap: only finished matches ever have one. Read-only; the body is the
   // English summary, the surrounding labels are localized.
-  let matchSummary: { content: string } | null = null;
+  let matchSummary: { content: string; id: string } | null = null;
   let recapImageUrl: string | null = null;
+  // Recap reaction bar state (seeded server-side so the first paint is correct
+  // without client JS). Only populated for a final match with an active recap.
+  let reactionCounts: Record<ReactionType, number> = emptyCounts();
+  let reactionMine: ReactionType[] = [];
   if (match.status === "final") {
     const { data: summaryRow } = await supabase
       .from("match_summaries")
-      .select("content")
+      .select("id, content")
       .eq("match_id", match.id)
       .eq("is_active", true)
       .maybeSingle();
-    if (summaryRow) matchSummary = { content: summaryRow.content };
+    if (summaryRow) {
+      matchSummary = { content: summaryRow.content, id: summaryRow.id };
+      const summary = await getRecapReactionSummary(
+        summaryRow.id,
+        user?.id ?? null,
+      );
+      reactionCounts = summary.counts;
+      reactionMine = summary.mine;
+    }
 
     // The active version's completed comic render (active-only RLS scopes this).
     const { data: renderRow } = await supabase
@@ -488,6 +503,14 @@ export default async function MatchDetailPage({
               {t("summaryDisclaimer")}
             </p>
           </div>
+          <RecapReactions
+            summaryId={matchSummary.id}
+            matchId={match.id}
+            locale={locale}
+            isSignedIn={Boolean(user)}
+            initialCounts={reactionCounts}
+            initialMine={reactionMine}
+          />
           {recapImageUrl ? (
             <div className="mt-4">
               <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">

@@ -132,6 +132,7 @@
     "recapGalleryEyebrow": "04 · Match-Comics",
     "recapGalleryHeadline": "Aktuelle Spiele, gezeichnet.",
     "recapImageAlt": "Comic-Rückblick: {home} gegen {away}",
+    "recapReactionCount": "{count, plural, one {# Reaktion} other {# Reaktionen}}",
     "featuresEyebrow": "03 · Mehr zum Mitspielen",
     "featuresHeadline": "Mehr als nur der Turnierbaum.",
     "groupsTitle": "Freundesgruppen",
@@ -338,6 +339,24 @@
     "summaryHeading": "Spielzusammenfassung",
     "summaryDisclaimer": "KI-generierte Zusammenfassung",
     "recapImageAlt": "Comic-Rückblick: {home} gegen {away}"
+  },
+  "recapReactions": {
+    "heading": "Reagiere auf diesen Rückblick",
+    "toggleAria": "{label} ({count})",
+    "signInPrompt": "Melde dich an, um zu reagieren.",
+    "signInCta": "Anmelden",
+    "errorInvalid": "Diese Reaktion ist nicht erlaubt.",
+    "errorNotSignedIn": "Du musst angemeldet sein, um zu reagieren.",
+    "errorRateLimited": "Du reagierst zu schnell — warte einen Moment.",
+    "errorNotReactable": "Reaktionen sind nur beim Rückblick eines beendeten Spiels möglich.",
+    "labels": {
+      "fire": "Feuer",
+      "goal": "Traumtor",
+      "shock": "Schockierend",
+      "laugh": "Urkomisch",
+      "clap": "Applaus",
+      "sad": "Herzschmerz"
+    }
   },
   "predictionForm": {
     "adminBlocked": "Administratorkonten nehmen nicht am Pool teil.",
