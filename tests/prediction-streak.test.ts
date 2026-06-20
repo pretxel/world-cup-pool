@@ -85,4 +85,44 @@ describe("computePredictionStreak", () => {
     expect(computePredictionStreak(everyDay, sunday)).toBe(7);
     expect(computePredictionStreak(everyDay, sunday)).toBeLessThanOrEqual(7);
   });
+
+  // --- Freeze-aware ---
+
+  it("no freeze days reproduces current behavior exactly", () => {
+    expect(
+      computePredictionStreak([day("06"), day("05"), day("04")], NOW, new Set()),
+    ).toBe(3);
+  });
+
+  it("a single forgiven gap inside the week keeps the streak alive", () => {
+    // picks on 06 (today) and 04, gap on 05 forgiven → 3
+    expect(
+      computePredictionStreak([day("06"), day("04")], NOW, new Set(["2026-06-05"])),
+    ).toBe(3);
+  });
+
+  it("a two-day gap with one freeze still breaks", () => {
+    expect(
+      computePredictionStreak([day("06"), day("03")], NOW, new Set(["2026-06-05"])),
+    ).toBe(1);
+  });
+
+  it("a freeze never invents activity at the run end", () => {
+    expect(
+      computePredictionStreak([day("06")], NOW, new Set(["2026-06-05"])),
+    ).toBe(1);
+  });
+
+  it("a freeze cannot bridge into the prior week (weekly cap preserved)", () => {
+    // NOW Monday 2026-06-08; today's pick only, last week's 06-07 frozen. The
+    // probe day before the gap is outside the week → no bridge.
+    const monday = new Date("2026-06-08T12:00:00Z");
+    expect(
+      computePredictionStreak(
+        ["2026-06-08T08:00:00Z"],
+        monday,
+        new Set(["2026-06-07"]),
+      ),
+    ).toBe(1);
+  });
 });
