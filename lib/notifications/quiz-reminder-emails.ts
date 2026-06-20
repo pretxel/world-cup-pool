@@ -207,6 +207,7 @@ async function loadQuestionUserIds(
 interface PreparedMessage {
   payload: {
     from: string;
+    replyTo: string;
     to: string[];
     subject: string;
     html: string;
@@ -316,6 +317,7 @@ export async function dispatchQuizReminders(
     prepared.push({
       payload: {
         from: fromAddress,
+        replyTo: env.emailReplyTo,
         to: [email],
         subject,
         html,

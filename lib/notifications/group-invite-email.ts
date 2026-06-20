@@ -92,6 +92,7 @@ export async function sendGroupInviteEmails(opts: {
     try {
       const { error } = await resend.emails.send({
         from: env.emailFrom,
+        replyTo: env.emailReplyTo,
         to: [recipient],
         subject,
         html,

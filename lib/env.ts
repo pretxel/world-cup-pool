@@ -44,6 +44,16 @@ export const env = {
   // production; the default is dev-only.
   resendApiKey: process.env.RESEND_API_KEY ?? null,
   emailFrom: process.env.EMAIL_FROM ?? "World Cup Pools <onboarding@resend.dev>",
+  // Reply-To for every transactional send: recipients can reply (and spam
+  // filters trust a two-way address). Defaults to the From address so a
+  // Reply-To is always present even if EMAIL_REPLY_TO is unset; the `<addr>`
+  // is extracted from the `Name <addr>` form when present.
+  emailReplyTo:
+    process.env.EMAIL_REPLY_TO ??
+    (process.env.EMAIL_FROM ?? "World Cup Pools <onboarding@resend.dev>").match(
+      /<([^>]+)>/,
+    )?.[1] ??
+    (process.env.EMAIL_FROM ?? "onboarding@resend.dev"),
   // OpenRouter (server only) for the post-final AI match recap. Nullable on
   // purpose — when the key is unset the generation step short-circuits (no
   // request, no row) instead of throwing, so the feature stays dormant until

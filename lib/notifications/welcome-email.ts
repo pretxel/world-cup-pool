@@ -118,6 +118,7 @@ export async function sendWelcomeEmail(userId: string): Promise<void> {
     const resend = new Resend(env.resendApiKey);
     const { error: sendErr } = await resend.emails.send({
       from: env.emailFrom,
+      replyTo: env.emailReplyTo,
       to: [email],
       subject,
       html,

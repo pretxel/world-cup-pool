@@ -270,3 +270,22 @@ commit;
   `VERCEL_PROJECT_PRODUCTION_URL` → `VERCEL_URL` → `http://localhost:3000`.
   Override `NEXT_PUBLIC_SITE_URL` when you need to point preview deploys at
   a custom domain.
+
+## Email deliverability: DMARC + replyable sender
+
+Gmail/Yahoo/Microsoft require a DMARC record and penalize `no-reply` senders.
+
+1. **DMARC** — publish a TXT record (monitor mode; safe, satisfies the requirement):
+   - Name: `_dmarc.edselserrano.com`
+   - Value: `v=DMARC1; p=none; rua=mailto:worldcup@edselserrano.com; fo=1`
+   - Verify: `dig +short TXT _dmarc.edselserrano.com`
+   - Tighten to `p=quarantine` later once `rua` reports confirm SPF/DKIM alignment.
+2. **Sender (no `no-reply`)** — set Vercel **Production** env:
+   - `EMAIL_FROM=World Cup Pools <worldcup@edselserrano.com>`
+   - `EMAIL_REPLY_TO=worldcup@edselserrano.com` (defaults to the From address if unset)
+   - Redeploy so the deployment snapshot picks up the new values.
+3. **Receiving** — the Resend domain has receiving disabled, so set up a mailbox or
+   forward for `worldcup@edselserrano.com` so replies and DMARC `rua` reports land
+   somewhere (otherwise they hard-bounce).
+
+All transactional sends already include the Reply-To via `env.emailReplyTo`.

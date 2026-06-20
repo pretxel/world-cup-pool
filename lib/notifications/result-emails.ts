@@ -193,6 +193,7 @@ type AdminClient = ReturnType<typeof createAdminSupabaseClient>;
 interface PreparedMessage {
   payload: {
     from: string;
+    replyTo: string;
     to: string[];
     subject: string;
     html: string;
@@ -398,7 +399,7 @@ async function dispatchPending(
     };
     const { subject, html, text } = renderResultEmail(data);
     prepared.push({
-      payload: { from: fromAddress, to: [email], subject, html, text },
+      payload: { from: fromAddress, replyTo: env.emailReplyTo, to: [email], subject, html, text },
       rows: p.matchIds.map((match_id) => ({ match_id, user_id: p.userId })),
     });
   }
