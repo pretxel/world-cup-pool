@@ -41,12 +41,21 @@ function currentUtcWeekBounds(now: Date): { start: Date; end: Date } {
  * pick yet yields 0 (today unanswered, yesterday is last week → outside the
  * window → breaks) — the intended weekly reset. The streak can never exceed 7.
  *
+ * A `frozenDays` set of consumed-freeze UTC day-keys forgives single isolated
+ * one-day gaps inside the weekly window (the missed day counts and the walk
+ * steps over it, but only when the day beyond it has a real in-week pick — so a
+ * freeze never invents activity, a two-day gap with one frozen day still breaks,
+ * and the 7-day weekly cap is preserved because only in-week days are walked).
+ * With no `frozenDays` (the default), behavior is identical to the original.
+ *
  * @param submittedAt ISO timestamps of the user's predictions (any order, any tz).
  * @param now reference instant (injectable for tests).
+ * @param frozenDays UTC day-keys the user holds a consumed freeze for.
  */
 export function computePredictionStreak(
   submittedAt: string[],
   now: Date = new Date(),
+  frozenDays: Set<string> = new Set(),
 ): number {
   const { start, end } = currentUtcWeekBounds(now);
 
@@ -60,7 +69,8 @@ export function computePredictionStreak(
   if (days.size === 0) return 0;
 
   // Anchor at today (UTC midnight). If today has no pick, the streak can still
-  // be alive from yesterday backwards; otherwise it's zero.
+  // be alive from yesterday backwards; otherwise it's zero. The anchor uses
+  // real in-week activity only — a freeze is never spent on it.
   const cursor = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
   );
@@ -70,9 +80,27 @@ export function computePredictionStreak(
   }
 
   let streak = 0;
-  while (days.has(utcDayKey(cursor))) {
-    streak++;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+  for (;;) {
+    const key = utcDayKey(cursor);
+    if (days.has(key)) {
+      streak++;
+      cursor.setUTCDate(cursor.getUTCDate() - 1);
+      continue;
+    }
+    // A consumed freeze bridges this missed day only when it is a single
+    // isolated gap with a real in-week pick the day before. The probe day is
+    // necessarily inside the week (only in-week days populate `days`), so the
+    // weekly window and the 7-day cap are preserved.
+    if (frozenDays.has(key)) {
+      const probe = new Date(cursor);
+      probe.setUTCDate(probe.getUTCDate() - 1);
+      if (days.has(utcDayKey(probe))) {
+        streak++;
+        cursor.setTime(probe.getTime());
+        continue;
+      }
+    }
+    break;
   }
   return streak;
 }

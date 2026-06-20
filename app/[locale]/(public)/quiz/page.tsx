@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { FlameIcon } from "lucide-react";
+import { FlameIcon, SnowflakeIcon } from "lucide-react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { QuizLeaderboardRow } from "@/lib/db";
 import { computeStreak, localizeQuizQuestion } from "@/lib/quiz";
+import { resolveStreakFreeze, type FreezeState } from "@/lib/streak-freeze";
 import { loadQuizStanding } from "@/lib/quiz-standing";
 import { ShareButtons } from "@/components/share-buttons";
 import { buildQuizSharePath } from "@/lib/share";
@@ -86,6 +87,7 @@ export default async function QuizPage({
   let streak = 0;
   let points = 0;
   let answeredCount = 0;
+  let freeze: FreezeState | null = null;
   if (user) {
     const { data: answers } = await supabase
       .from("quiz_answers")
@@ -94,7 +96,22 @@ export default async function QuizPage({
     const list = answers ?? [];
     answeredCount = list.length;
     points = list.filter((a) => a.is_correct).length * 10;
-    streak = computeStreak(list.map((a) => a.answered_at));
+    // A weekly freeze pass can forgive a single one-day gap. The quiz streak is
+    // unbounded (no weekly window), so gap detection is unbounded too — only the
+    // allowance refills on the Monday-UTC week. Best-effort; never throws.
+    const now = new Date();
+    const answeredAt = list.map((a) => a.answered_at);
+    const activityDays = new Set(
+      answeredAt.map((iso) => new Date(iso).toISOString().slice(0, 10)),
+    );
+    freeze = await resolveStreakFreeze(
+      supabase,
+      user.id,
+      "quiz",
+      activityDays,
+      now,
+    );
+    streak = computeStreak(answeredAt, now, freeze.frozenDays);
     if (question?.id) {
       const mine = list.find((a) => a.question_id === question.id);
       if (mine) myAnswer = { choiceIndex: mine.choice_index, isCorrect: mine.is_correct };
@@ -139,8 +156,18 @@ export default async function QuizPage({
                   aria-hidden
                 />
                 {streak}
+                {freeze ? (
+                  <span
+                    className="ml-1 inline-flex items-center gap-0.5 text-xs font-medium text-sky-500"
+                    title={t("freezeRemaining", { count: freeze.remaining })}
+                  >
+                    <SnowflakeIcon className="size-3.5" aria-hidden />
+                    {freeze.remaining}
+                  </span>
+                ) : null}
               </span>
             }
+            hint={freeze?.usedThisWeek ? t("freezeSaved") : undefined}
           />
           <Stat label={t("pointsLabel")} value={points} />
           <Stat label={t("answeredLabel")} value={answeredCount} />
@@ -240,13 +267,26 @@ export default async function QuizPage({
   );
 }
 
-function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+function Stat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+}) {
   return (
     <div className="rounded-md border border-border bg-card px-3 py-2">
       <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
         {label}
       </dt>
       <dd className="mt-0.5 font-mono text-xl font-semibold tabular-nums">{value}</dd>
+      {hint ? (
+        <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }

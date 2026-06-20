@@ -831,6 +831,47 @@ export type Database = {
           },
         ]
       }
+      streak_freezes: {
+        Row: {
+          amount: number | null
+          consumed_day: string | null
+          created_at: string
+          id: string
+          kind: string
+          row_kind: string
+          user_id: string
+          week_start: string | null
+        }
+        Insert: {
+          amount?: number | null
+          consumed_day?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          row_kind: string
+          user_id: string
+          week_start?: string | null
+        }
+        Update: {
+          amount?: number | null
+          consumed_day?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          row_kind?: string
+          user_id?: string
+          week_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streak_freezes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboard_rank_daily: {
         Row: {
           rank: number
@@ -1089,6 +1130,14 @@ export type Database = {
         Returns: { is_correct: boolean; correct_index: number }[]
       }
       active_competition_id: { Args: never; Returns: string }
+      grant_streak_freeze: {
+        Args: { p_kind: string; p_amount: number }
+        Returns: number
+      }
+      consume_streak_freeze: {
+        Args: { p_kind: string; p_consumed_day: string }
+        Returns: boolean
+      }
       compute_match_scores: { Args: { p_match_id: string }; Returns: undefined }
       create_group: { Args: { p_name: string }; Returns: string }
       generate_join_code: { Args: { p_prefix?: string }; Returns: string }

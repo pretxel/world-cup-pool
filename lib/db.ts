@@ -32,6 +32,7 @@ export type QuizAnswerRow = Tables<"quiz_answers">;
 export type QuizLeaderboardRow = Tables<"v_quiz_leaderboard">;
 export type QuizStandingRow = Tables<"v_quiz_standing">;
 export type QuizReminderLogRow = Tables<"quiz_reminder_log">;
+export type StreakFreezeRow = Tables<"streak_freezes">;
 
 // One recorded background-job run. `kind`/`trigger`/`status` are CHECK-narrowed
 // in the schema but render as plain `string`; the operations module re-narrows

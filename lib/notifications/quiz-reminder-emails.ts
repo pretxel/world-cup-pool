@@ -5,6 +5,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 import { DEFAULT_LOCALE, localePath } from "@/lib/i18n";
 import { computeStreak } from "@/lib/quiz";
+import { loadConsumedFreezeDays } from "@/lib/streak-freeze";
 import { filterRecipientsAtLocalHour } from "@/lib/match-utils";
 import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
@@ -120,7 +121,10 @@ function withFromName(emailFrom: string, name?: string): string {
 
 // Best-effort per-user current streak. One grouped query over the eligible set;
 // any failure degrades to an empty map (emails still send, just without the
-// streak hook). Never throws.
+// streak hook). Never throws. Supplies each recipient's already-consumed freeze
+// days so the reminder reflects the freeze-PROTECTED streak and never tells a
+// still-alive (frozen) user their streak is gone. The email never consumes a
+// freeze — consumption is owned by the page read paths; it only reads.
 async function loadStreaks(admin: AdminClient, userIds: string[]): Promise<Map<string, number>> {
   const out = new Map<string, number>();
   if (userIds.length === 0) return out;
@@ -130,6 +134,7 @@ async function loadStreaks(admin: AdminClient, userIds: string[]): Promise<Map<s
       .select("user_id, answered_at")
       .in("user_id", userIds);
     if (error || !data) return out;
+    const frozenByUser = await loadConsumedFreezeDays(admin, userIds, "quiz");
     const byUser = new Map<string, string[]>();
     for (const row of data) {
       const uid = row.user_id as string;
@@ -137,7 +142,9 @@ async function loadStreaks(admin: AdminClient, userIds: string[]): Promise<Map<s
       arr.push(row.answered_at as string);
       byUser.set(uid, arr);
     }
-    for (const [uid, stamps] of byUser) out.set(uid, computeStreak(stamps));
+    for (const [uid, stamps] of byUser) {
+      out.set(uid, computeStreak(stamps, new Date(), frozenByUser.get(uid)));
+    }
     return out;
   } catch (err) {
     console.error("[quiz-reminders] streak load failed:", err);

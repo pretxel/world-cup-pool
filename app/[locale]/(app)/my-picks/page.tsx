@@ -19,7 +19,11 @@ import { paginate, parsePageParam } from "@/lib/pagination";
 import { sortPicksByKickoff } from "@/lib/picks-order";
 import { isLocked } from "@/lib/match-utils";
 import { computePredictionStreak } from "@/lib/prediction-streak";
-import { ArrowRightIcon, FlameIcon, PencilLineIcon } from "lucide-react";
+import {
+  resolveStreakFreeze,
+  currentFreezeWeekBounds,
+} from "@/lib/streak-freeze";
+import { ArrowRightIcon, FlameIcon, PencilLineIcon, SnowflakeIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 
@@ -81,11 +85,29 @@ export default async function MyPicksPage({
   const totalPoints = (scores ?? []).reduce((sum, s) => sum + (s.points ?? 0), 0);
   const exactCount = (scores ?? []).filter((s) => s.hit_type === "exact").length;
 
-  // Prediction streak from the predictions already fetched above (no extra
-  // query). Counts consecutive UTC days with ≥1 pick within the current week.
-  const streak = computePredictionStreak(
-    (picks ?? []).map((p) => p.submitted_at),
+  // Prediction streak from the predictions already fetched above. A weekly
+  // freeze pass can forgive a single one-day gap so the run survives the cliff.
+  // The freeze helper lazily refills this week's allowance, consumes one freeze
+  // if an eligible gap exists, and returns the consumed-freeze days fed into the
+  // pure streak function. Best-effort: it never throws into the render.
+  const now = new Date();
+  const submittedAt = (picks ?? []).map((p) => p.submitted_at);
+  const { start: weekStart, end: weekEnd } = currentFreezeWeekBounds(now);
+  const weekActivityDays = new Set(
+    submittedAt
+      .map((iso) => new Date(iso))
+      .filter((d) => d >= weekStart && d < weekEnd)
+      .map((d) => d.toISOString().slice(0, 10)),
   );
+  const freeze = await resolveStreakFreeze(
+    supabase,
+    user.id,
+    "prediction",
+    weekActivityDays,
+    now,
+    weekStart,
+  );
+  const streak = computePredictionStreak(submittedAt, now, freeze.frozenDays);
 
   // Simulated group stage from the user's own predictions. Fetch every group
   // fixture, then derive each group's table from the picks already loaded above
@@ -167,9 +189,16 @@ export default async function MyPicksPage({
                   aria-hidden
                 />
                 {streak}
+                <span
+                  className="ml-1 inline-flex items-center gap-0.5 text-xs font-medium text-sky-500"
+                  title={t("freezeRemaining", { count: freeze.remaining })}
+                >
+                  <SnowflakeIcon className="size-3.5" aria-hidden />
+                  {freeze.remaining}
+                </span>
               </span>
             }
-            hint={t("statStreakHint")}
+            hint={freeze.usedThisWeek ? t("freezeSaved") : t("statStreakHint")}
           />
         </dl>
       </header>

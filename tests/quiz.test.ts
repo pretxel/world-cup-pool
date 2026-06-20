@@ -39,6 +39,43 @@ describe("computeStreak", () => {
     // 2026-06-07T01:00:00+03:00 === 2026-06-06T22:00:00Z → counts as today (06)
     expect(computeStreak(["2026-06-07T01:00:00+03:00", day("05")], NOW)).toBe(2);
   });
+
+  // --- Freeze-aware ---
+
+  it("no freeze days reproduces current behavior exactly", () => {
+    expect(computeStreak([day("06"), day("05"), day("04")], NOW, new Set())).toBe(
+      3,
+    );
+    expect(computeStreak([day("06"), day("04")], NOW, new Set())).toBe(1);
+  });
+
+  it("a single forgiven gap keeps the streak alive", () => {
+    // activity on 06 (today) and 04, gap on 05 forgiven → counts through to 04 = 3
+    expect(
+      computeStreak([day("06"), day("04")], NOW, new Set(["2026-06-05"])),
+    ).toBe(3);
+  });
+
+  it("a two-day gap with one freeze still breaks", () => {
+    // activity on 06 and 03; only 05 frozen (04 still missing) → only today counts
+    expect(
+      computeStreak([day("06"), day("03")], NOW, new Set(["2026-06-05"])),
+    ).toBe(1);
+  });
+
+  it("a freeze at the natural run-end invents no activity", () => {
+    // activity only on 06 (today); 05 frozen but nothing before it → just 1
+    expect(
+      computeStreak([day("06")], NOW, new Set(["2026-06-05"])),
+    ).toBe(1);
+  });
+
+  it("bridges a gap when the streak is anchored on yesterday", () => {
+    // today (06) not answered; activity on 05 and 03, gap on 04 frozen → 3
+    expect(
+      computeStreak([day("05"), day("03")], NOW, new Set(["2026-06-04"])),
+    ).toBe(3);
+  });
 });
 
 describe("localizeQuizQuestion", () => {
