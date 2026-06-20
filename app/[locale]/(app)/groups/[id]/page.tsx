@@ -87,6 +87,9 @@ export default async function GroupDetailPage({
         <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
           {t("boardTitle")}
         </h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          {t("joinDateScoringNote")}
+        </p>
         {rows.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-10 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
