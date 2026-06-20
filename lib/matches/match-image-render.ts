@@ -22,6 +22,9 @@ const LEONARDO_GENERATIONS_URL = "https://cloud.leonardo.ai/api/rest/v2/generati
 // Poll fallback hits the v1 get-by-id endpoint.
 const LEONARDO_GENERATION_BY_ID_URL = "https://cloud.leonardo.ai/api/rest/v1/generations";
 const BUCKET = "match-recap-images";
+// Cap how many renders one batch pass will request, bounding Leonardo spend per
+// cron run. Mirrors the summary/prompt passes' DEFAULT_BATCH_LIMIT.
+const DEFAULT_BATCH_LIMIT = 20;
 // The template's 2:3 portrait. Both multiples of 16 and within Leonardo's pixel
 // limits (832 * 1248 = 1,038,336 px; ratio 1.5:1).
 const IMAGE_WIDTH = 832;
@@ -305,4 +308,93 @@ export async function pollMatchImageRender(
 
   await finalizeRender(admin, row.generation_id, imageUrl);
   return { polled: true };
+}
+
+export type PendingRenders = {
+  candidates: number;
+  requested: number;
+  skipped: number;
+  errors: number;
+};
+
+/**
+ * Find active recap summaries (of recent final matches) that have a non-empty
+ * `image_prompt` but NO `match_summary_images` row yet, and request a Leonardo
+ * render for each. Mirrors `generatePendingSummaries`: load recent finals, then
+ * their active summaries, anti-join against existing render rows (any status, so
+ * a pending/failed render is never re-requested — that prevents duplicate spend;
+ * failures are recovered via the admin retry, unchanged). Used by the sync cron
+ * after the prompt pass (so it picks up prompts written earlier in the same run)
+ * and reusable as a backfill. No-ops (without DB access) when the Leonardo key
+ * is unset.
+ */
+export async function requestPendingRenders(
+  admin: AdminClient,
+  opts: { limit?: number } = {},
+): Promise<PendingRenders> {
+  const out: PendingRenders = { candidates: 0, requested: 0, skipped: 0, errors: 0 };
+  if (!env.leonardoApiKey) return out;
+
+  const limit = opts.limit ?? DEFAULT_BATCH_LIMIT;
+
+  // Recent finals, newest first — the same bounded window the summary pass uses.
+  const { data: finals, error: finalsError } = await admin
+    .from("matches")
+    .select("id")
+    .eq("status", "final")
+    .order("kickoff_at", { ascending: false })
+    .limit(limit);
+  if (finalsError) {
+    out.errors++;
+    console.error("[match-image-render] failed to load final matches:", finalsError.message);
+    return out;
+  }
+
+  const matchIds = (finals ?? []).map((m) => m.id);
+  if (matchIds.length === 0) return out;
+
+  // Active summaries that already carry a prompt for those finals.
+  const { data: summaries, error: summariesError } = await admin
+    .from("match_summaries")
+    .select("id, image_prompt")
+    .eq("is_active", true)
+    .in("match_id", matchIds);
+  if (summariesError) {
+    out.errors++;
+    console.error("[match-image-render] failed to load active summaries:", summariesError.message);
+    return out;
+  }
+
+  const withPrompt = (summaries ?? []).filter((s) => (s.image_prompt ?? "").trim().length > 0);
+  if (withPrompt.length === 0) return out;
+
+  // Anti-join against existing render rows (PostgREST has no clean anti-join):
+  // any render row at all (pending/complete/failed) means "do not re-request".
+  const summaryIds = withPrompt.map((s) => s.id);
+  const { data: existing, error: existingError } = await admin
+    .from("match_summary_images")
+    .select("summary_id")
+    .in("summary_id", summaryIds);
+  if (existingError) {
+    out.errors++;
+    console.error("[match-image-render] failed to load existing renders:", existingError.message);
+    return out;
+  }
+
+  const have = new Set((existing ?? []).map((r) => r.summary_id));
+  const pending = summaryIds.filter((id) => !have.has(id));
+  out.candidates = pending.length;
+
+  for (const id of pending) {
+    try {
+      const result = await requestMatchImageRender(admin, id);
+      if (result.requested) out.requested++;
+      else out.skipped++;
+    } catch (err) {
+      out.errors++;
+      console.error(`[match-image-render] render request failed for ${id}:`, err);
+    }
+  }
+
+  return out;
 }
