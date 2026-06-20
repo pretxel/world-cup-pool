@@ -44,7 +44,21 @@
     "saved": "Preferences updated",
     "error": "Couldn't update your preferences",
     "results_digest": "Daily results digest",
-    "recap_digest": "Match comic digest"
+    "recap_digest": "Match comic digest",
+    "push": "Push notifications",
+    "pushUnsupported": "Push isn't supported on this browser",
+    "pushDenied": "Notification permission was denied",
+    "pushHint": "On iPhone, add this site to your Home Screen to enable push."
+  },
+  "pushNotifications": {
+    "matchNeeded": {
+      "title": "Don't miss today's picks",
+      "body": "{count, plural, one {# match needs your pick today} other {# matches need your pick today}}"
+    },
+    "standingChanged": {
+      "title": "Your standing changed",
+      "body": "{direction, select, up {You moved up {count, number} to #{rank, number}.} down {You slipped {count, number} to #{rank, number}.} same {You held your spot at #{rank, number}.} other {Your standing updated — see the leaderboard.}}"
+    }
   },
   "footer": {
     "tournament": "WC26 Pool · 11 Jun – 19 Jul 2026",

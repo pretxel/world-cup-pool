@@ -37,6 +37,7 @@ describe("normalizeEmailPrefs", () => {
       results_digest: true,
       recap_digest: true,
       comeback: true,
+      push: true,
     });
   });
 

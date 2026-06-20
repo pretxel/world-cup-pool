@@ -70,6 +70,17 @@ export const env = {
   // Google Analytics 4 measurement ID. Defaults to the project's stream so
   // analytics works without extra config; override per-environment if needed.
   gaMeasurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-18P5786JW2",
+  // Web Push (VAPID). The public key is client-readable (the subscribe flow
+  // passes it to pushManager.subscribe); the private key + subject are
+  // server-only (the send path signs with them). All nullable on purpose — when
+  // any is unset every push send path no-ops (logs and sends nothing) and the
+  // subscribe UI stays off, so the feature is fully dormant until configured,
+  // mirroring the resendApiKey/footballDataToken posture. Generate once with
+  // `npx web-push generate-vapid-keys`. `vapidSubject` is a `mailto:` or https
+  // contact URL the push services use to reach the application server operator.
+  vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null,
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY ?? null,
+  vapidSubject: process.env.VAPID_SUBJECT ?? null,
 };
 
 export function requireServiceRoleKey(): string {

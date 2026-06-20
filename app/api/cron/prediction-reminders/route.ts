@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
-import { dispatchPredictionReminders } from "@/lib/notifications/prediction-reminder-emails";
+import {
+  dispatchPredictionReminders,
+  dispatchMatchNeededPush,
+} from "@/lib/notifications/prediction-reminder-emails";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
 
@@ -38,7 +41,17 @@ export async function GET(request: NextRequest) {
   try {
     const recorded = await recordRun("prediction_reminders", "cron", async () => {
       const { emailFromName } = await getActiveBranding();
-      return await dispatchPredictionReminders(emailFromName);
+      const emailSummary = await dispatchPredictionReminders(emailFromName);
+      // Web Push rides the SAME run, reusing the pending set. Isolated: a push
+      // failure is logged and never affects the email summary or the run.
+      let pushed = 0;
+      try {
+        const push = await dispatchMatchNeededPush();
+        pushed = push.pushed;
+      } catch (err) {
+        console.error("[cron:prediction-reminders] push dispatch failed:", err);
+      }
+      return { ...emailSummary, pushed };
     });
     summary = recorded.summary;
   } catch (err) {

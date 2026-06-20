@@ -57,6 +57,7 @@ describe("GET /api/prediction-reminders/unsubscribe", () => {
         results_digest: true,
         recap_digest: true,
         comeback: true,
+        push: true,
       },
     });
     expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);
@@ -78,6 +79,7 @@ describe("GET /api/prediction-reminders/unsubscribe", () => {
         results_digest: true,
         recap_digest: true,
         comeback: true,
+        push: true,
       },
     });
   });
@@ -136,6 +138,7 @@ describe("POST /api/prediction-reminders/unsubscribe", () => {
         results_digest: true,
         recap_digest: true,
         comeback: true,
+        push: true,
       },
     });
     expect(updateEqMock).toHaveBeenCalledWith("unsubscribe_token", TOKEN);

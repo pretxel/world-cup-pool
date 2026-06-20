@@ -783,6 +783,76 @@ export type Database = {
           },
         ]
       }
+      prediction_reminder_push_log: {
+        Row: {
+          pushed_at: string
+          reminder_date: string
+          user_id: string
+        }
+        Insert: {
+          pushed_at?: string
+          reminder_date: string
+          user_id: string
+        }
+        Update: {
+          pushed_at?: string
+          reminder_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_reminder_push_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          failure_count: number
+          id: string
+          last_seen_at: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          failure_count?: number
+          id?: string
+          last_seen_at?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          failure_count?: number
+          id?: string
+          last_seen_at?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1007,6 +1077,39 @@ export type Database = {
           },
           {
             foreignKeyName: "result_email_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      result_push_log: {
+        Row: {
+          match_id: string
+          pushed_at: string
+          user_id: string
+        }
+        Insert: {
+          match_id: string
+          pushed_at?: string
+          user_id: string
+        }
+        Update: {
+          match_id?: string
+          pushed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "result_push_log_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "result_push_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

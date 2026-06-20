@@ -8,6 +8,13 @@ import { filterRecipientsAtLocalHour, isConfirmedMatch, isLocked } from "@/lib/m
 import { isOptedIn } from "@/lib/email-prefs";
 import { checkEmailSenderConfig } from "./email-sender-config";
 import {
+  dispatchPushTargets,
+  ZERO_PUSH,
+  type PushDispatchSummary,
+  type PushTarget,
+} from "./push-dispatch";
+import { isWebPushConfigured } from "./web-push";
+import {
   renderPredictionReminderEmail,
   type PredictionReminderEmailStrings,
   type PredictionReminderMatch,
@@ -419,4 +426,99 @@ export async function dispatchPredictionReminders(fromName?: string): Promise<Di
 
   console.log(`[prediction-reminders] emailed=${emailed} failed=${failed} skipped=${skipped}`);
   return { emailed, failed, skipped, ...flag };
+}
+
+// User ids already PUSHED today, from the sibling push ledger (independent of
+// the email ledger so a player can be emailed-but-not-pushed and vice-versa).
+async function loadPushedUserIds(admin: AdminClient, date: string): Promise<string[]> {
+  const out: string[] = [];
+  for (let offset = 0; ; offset += SUPABASE_PAGE_LIMIT) {
+    const { data, error } = await admin
+      .from("prediction_reminder_push_log")
+      .select("user_id")
+      .eq("reminder_date", date)
+      .order("user_id", { ascending: true })
+      .range(offset, offset + SUPABASE_PAGE_LIMIT - 1);
+    if (error) throw new Error(`[prediction-reminders] load push ledger: ${error.message}`);
+    const page = data ?? [];
+    for (const r of page) out.push(r.user_id as string);
+    if (page.length < SUPABASE_PAGE_LIMIT) break;
+  }
+  return out;
+}
+
+// Cron path (phase 2): sends a "matches need your pick today" Web Push to each
+// pending, push-opted-in player who has a subscription, reusing the SAME
+// pending set as the email path (computePendingPredictionReminders +
+// filterRecipientsAtLocalHour) — the audience is not re-derived. Idempotent per
+// player per UTC day via prediction_reminder_push_log (written only after a
+// successful send). No-ops when VAPID is unset. Isolated by the caller: a
+// failure here never affects the email send or the run summary.
+export async function dispatchMatchNeededPush(): Promise<PushDispatchSummary> {
+  if (!isWebPushConfigured()) {
+    console.log("[prediction-reminders] VAPID unset — skipping push");
+    return { ...ZERO_PUSH };
+  }
+
+  const admin = createAdminSupabaseClient();
+  const today = todayUtcDate();
+  const window = utcDayWindow(today);
+
+  const todayMatches = await loadTodayOpenMatches(admin, window);
+  if (todayMatches.length === 0) {
+    return { ...ZERO_PUSH };
+  }
+  const matchIds = todayMatches.map((m) => m.id);
+
+  const [profiles, predictions, pushedUserIds] = await Promise.all([
+    loadOptedInProfiles(admin),
+    loadPredictionsForMatches(admin, matchIds),
+    loadPushedUserIds(admin, today),
+  ]);
+  // Same local-7am bucketing + pending computation as the email path; the push
+  // ledger (pushedUserIds) is the only difference, so push and email dedupe
+  // independently.
+  const bucketed = filterRecipientsAtLocalHour(profiles);
+  const pending = computePendingPredictionReminders(
+    bucketed,
+    todayMatches,
+    predictions,
+    pushedUserIds,
+  );
+  if (pending.length === 0) {
+    return { ...ZERO_PUSH };
+  }
+
+  const t = (await getTranslations({
+    locale: DEFAULT_LOCALE,
+    namespace: "pushNotifications",
+  })) as Translator;
+  const url = `${env.siteUrl}${localePath(DEFAULT_LOCALE, "/matches?picks=needed")}`;
+
+  const targets: PushTarget[] = pending.map(({ recipient, matches }) => ({
+    userId: recipient.userId,
+    payload: {
+      title: t("matchNeeded.title"),
+      body: t("matchNeeded.body", { count: matches.length }),
+      url,
+      tag: `match-needed-${today}`,
+    },
+  }));
+
+  const summary = await dispatchPushTargets(admin, targets, async (userId) => {
+    const { error } = await admin
+      .from("prediction_reminder_push_log")
+      .upsert(
+        { user_id: userId, reminder_date: today },
+        { onConflict: "user_id,reminder_date", ignoreDuplicates: true },
+      );
+    if (error) {
+      console.error("[prediction-reminders] push ledger write failed:", error.message);
+    }
+  });
+
+  console.log(
+    `[prediction-reminders] push pushed=${summary.pushed} failed=${summary.failed} pruned=${summary.pruned} skipped=${summary.skipped}`,
+  );
+  return summary;
 }

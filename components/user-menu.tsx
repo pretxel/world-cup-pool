@@ -9,13 +9,23 @@ import { CheckIcon, LogOutIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateDisplayName, updateEmailPrefs } from "@/app/[locale]/profile-actions";
+import {
+  updateDisplayName,
+  updateEmailPrefs,
+  savePushSubscription,
+  removePushSubscription,
+} from "@/app/[locale]/profile-actions";
 import {
   EMAIL_PREF_KEYS,
   normalizeEmailPrefs,
   type EmailPrefKey,
   type EmailPrefs,
 } from "@/lib/email-prefs";
+import {
+  isPushSupported,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from "@/lib/push-client";
 import { cn } from "@/lib/utils";
 
 function initialOf(name: string | null, email: string): string {
@@ -49,7 +59,22 @@ export function UserMenu({
   const fieldId = React.useId();
   const prefsId = React.useId();
 
+  // Browsers without Web Push support (or iOS Safari outside a Home-Screen
+  // install) can't subscribe; the push toggle stays disabled with a hint.
+  // useSyncExternalStore returns the server snapshot (true → toggle enabled in
+  // SSR markup) then the real client capability after hydration, with no
+  // setState-in-effect.
+  const pushSupported = React.useSyncExternalStore(
+    () => () => {},
+    () => isPushSupported(),
+    () => true,
+  );
+
   function onTogglePref(key: EmailPrefKey, next: boolean) {
+    if (key === "push") {
+      onTogglePush(next);
+      return;
+    }
     const previous = prefs;
     // Optimistic flip; revert to the last persisted value on failure.
     setPrefs((p) => ({ ...p, [key]: next }));
@@ -61,6 +86,56 @@ export function UserMenu({
       } else {
         setPrefs(previous);
         toast.error(tPrefs("error"));
+      }
+    });
+  }
+
+  // The push toggle runs the browser subscribe/unsubscribe ceremony first, then
+  // persists both the subscription row and the `push` preference. On a denied
+  // permission or unsupported browser the toggle stays off and nothing is saved.
+  function onTogglePush(next: boolean) {
+    const previous = prefs;
+    startPrefsTransition(async () => {
+      if (next) {
+        const result = await subscribeToPush();
+        if (result.status === "unsupported") {
+          toast.error(tPrefs("pushUnsupported"));
+          return;
+        }
+        if (result.status === "denied") {
+          toast.error(tPrefs("pushDenied"));
+          return;
+        }
+        if (result.status === "error") {
+          toast.error(tPrefs("error"));
+          return;
+        }
+        const saved = await savePushSubscription(result.subscription);
+        if (!saved.ok) {
+          toast.error(tPrefs("error"));
+          return;
+        }
+        const res = await updateEmailPrefs({ push: true });
+        if (res.ok) {
+          setPrefs(res.prefs);
+          toast.success(tPrefs("saved"));
+        } else {
+          setPrefs(previous);
+          toast.error(tPrefs("error"));
+        }
+      } else {
+        // Turning off: remove the browser subscription and the server row, then
+        // record the preference as false.
+        const endpoint = await unsubscribeFromPush();
+        if (endpoint) await removePushSubscription(endpoint);
+        const res = await updateEmailPrefs({ push: false });
+        if (res.ok) {
+          setPrefs(res.prefs);
+          toast.success(tPrefs("saved"));
+        } else {
+          setPrefs(previous);
+          toast.error(tPrefs("error"));
+        }
       }
     });
   }
@@ -151,20 +226,32 @@ export function UserMenu({
               <ul className="space-y-1.5">
                 {EMAIL_PREF_KEYS.map((key) => {
                   const id = `${prefsId}-${key}`;
+                  // The push toggle is disabled on browsers without Web Push
+                  // (incl. iOS Safari outside a Home-Screen install).
+                  const isPush = key === "push";
+                  const disabled =
+                    prefsPending || (isPush && !pushSupported);
                   return (
-                    <li key={key} className="flex items-center justify-between gap-2">
-                      <Label htmlFor={id} className="text-sm font-normal text-foreground">
-                        {tPrefs(key)}
-                      </Label>
-                      <Switch.Root
-                        id={id}
-                        checked={prefs[key]}
-                        disabled={prefsPending}
-                        onCheckedChange={(checked) => onTogglePref(key, checked)}
-                        className="relative h-5 w-9 shrink-0 cursor-pointer rounded-full bg-foreground/20 p-0.5 transition-colors outline-none data-checked:bg-pitch focus-visible:ring-2 focus-visible:ring-pitch/40 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <Switch.Thumb className="block size-4 rounded-full bg-background shadow-sm transition-transform data-checked:translate-x-4" />
-                      </Switch.Root>
+                    <li key={key} className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <Label htmlFor={id} className="text-sm font-normal text-foreground">
+                          {tPrefs(key)}
+                        </Label>
+                        <Switch.Root
+                          id={id}
+                          checked={prefs[key]}
+                          disabled={disabled}
+                          onCheckedChange={(checked) => onTogglePref(key, checked)}
+                          className="relative h-5 w-9 shrink-0 cursor-pointer rounded-full bg-foreground/20 p-0.5 transition-colors outline-none data-checked:bg-pitch focus-visible:ring-2 focus-visible:ring-pitch/40 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Switch.Thumb className="block size-4 rounded-full bg-background shadow-sm transition-transform data-checked:translate-x-4" />
+                        </Switch.Root>
+                      </div>
+                      {isPush && !pushSupported && (
+                        <p className="text-xs text-muted-foreground">
+                          {tPrefs("pushHint")}
+                        </p>
+                      )}
                     </li>
                   );
                 })}

@@ -44,7 +44,21 @@
     "saved": "Préférences mises à jour",
     "error": "Impossible de mettre à jour les préférences",
     "results_digest": "Résumé quotidien des résultats",
-    "recap_digest": "Résumé des BD de match"
+    "recap_digest": "Résumé des BD de match",
+    "push": "Notifications push",
+    "pushUnsupported": "Les notifications push ne sont pas prises en charge sur ce navigateur",
+    "pushDenied": "L'autorisation de notification a été refusée",
+    "pushHint": "Sur iPhone, ajoutez ce site à votre écran d'accueil pour activer les notifications."
+  },
+  "pushNotifications": {
+    "matchNeeded": {
+      "title": "Ne manquez pas les pronostics du jour",
+      "body": "{count, plural, one {# match attend votre pronostic aujourd'hui} other {# matchs attendent votre pronostic aujourd'hui}}"
+    },
+    "standingChanged": {
+      "title": "Votre classement a changé",
+      "body": "{direction, select, up {Vous avez gagné {count, number} places jusqu'au #{rank, number}.} down {Vous avez perdu {count, number} places jusqu'au #{rank, number}.} same {Vous avez conservé votre place au #{rank, number}.} other {Votre classement a été mis à jour — voir le classement.}}"
+    }
   },
   "footer": {
     "tournament": "WC26 Pool · 11 juin – 19 juil. 2026",
