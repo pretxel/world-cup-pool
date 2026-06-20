@@ -94,14 +94,16 @@ export async function updateEmailPrefs(
 
 // The browser PushSubscription, narrowed to the fields the store needs. The
 // client serializes `pushManager.subscribe(...).toJSON()` and sends these.
-export const pushSubscriptionSchema = z.object({
+// Module-local: a "use server" file may export ONLY async functions (and
+// types), so this schema must not be exported.
+const pushSubscriptionSchema = z.object({
   endpoint: z.string().url(),
   p256dh: z.string().min(1),
   auth: z.string().min(1),
   userAgent: z.string().max(512).optional(),
 });
 
-export type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
+type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
 
 export type PushSubscriptionResult =
   | { ok: true }

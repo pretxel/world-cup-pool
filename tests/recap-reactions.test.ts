@@ -19,7 +19,7 @@ import {
 const raw = readFileSync(
   fileURLToPath(
     new URL(
-      "../supabase/migrations/20260620020000_recap_reactions.sql",
+      "../supabase/migrations/20260620020002_recap_reactions.sql",
       import.meta.url,
     ),
   ),
