@@ -135,6 +135,11 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+  -- The RETURNS TABLE columns (reaction, count) shadow the recap_reactions
+  -- columns; prefer the column on any unqualified reference so the ON CONFLICT
+  -- target `reaction` is the column, not the OUT variable ("column reference
+  -- reaction is ambiguous" otherwise).
+  #variable_conflict use_column
 declare
   v_uid uuid := auth.uid();
   v_match_id uuid;
