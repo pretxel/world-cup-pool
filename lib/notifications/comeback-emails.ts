@@ -339,6 +339,7 @@ async function loadStandings(
 interface PreparedMessage {
   payload: {
     from: string;
+    replyTo: string;
     to: string[];
     subject: string;
     html: string;
@@ -440,6 +441,7 @@ export async function dispatchComebackEmails(fromName?: string): Promise<Dispatc
     prepared.push({
       payload: {
         from: fromAddress,
+        replyTo: env.emailReplyTo,
         to: [email],
         subject,
         html,

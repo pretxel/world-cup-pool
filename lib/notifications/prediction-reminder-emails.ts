@@ -293,6 +293,7 @@ async function loadRemindedUserIds(admin: AdminClient, date: string): Promise<st
 interface PreparedMessage {
   payload: {
     from: string;
+    replyTo: string;
     to: string[];
     subject: string;
     html: string;
@@ -384,6 +385,7 @@ export async function dispatchPredictionReminders(fromName?: string): Promise<Di
     prepared.push({
       payload: {
         from: fromAddress,
+        replyTo: env.emailReplyTo,
         to: [email],
         subject,
         html,

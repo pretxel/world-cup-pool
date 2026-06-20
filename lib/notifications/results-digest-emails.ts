@@ -152,6 +152,7 @@ type AdminClient = ReturnType<typeof createAdminSupabaseClient>;
 interface PreparedMessage {
   payload: {
     from: string;
+    replyTo: string;
     to: string[];
     subject: string;
     html: string;
@@ -328,7 +329,7 @@ export async function dispatchResultsDigest(fromName?: string): Promise<Dispatch
     };
     const { subject, html, text } = renderResultsDigest(data);
     prepared.push({
-      payload: { from: fromAddress, to: [email], subject, html, text },
+      payload: { from: fromAddress, replyTo: env.emailReplyTo, to: [email], subject, html, text },
       rows: [{ digest_date: digestDate, user_id: r.user_id }],
     });
   }
