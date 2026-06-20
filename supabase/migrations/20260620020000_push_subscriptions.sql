@@ -98,4 +98,9 @@ alter table public.result_push_log enable row level security;
 -- ---------------------------------------------------------------------------
 alter table public.profiles
   alter column email_prefs set default
-    '{"prediction_reminder":true,"result":true,"quiz_reminder":true,"push":true}'::jsonb;
+    '{"prediction_reminder":true,"result":true,"quiz_reminder":true,"results_digest":true,"recap_digest":true,"comeback":true,"push":true}'::jsonb;
+
+-- Backfill push into existing rows (default-on, explicit).
+update public.profiles
+set email_prefs = email_prefs || '{"push":true}'::jsonb
+where not (email_prefs ? 'push');
