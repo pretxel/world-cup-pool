@@ -18,6 +18,11 @@ type AdminClient = SupabaseClient<Database>;
 // fixed template), so give the completion more room than the recap's 320.
 const IMAGE_PROMPT_MAX_TOKENS = 800;
 
+// Cap how many summaries one batch pass will turn into prompts, so a backlog
+// (e.g. the first run after deploy) can't fan out into an unbounded burst of
+// LLM calls. Mirrors the summary pass's DEFAULT_BATCH_LIMIT.
+const DEFAULT_BATCH_LIMIT = 20;
+
 /**
  * The verbatim, fixed part of the comic prompt — everything up to and including
  * the `PANEL LAYOUT & SCENE SEQUENCE` heading. The model-generated panels are
@@ -150,4 +155,77 @@ export async function generateMatchImagePrompt(
   }
 
   return { generated: true };
+}
+
+export type PendingImagePrompts = {
+  candidates: number;
+  generated: number;
+  skipped: number;
+  errors: number;
+};
+
+/**
+ * Find active recap summaries of recent final matches that have content but no
+ * `image_prompt` yet, and generate the prompt for each. Mirrors
+ * `generatePendingSummaries`: load recent finals, anti-join against the
+ * summaries that still lack a prompt, generate only the missing ones. Used by
+ * the sync cron after the summary pass (so it picks up summaries created earlier
+ * in the same run) and reusable as a backfill. No-ops (without DB access) when
+ * the OpenRouter key is unset.
+ */
+export async function generatePendingImagePrompts(
+  admin: AdminClient,
+  opts: { limit?: number } = {},
+): Promise<PendingImagePrompts> {
+  const out: PendingImagePrompts = { candidates: 0, generated: 0, skipped: 0, errors: 0 };
+  if (!env.openrouterApiKey) return out;
+
+  const limit = opts.limit ?? DEFAULT_BATCH_LIMIT;
+
+  // Recent finals, newest first — the same bounded window the summary pass uses.
+  const { data: finals, error: finalsError } = await admin
+    .from("matches")
+    .select("id")
+    .eq("status", "final")
+    .order("kickoff_at", { ascending: false })
+    .limit(limit);
+  if (finalsError) {
+    out.errors++;
+    console.error("[match-image-prompt] failed to load final matches:", finalsError.message);
+    return out;
+  }
+
+  const matchIds = (finals ?? []).map((m) => m.id);
+  if (matchIds.length === 0) return out;
+
+  // Active summaries for those finals; we then filter to the ones still missing
+  // an image_prompt. (PostgREST has no clean anti-join, so we pull + filter.)
+  const { data: summaries, error: summariesError } = await admin
+    .from("match_summaries")
+    .select("id, content, image_prompt")
+    .eq("is_active", true)
+    .in("match_id", matchIds);
+  if (summariesError) {
+    out.errors++;
+    console.error("[match-image-prompt] failed to load active summaries:", summariesError.message);
+    return out;
+  }
+
+  const pending = (summaries ?? []).filter(
+    (s) => (s.content ?? "").trim().length > 0 && !(s.image_prompt ?? "").trim(),
+  );
+  out.candidates = pending.length;
+
+  for (const summary of pending) {
+    try {
+      const result = await generateMatchImagePrompt(admin, summary.id);
+      if (result.generated) out.generated++;
+      else out.skipped++;
+    } catch (err) {
+      out.errors++;
+      console.error(`[match-image-prompt] generation failed for ${summary.id}:`, err);
+    }
+  }
+
+  return out;
 }

@@ -11,6 +11,8 @@ import { captureRankSnapshot } from "@/lib/notifications/rank-snapshot";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
 import { generatePendingSummaries } from "@/lib/matches/match-summary";
+import { generatePendingImagePrompts } from "@/lib/matches/match-image-prompt";
+import { requestPendingRenders } from "@/lib/matches/match-image-render";
 
 function unauthorized() {
   return new NextResponse("unauthorized", { status: 401 });
@@ -98,7 +100,30 @@ export async function GET(request: NextRequest) {
       console.error("[cron:sync-matches] summary generation failed:", err);
     }
 
-    return { ...summary, events, emailed, pushed, summaries };
+    // Derive the comic image PROMPT for any active summary that has content but
+    // no image_prompt yet. Runs AFTER the summary pass so it picks up summaries
+    // created earlier in this same run. Isolated + no-ops without OpenRouter.
+    let imagePrompts = 0;
+    try {
+      const pass = await generatePendingImagePrompts(createAdminSupabaseClient());
+      imagePrompts = pass.generated;
+    } catch (err) {
+      console.error("[cron:sync-matches] image prompt generation failed:", err);
+    }
+
+    // Request the Leonardo RENDER for any active summary that now has a prompt
+    // but no render row. Runs AFTER the prompt pass so it picks up prompts just
+    // written. The render finalizes async via /api/callback-image. Isolated +
+    // no-ops without LEONARDO_API_KEY.
+    let renders = 0;
+    try {
+      const pass = await requestPendingRenders(createAdminSupabaseClient());
+      renders = pass.requested;
+    } catch (err) {
+      console.error("[cron:sync-matches] image render request failed:", err);
+    }
+
+    return { ...summary, events, emailed, pushed, summaries, imagePrompts, renders };
   });
 
   console.log(`[cron:sync-matches] summary:`, JSON.stringify(response));
