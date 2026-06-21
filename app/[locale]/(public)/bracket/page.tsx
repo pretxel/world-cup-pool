@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BracketLiveRefresh } from "@/components/bracket-live-refresh";
 import { BracketView } from "@/components/bracket-view";
 import { getBracket } from "@/lib/bracket";
 import { KNOCKOUT_ORDER } from "@/lib/bracket-core";
@@ -57,6 +58,7 @@ export default async function BracketPage({
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
+      <BracketLiveRefresh />
       <header className="mb-8 border-b border-border pb-6">
         <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
           {t("eyebrow")}
