@@ -87,6 +87,14 @@
     "third": "Third-place play-off",
     "final": "Final"
   },
+  "scoring": {
+    "eyebrow": "Stage-weighted scoring",
+    "heading": "Later rounds are worth more",
+    "lede": "Every correct pick scores the same base points — but the deeper the round, the bigger the multiplier. Nail the final and it's worth ten times a group-stage call.",
+    "exact": "Exact score",
+    "winnerGd": "Winner + GD",
+    "winner": "Winner"
+  },
   "home": {
     "title": "World Cup 2026 Pool — Predictions & Leaderboard",
     "description": "Predict every World Cup 2026 match. Submit scores before kickoff, earn points on results, and climb a single global leaderboard.",
