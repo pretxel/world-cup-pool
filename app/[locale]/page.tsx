@@ -19,6 +19,7 @@ import { TeamFlag } from "@/components/team-flag";
 import { Logotype } from "@/components/logotype";
 import { TournamentCountdown } from "@/components/tournament-countdown";
 import { RecentRecapImages } from "@/components/recent-recap-images";
+import { ScoringExplainer } from "@/components/scoring-explainer";
 import { StandingCards } from "@/components/standing-cards";
 import { StandingCardsTracker } from "@/components/standing-cards-tracker";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -71,6 +72,7 @@ export default async function HomePage({
       <Hero locale={locale} t={t} />
       <TournamentCountdown />
       <ScoringSection locale={locale} t={t} />
+      <ScoringExplainer locale={locale} />
       <FlagWallDivider />
       <Cadence t={t} />
       <FeatureSections locale={locale} t={t} />

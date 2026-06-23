@@ -87,6 +87,14 @@
     "third": "Tercer puesto",
     "final": "Final"
   },
+  "scoring": {
+    "eyebrow": "Puntuación por fase",
+    "heading": "Las rondas finales valen más",
+    "lede": "Cada acierto suma los mismos puntos base, pero cuanto más avanzada la ronda, mayor es el multiplicador. Clava la final y valdrá diez veces más que un acierto en la fase de grupos.",
+    "exact": "Marcador exacto",
+    "winnerGd": "Ganador + DG",
+    "winner": "Ganador"
+  },
   "home": {
     "title": "Pool Mundial 2026 — Pronósticos y Clasificación",
     "description": "Pronostica cada partido del Mundial 2026. Envía marcadores antes del inicio, gana puntos con los resultados y sube en una única clasificación global.",

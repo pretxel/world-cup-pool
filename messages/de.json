@@ -87,6 +87,14 @@
     "third": "Spiel um Platz drei",
     "final": "Finale"
   },
+  "scoring": {
+    "eyebrow": "Phasengewichtete Wertung",
+    "heading": "Spätere Runden zählen mehr",
+    "lede": "Jeder richtige Tipp bringt dieselben Basispunkte – doch je weiter die Runde, desto größer der Multiplikator. Triff das Finale und es zählt zehnmal so viel wie ein Tipp in der Gruppenphase.",
+    "exact": "Genaues Ergebnis",
+    "winnerGd": "Sieger + Tordifferenz",
+    "winner": "Sieger"
+  },
   "home": {
     "title": "World Cup 2026 Pool — Tipps & Rangliste",
     "description": "Tippe jedes Spiel der Weltmeisterschaft 2026. Gib deine Ergebnisse vor dem Anpfiff ab, sammle Punkte für richtige Ergebnisse und klettere in einer einzigen globalen Rangliste nach oben.",

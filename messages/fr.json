@@ -87,6 +87,14 @@
     "third": "Match pour la 3e place",
     "final": "Finale"
   },
+  "scoring": {
+    "eyebrow": "Score pondéré par phase",
+    "heading": "Les tours avancés rapportent plus",
+    "lede": "Chaque bon pronostic rapporte les mêmes points de base, mais plus le tour est avancé, plus le multiplicateur est élevé. Réussissez la finale et elle vaudra dix fois un pronostic de phase de groupes.",
+    "exact": "Score exact",
+    "winnerGd": "Vainqueur + écart",
+    "winner": "Vainqueur"
+  },
   "home": {
     "title": "Pool Coupe du Monde 2026 — Pronostics & Classement",
     "description": "Pronostiquez chaque match de la Coupe du Monde 2026. Saisissez les scores avant le coup d'envoi, gagnez des points sur les résultats et grimpez dans un unique classement global.",
