@@ -1046,7 +1046,8 @@
         "quiz_reminders": "Recordatorios del quiz",
         "results_digest": "Resumen de resultados",
         "recap_digest": "Resumen de recaps",
-        "comeback_emails": "Correos de regreso"
+        "comeback_emails": "Correos de regreso",
+        "playoff_score_email": "Correo de marcadores de playoffs"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
@@ -1055,7 +1056,8 @@
         "quiz_reminders": "Avisa a quienes no han respondido",
         "results_digest": "Resumen diario de la clasificación y los que más suben",
         "recap_digest": "Envía los cómics de partidos recién generados",
-        "comeback_emails": "Recupera a jugadores inactivos con un partido por pronosticar"
+        "comeback_emails": "Recupera a jugadores inactivos con un partido por pronosticar",
+        "playoff_score_email": "Correo del sábado con los marcadores de la fase eliminatoria del día"
       },
       "status": {
         "success": "Éxito",
@@ -1278,6 +1280,17 @@
     "youLabel": "Tú",
     "ctaLabel": "Ver clasificación completa",
     "footer": "Recibes este resumen diario de tu quiniela del Mundial. Puedes desactivarlo en las preferencias de correo de tu cuenta."
+  },
+  "playoffScoreEmail": {
+    "subject": "Resultados de los playoffs del sábado",
+    "preheader": "Los marcadores finales de los partidos de eliminatorias de hoy.",
+    "eyebrow": "Resultados de playoffs",
+    "heading": "Marcadores de la fase eliminatoria del sábado",
+    "intro": "Aquí están los marcadores finales de los partidos de playoffs de hoy.",
+    "resultsLabel": "Resultados",
+    "scoreSeparator": "–",
+    "ctaLabel": "Ver el cuadro",
+    "footer": "Recibes esto porque la fase eliminatoria está en marcha. Puedes desactivarlo en las preferencias de correo de tu cuenta."
   },
   "recapDigest": {
     "subject": "Nuevos cómics de partidos de la quiniela",
