@@ -1117,6 +1117,32 @@ export type Database = {
           },
         ]
       }
+      playoff_score_email_log: {
+        Row: {
+          digest_date: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          digest_date: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          digest_date?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playoff_score_email_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       results_digest_log: {
         Row: {
           digest_date: string

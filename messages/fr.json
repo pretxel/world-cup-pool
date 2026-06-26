@@ -1046,7 +1046,8 @@
         "quiz_reminders": "Rappels du quiz",
         "results_digest": "Résumé des résultats",
         "recap_digest": "Résumé des récaps",
-        "comeback_emails": "E-mails de retour"
+        "comeback_emails": "E-mails de retour",
+        "playoff_score_email": "E-mail des scores des playoffs"
       },
       "jobsDesc": {
         "sync_matches": "Récupère les résultats et recalcule le classement",
@@ -1055,7 +1056,8 @@
         "quiz_reminders": "Relance les joueurs sans réponse",
         "results_digest": "Récapitulatif quotidien du classement et des plus fortes progressions",
         "recap_digest": "Envoie les BD de match nouvellement générées",
-        "comeback_emails": "Relance les joueurs inactifs ayant un match à pronostiquer"
+        "comeback_emails": "Relance les joueurs inactifs ayant un match à pronostiquer",
+        "playoff_score_email": "E-mail du samedi avec les scores des matchs à élimination directe du jour"
       },
       "status": {
         "success": "Succès",
@@ -1278,6 +1280,17 @@
     "youLabel": "Vous",
     "ctaLabel": "Voir le classement complet",
     "footer": "Vous recevez ce récap quotidien de votre pool Coupe du Monde. Vous pouvez le désactiver dans les préférences e-mail de votre compte."
+  },
+  "playoffScoreEmail": {
+    "subject": "Résultats des playoffs du samedi",
+    "preheader": "Les scores finaux des matchs à élimination directe d'aujourd'hui.",
+    "eyebrow": "Résultats des playoffs",
+    "heading": "Scores de la phase à élimination directe du samedi",
+    "intro": "Voici les scores finaux des matchs de playoffs d'aujourd'hui.",
+    "resultsLabel": "Résultats",
+    "scoreSeparator": "–",
+    "ctaLabel": "Voir le tableau",
+    "footer": "Vous recevez ceci car la phase à élimination directe est en cours. Vous pouvez le désactiver dans les préférences e-mail de votre compte."
   },
   "recapDigest": {
     "subject": "Nouvelles BD de match du pool",

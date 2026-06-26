@@ -1046,7 +1046,8 @@
         "quiz_reminders": "Quiz reminders",
         "results_digest": "Results digest",
         "recap_digest": "Recap digest",
-        "comeback_emails": "Comeback emails"
+        "comeback_emails": "Comeback emails",
+        "playoff_score_email": "Playoff score email"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
@@ -1055,7 +1056,8 @@
         "quiz_reminders": "Nudges players who haven't answered",
         "results_digest": "Daily recap of the leaderboard and movers",
         "recap_digest": "Emails newly-rendered match comics",
-        "comeback_emails": "Wins back inactive players with a pickable match"
+        "comeback_emails": "Wins back inactive players with a pickable match",
+        "playoff_score_email": "Saturday email with the day's finished knockout scores"
       },
       "status": {
         "success": "Success",
@@ -1278,6 +1280,17 @@
     "youLabel": "You",
     "ctaLabel": "View full leaderboard",
     "footer": "You're getting this daily recap of your World Cup pool. You can turn it off in your account email preferences."
+  },
+  "playoffScoreEmail": {
+    "subject": "Saturday's playoff results",
+    "preheader": "The final scores from today's knockout matches.",
+    "eyebrow": "Playoff results",
+    "heading": "Saturday's knockout scores",
+    "intro": "Here are the final scores from today's playoff matches.",
+    "resultsLabel": "Results",
+    "scoreSeparator": "–",
+    "ctaLabel": "View the bracket",
+    "footer": "You're getting this because the knockout rounds are underway. You can turn it off in your account email preferences."
   },
   "recapDigest": {
     "subject": "New match comics from the pool",

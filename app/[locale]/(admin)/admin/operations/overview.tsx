@@ -17,6 +17,7 @@ import {
   runResultsDigest,
   runRecapDigest,
   runComebackEmails,
+  runPlayoffScoreEmail,
 } from "./actions";
 
 const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> = {
@@ -27,6 +28,7 @@ const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> =
   results_digest: runResultsDigest,
   recap_digest: runRecapDigest,
   comeback_emails: runComebackEmails,
+  playoff_score_email: runPlayoffScoreEmail,
 };
 
 // Parses the "Run now" outcome the trigger action redirects back with. The

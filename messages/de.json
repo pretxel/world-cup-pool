@@ -1046,7 +1046,8 @@
         "quiz_reminders": "Quiz-Erinnerungen",
         "results_digest": "Ergebnisübersicht",
         "recap_digest": "Recap-Übersicht",
-        "comeback_emails": "Comeback-E-Mails"
+        "comeback_emails": "Comeback-E-Mails",
+        "playoff_score_email": "Playoff-Ergebnis-E-Mail"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
@@ -1055,7 +1056,8 @@
         "quiz_reminders": "Erinnert Spieler, die noch nicht geantwortet haben",
         "results_digest": "Tägliche Zusammenfassung von Tabelle und Aufsteigern",
         "recap_digest": "Versendet neu erstellte Spiel-Comics",
-        "comeback_emails": "Holt inaktive Spieler mit tippbarem Spiel zurück"
+        "comeback_emails": "Holt inaktive Spieler mit tippbarem Spiel zurück",
+        "playoff_score_email": "Samstags-E-Mail mit den K.-o.-Ergebnissen des Tages"
       },
       "status": {
         "success": "Erfolgreich",
@@ -1278,6 +1280,17 @@
     "youLabel": "Du",
     "ctaLabel": "Gesamte Tabelle ansehen",
     "footer": "Du erhältst diese tägliche Zusammenfassung deines WM-Pools. Du kannst sie in den E-Mail-Einstellungen deines Kontos deaktivieren."
+  },
+  "playoffScoreEmail": {
+    "subject": "Playoff-Ergebnisse vom Samstag",
+    "preheader": "Die Endstände der heutigen K.-o.-Spiele.",
+    "eyebrow": "Playoff-Ergebnisse",
+    "heading": "K.-o.-Ergebnisse vom Samstag",
+    "intro": "Hier sind die Endstände der heutigen Playoff-Spiele.",
+    "resultsLabel": "Ergebnisse",
+    "scoreSeparator": "–",
+    "ctaLabel": "Spielbaum ansehen",
+    "footer": "Du erhältst diese E-Mail, weil die K.-o.-Runde läuft. Du kannst sie in den E-Mail-Einstellungen deines Kontos deaktivieren."
   },
   "recapDigest": {
     "subject": "Neue Spiel-Comics aus dem Pool",
