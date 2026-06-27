@@ -1047,7 +1047,8 @@
         "results_digest": "Resumen de resultados",
         "recap_digest": "Resumen de recaps",
         "comeback_emails": "Correos de regreso",
-        "playoff_score_email": "Correo de marcadores de playoffs"
+        "playoff_score_email": "Correo de marcadores de playoffs",
+        "score_rules_email": "Correo de puntuación"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
@@ -1057,7 +1058,8 @@
         "results_digest": "Resumen diario de la clasificación y los que más suben",
         "recap_digest": "Envía los cómics de partidos recién generados",
         "comeback_emails": "Recupera a jugadores inactivos con un partido por pronosticar",
-        "playoff_score_email": "Correo del sábado con los marcadores de la fase eliminatoria del día"
+        "playoff_score_email": "Correo del sábado con los marcadores de la fase eliminatoria del día",
+        "score_rules_email": "Anuncio único de las reglas de puntuación por fase"
       },
       "status": {
         "success": "Éxito",
@@ -1075,7 +1077,8 @@
         "nextRun": "Próxima ejecución",
         "runNow": "Ejecutar ahora",
         "running": "Ejecutando…",
-        "ranError": "La ejecución falló"
+        "ranError": "La ejecución falló",
+        "manualOnly": "Solo manual"
       },
       "runs": {
         "title": "Historial de ejecuciones",
@@ -1321,5 +1324,20 @@
     "ctaLabel": "Hacer mis pronósticos",
     "footer": "Recibes esto porque participas en la quiniela del Mundial y hace tiempo que no pronosticas.",
     "unsubscribeLabel": "Cancelar los correos de regreso"
+  },
+  "scoreRulesEmail": {
+    "subject": "Nueva puntuación: las rondas finales valen más",
+    "preheader": "Los puntos ahora escalan por fase: mira cuánto vale cada una.",
+    "eyebrow": "Cambio de puntuación",
+    "heading": "Hemos cambiado cómo funcionan los puntos",
+    "intro": "Las predicciones ahora puntúan más en las rondas finales. Tus puntos de acierto se multiplican según la fase del partido, así que los pronósticos del final del torneo son los que más cuentan. Esto es lo que vale cada fase.",
+    "tableLabel": "Puntos por fase",
+    "phaseHeader": "Fase",
+    "multHeader": "×",
+    "exactHeader": "Exacto",
+    "winnerGdHeader": "Ganador + DG",
+    "winnerHeader": "Ganador",
+    "ctaLabel": "Ver puntuación completa",
+    "footer": "Recibes esto porque cambiaron las reglas de puntuación del grupo. Puedes desactivar estos correos en las preferencias de correo de tu cuenta."
   }
 }

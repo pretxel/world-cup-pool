@@ -18,6 +18,7 @@ import {
   runRecapDigest,
   runComebackEmails,
   runPlayoffScoreEmail,
+  runScoreRulesEmail,
 } from "./actions";
 
 const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> = {
@@ -29,6 +30,7 @@ const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> =
   recap_digest: runRecapDigest,
   comeback_emails: runComebackEmails,
   playoff_score_email: runPlayoffScoreEmail,
+  score_rules_email: runScoreRulesEmail,
 };
 
 // Parses the "Run now" outcome the trigger action redirects back with. The
@@ -111,7 +113,11 @@ export async function Overview({
               <div className="flex justify-between gap-2">
                 <dt>{t("overview.nextRun")}</dt>
                 <dd className="font-mono tabular-nums text-foreground">
-                  <LocalTime iso={next.toISOString()} />
+                  {next ? (
+                    <LocalTime iso={next.toISOString()} />
+                  ) : (
+                    t("overview.manualOnly")
+                  )}
                 </dd>
               </div>
             </dl>

@@ -1047,7 +1047,8 @@
         "results_digest": "Results digest",
         "recap_digest": "Recap digest",
         "comeback_emails": "Comeback emails",
-        "playoff_score_email": "Playoff score email"
+        "playoff_score_email": "Playoff score email",
+        "score_rules_email": "Scoring-rules email"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
@@ -1057,7 +1058,8 @@
         "results_digest": "Daily recap of the leaderboard and movers",
         "recap_digest": "Emails newly-rendered match comics",
         "comeback_emails": "Wins back inactive players with a pickable match",
-        "playoff_score_email": "Saturday email with the day's finished knockout scores"
+        "playoff_score_email": "Saturday email with the day's finished knockout scores",
+        "score_rules_email": "One-off announcement of the stage-weighted scoring rules"
       },
       "status": {
         "success": "Success",
@@ -1075,7 +1077,8 @@
         "nextRun": "Next run",
         "runNow": "Run now",
         "running": "Running…",
-        "ranError": "Run failed"
+        "ranError": "Run failed",
+        "manualOnly": "Manual only"
       },
       "runs": {
         "title": "Run history",
@@ -1321,5 +1324,20 @@
     "ctaLabel": "Make your picks",
     "footer": "You're getting this because you're playing the World Cup pool and haven't predicted in a while.",
     "unsubscribeLabel": "Unsubscribe from comeback emails"
+  },
+  "scoreRulesEmail": {
+    "subject": "New scoring: later rounds are worth more",
+    "preheader": "Points now scale by stage — see what each phase is worth.",
+    "eyebrow": "Scoring update",
+    "heading": "We've updated how points work",
+    "intro": "Predictions now score more in the later rounds. Your accuracy points are multiplied by each match's stage, so deep-tournament picks matter most. Here's what every phase is worth.",
+    "tableLabel": "Points per phase",
+    "phaseHeader": "Phase",
+    "multHeader": "×",
+    "exactHeader": "Exact",
+    "winnerGdHeader": "Winner + GD",
+    "winnerHeader": "Winner",
+    "ctaLabel": "See full scoring",
+    "footer": "You're getting this because the pool's scoring rules changed. You can turn these emails off in your account email preferences."
   }
 }

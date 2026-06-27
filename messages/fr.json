@@ -1047,7 +1047,8 @@
         "results_digest": "Résumé des résultats",
         "recap_digest": "Résumé des récaps",
         "comeback_emails": "E-mails de retour",
-        "playoff_score_email": "E-mail des scores des playoffs"
+        "playoff_score_email": "E-mail des scores des playoffs",
+        "score_rules_email": "E-mail de barème"
       },
       "jobsDesc": {
         "sync_matches": "Récupère les résultats et recalcule le classement",
@@ -1057,7 +1058,8 @@
         "results_digest": "Récapitulatif quotidien du classement et des plus fortes progressions",
         "recap_digest": "Envoie les BD de match nouvellement générées",
         "comeback_emails": "Relance les joueurs inactifs ayant un match à pronostiquer",
-        "playoff_score_email": "E-mail du samedi avec les scores des matchs à élimination directe du jour"
+        "playoff_score_email": "E-mail du samedi avec les scores des matchs à élimination directe du jour",
+        "score_rules_email": "Annonce unique du barème pondéré par phase"
       },
       "status": {
         "success": "Succès",
@@ -1075,7 +1077,8 @@
         "nextRun": "Prochaine exécution",
         "runNow": "Lancer",
         "running": "En cours…",
-        "ranError": "Échec de l'exécution"
+        "ranError": "Échec de l'exécution",
+        "manualOnly": "Manuel uniquement"
       },
       "runs": {
         "title": "Historique des exécutions",
@@ -1321,5 +1324,20 @@
     "ctaLabel": "Faire mes pronostics",
     "footer": "Vous recevez ceci car vous participez au pool de la Coupe du monde et n'avez pas pronostiqué depuis un moment.",
     "unsubscribeLabel": "Se désabonner des e-mails de retour"
+  },
+  "scoreRulesEmail": {
+    "subject": "Nouveau barème : les tours finaux rapportent plus",
+    "preheader": "Les points évoluent selon la phase — voyez ce que chaque tour rapporte.",
+    "eyebrow": "Mise à jour du barème",
+    "heading": "Nous avons modifié le calcul des points",
+    "intro": "Les pronostics rapportent désormais plus dans les derniers tours. Vos points de précision sont multipliés selon la phase du match, donc les pronostics de fin de tournoi comptent le plus. Voici ce que vaut chaque phase.",
+    "tableLabel": "Points par phase",
+    "phaseHeader": "Phase",
+    "multHeader": "×",
+    "exactHeader": "Exact",
+    "winnerGdHeader": "Vainqueur + DB",
+    "winnerHeader": "Vainqueur",
+    "ctaLabel": "Voir le barème complet",
+    "footer": "Vous recevez ceci car les règles de score du pool ont changé. Vous pouvez désactiver ces e-mails dans les préférences e-mail de votre compte."
   }
 }
