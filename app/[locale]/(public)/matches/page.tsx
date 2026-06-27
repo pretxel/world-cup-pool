@@ -32,7 +32,7 @@ import { persistTimeZoneForCurrentUser, readTimeZoneCookie } from "@/lib/timezon
 import { TimezoneSync } from "@/components/timezone-sync";
 import { maybeScheduleOpportunisticSync } from "@/lib/result-sync/opportunistic";
 import { getActiveCompetition } from "@/lib/competition";
-import { getStageLabel } from "@/lib/competition-schema";
+import { getStageLabel, revealedKnockoutStageKeys } from "@/lib/competition-schema";
 import type { MatchRow } from "@/lib/db";
 import { CheckCircle2Icon, ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -107,11 +107,16 @@ export default async function MatchesPage({
     );
   }
 
-  // Public visibility is gated to confirmed matches: knockout fixtures hold
-  // placeholder participants ("2nd Group A") until an admin sets the real
-  // teams, and an unknown matchup is neither readable nor pickable. Everything
-  // below (filter, stats, day groups) operates on this confirmed base.
-  const list = ((matches ?? []) as MatchRow[]).filter(isConfirmedMatch);
+  // Public visibility: a fixture shows when it is confirmed (both teams real)
+  // OR its knockout round has been revealed by an admin. Revealed rounds let
+  // players see the upcoming schedule (date/venue/placeholders) before teams
+  // are confirmed; such rows render read-only and stay unpickable (the pick
+  // gate is still confirmation). Everything below (filter, stats, day groups)
+  // operates on this visible base.
+  const revealedStages = format ? revealedKnockoutStageKeys(format) : new Set<string>();
+  const list = ((matches ?? []) as MatchRow[]).filter(
+    (m) => isConfirmedMatch(m) || revealedStages.has(m.stage),
+  );
 
   // Safety net for the daily cron: if a kicked-off match still has no result
   // hours later, run a result sync after this response is sent. Costs the
@@ -337,6 +342,8 @@ export default async function MatchesPage({
                         tClosesIn={t("rowClosesIn", { time: "{time}" })}
                         picked={pickedIds.has(m.id)}
                         tPicked={t("rowPicked")}
+                        confirmed={isConfirmedMatch(m)}
+                        tTbd={t("rowTeamsTbd")}
                       />
                     </li>
                   );
@@ -390,6 +397,8 @@ function MatchRowCard({
   tClosesIn,
   picked,
   tPicked,
+  confirmed,
+  tTbd,
 }: {
   match: MatchRow;
   uiStatus: MatchUiStatus;
@@ -403,15 +412,16 @@ function MatchRowCard({
   tClosesIn: string;
   picked: boolean;
   tPicked: string;
+  confirmed: boolean;
+  tTbd: string;
 }) {
   const finalKnown =
     match.status === "final" && match.home_score != null && match.away_score != null;
 
-  // A scheduled, unpicked fixture becomes a "closing soon" candidate. The
-  // server hint drives the row's urgency styling at render time; the badge
-  // itself self-corrects on the client clock (and clears the styling on the
-  // next render once kickoff passes).
-  const pickable = uiStatus === "scheduled" && !picked;
+  // A scheduled, unpicked fixture becomes a "closing soon" candidate. Only a
+  // confirmed fixture is pickable — a revealed-but-unconfirmed knockout row is
+  // read-only (schedule only), so it never shows the Pick/closing-soon affordance.
+  const pickable = uiStatus === "scheduled" && !picked && confirmed;
   const closingSoon = pickable && isClosingSoon(match.kickoff_at);
 
   return (
@@ -471,7 +481,11 @@ function MatchRowCard({
       </div>
 
       <div className="flex shrink-0 items-center gap-1.5 text-right">
-        {finalKnown ? (
+        {!confirmed ? (
+          <div className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:block">
+            {tTbd}
+          </div>
+        ) : finalKnown ? (
           <div>
             <div className="text-muted-foreground font-mono text-[10px] tracking-[0.2em] uppercase">
               {tFinal}

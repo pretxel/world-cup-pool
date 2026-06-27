@@ -237,7 +237,8 @@
       "noneTitle": "No open matches right now",
       "noneBody": "Every fixture is locked or done for the moment — check back soon to make your first pick."
     },
-    "loadFailed": "Failed to load matches: {message}"
+    "loadFailed": "Failed to load matches: {message}",
+    "rowTeamsTbd": "Teams TBD"
   },
   "news": {
     "title": "News",
@@ -1139,7 +1140,13 @@
     "confirmKnockout": "Confirm knockout teams",
     "confirmKnockoutRunning": "Confirming…",
     "confirmKnockoutResult": "Confirmed {count} fixtures",
-    "confirmKnockoutNone": "No new fixtures to confirm"
+    "confirmKnockoutNone": "No new fixtures to confirm",
+    "revealTitle": "Knockout rounds",
+    "revealLede": "Reveal a round to show its fixtures (date, venue) on the public matches page before teams are confirmed. Revealed rows are read-only until teams are set.",
+    "revealStateOn": "Revealed",
+    "revealStateOff": "Hidden",
+    "revealShow": "Reveal",
+    "revealHide": "Hide"
   },
   "error": {
     "eyebrow": "Stoppage time",
