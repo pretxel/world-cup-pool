@@ -57,6 +57,7 @@ function completeGroup(code: string): BracketMatchInput[] {
     status: "final",
     home_score: h,
     away_score: a,
+    venue: null,
   });
   // 1 beats 2 and 3; 2 beats 3 → ranks 1,2,3; rank3 = code3
   return [m(t[0], t[1], 2, 0), m(t[0], t[2], 2, 0), m(t[1], t[2], 1, 0)];
@@ -83,6 +84,7 @@ function partialGroup(code: string, thirdGoalsConceded = 0): BracketMatchInput[]
     status,
     home_score: h,
     away_score: a,
+    venue: null,
   });
   return [
     m(t[0], t[1], null, null, "scheduled"), // decider not played
@@ -105,6 +107,7 @@ describe("buildBracket — best-third resolution", () => {
       status: "scheduled",
       home_score: null,
       away_score: null,
+      venue: null,
     };
     const b = buildBracket([...groups, r32]);
     const m = b.rounds.find((r) => r.stage === "r32")!.matches[0];
@@ -127,6 +130,7 @@ describe("buildBracket — best-third resolution", () => {
         status: "scheduled",
         home_score: null,
         away_score: null,
+        venue: null,
       } as BracketMatchInput,
     ];
     const r32: BracketMatchInput = {
@@ -139,6 +143,7 @@ describe("buildBracket — best-third resolution", () => {
       status: "scheduled",
       home_score: null,
       away_score: null,
+      venue: null,
     };
     const b = buildBracket([...groups, r32]);
     const m = b.rounds.find((r) => r.stage === "r32")!.matches[0];
@@ -161,6 +166,7 @@ describe("buildBracket — best-third resolution", () => {
       status: "scheduled",
       home_score: null,
       away_score: null,
+      venue: null,
     };
     const b = buildBracket([...groups, r32]);
     const m = b.rounds.find((r) => r.stage === "r32")!.matches[0];
@@ -183,6 +189,7 @@ describe("buildBracket — best-third resolution", () => {
         status: "scheduled",
         home_score: null,
         away_score: null,
+        venue: null,
       } as BracketMatchInput,
     ];
     const r32: BracketMatchInput = {
@@ -195,6 +202,7 @@ describe("buildBracket — best-third resolution", () => {
       status: "scheduled",
       home_score: null,
       away_score: null,
+      venue: null,
     };
     const b = buildBracket([...groups, r32]);
     const m = b.rounds.find((r) => r.stage === "r32")!.matches[0];
@@ -220,6 +228,7 @@ describe("buildBracket — best-third resolution", () => {
       status: "scheduled",
       home_score: null,
       away_score: null,
+      venue: null,
     };
 
     // Build 9 complete groups, but tune each group's 3rd-place goals conceded so
@@ -241,6 +250,7 @@ describe("buildBracket — best-third resolution", () => {
         status: "final",
         home_score: h,
         away_score: a,
+        venue: null,
       });
       // 1 beats 2 and 3; 2 beats 3 → ranks 1,2,3. Third loses both games by
       // `thirdGC` goals each — more conceded = weaker third (worse GD).

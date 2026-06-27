@@ -19,8 +19,12 @@ import {
 export type KnockoutStage = "r32" | "r16" | "qf" | "sf" | "third" | "final";
 
 // A fixture as the bracket needs it — same shape as a group match plus the
-// stage. group_code is null for knockout rows.
-export type BracketMatchInput = GroupTableMatch & { stage: string };
+// stage and venue. group_code is null for knockout rows; venue is null when the
+// stadium is not yet recorded.
+export type BracketMatchInput = GroupTableMatch & {
+  stage: string;
+  venue: string | null;
+};
 
 // Stage ordering and the FIFA match-number base for each stage. Numbering is by
 // (stage order, kickoff, id): group 1–72, r32 73–88, r16 89–96, qf 97–100,
@@ -213,6 +217,7 @@ export type BracketSlotMatch = {
   awayScore: number | null;
   status: string;
   kickoffAt: string;
+  venue: string | null;
 };
 
 export type BracketRound = {
@@ -339,6 +344,7 @@ export function buildBracket(matches: BracketMatchInput[]): Bracket {
         awayScore: fx.away_score,
         status: fx.status,
         kickoffAt: fx.kickoff_at,
+        venue: fx.venue,
       })),
     });
   }

@@ -24,7 +24,7 @@ export async function getBracket(): Promise<BracketResult> {
   const { data } = await supabase
     .from("matches")
     .select(
-      "id, home_team, away_team, group_code, home_score, away_score, status, kickoff_at, stage",
+      "id, home_team, away_team, group_code, home_score, away_score, status, kickoff_at, stage, venue",
     )
     .eq("competition_id", competition.id);
 

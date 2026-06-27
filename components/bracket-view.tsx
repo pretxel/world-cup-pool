@@ -1,3 +1,4 @@
+import { LocalTime } from "@/components/local-time";
 import { TeamFlag } from "@/components/team-flag";
 import type {
   BracketRound,
@@ -95,6 +96,12 @@ function MatchCard({
         won={awayWon}
         showScore={match.status === "final"}
       />
+      <div className="border-t border-border/60 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+        <LocalTime iso={match.kickoffAt} format="datetime" />
+        {match.venue ? (
+          <span className="mt-0.5 block truncate">{match.venue}</span>
+        ) : null}
+      </div>
       {provisional ? (
         <div className="border-t border-dashed border-border/60 px-2.5 py-1">
           <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-amber-600 dark:text-amber-500">
