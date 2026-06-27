@@ -238,7 +238,9 @@
       "noneBody": "Every fixture is locked or done for the moment — check back soon to make your first pick."
     },
     "loadFailed": "Failed to load matches: {message}",
-    "rowTeamsTbd": "Teams TBD"
+    "rowTeamsTbd": "Teams TBD",
+    "filterRoundLabel": "Filter by round",
+    "filterAllRounds": "All rounds"
   },
   "news": {
     "title": "News",

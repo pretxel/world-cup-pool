@@ -215,6 +215,24 @@ export function filterableTeams(matches: TeamPair[]): string[] {
   return [...teams].sort((a, b) => a.localeCompare(b));
 }
 
+// Distinct stage (round) keys present in a match list. Used to build the round
+// filter's option set so only rounds with fixtures appear.
+export function stagesPresent(matches: { stage: string }[]): Set<string> {
+  return new Set(matches.map((m) => m.stage));
+}
+
+// Normalize a `?round=` value to a single stage key (first value, trimmed) or
+// null. Validity against the rounds actually present is checked by the caller,
+// so an unknown value falls back to "All rounds" rather than erroring.
+export function parseRoundParam(raw: string | string[] | undefined): string | null {
+  if (!raw) return null;
+  for (const value of Array.isArray(raw) ? raw : [raw]) {
+    const key = value.trim();
+    if (key.length > 0) return key;
+  }
+  return null;
+}
+
 // Drop unknown/placeholder values from a parsed selection by intersecting it
 // with the known filterable teams. Returns canonical team names in
 // `available` order, so an all-unknown `?team=` collapses to an empty (= "All")
