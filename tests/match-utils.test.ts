@@ -15,6 +15,7 @@ import {
   matchInvolvesTeam,
   needsPick,
   parsePicksParam,
+  parseMatchesTab,
   parseRoundParam,
   parseStatusParam,
   parseTeamParam,
@@ -167,6 +168,37 @@ describe("parseRoundParam", () => {
 
   it("keeps the first non-empty value of a repeated param", () => {
     expect(parseRoundParam(["", "group", "final"])).toBe("group");
+  });
+});
+
+describe("parseMatchesTab", () => {
+  const base = { hasKnockout: true, hasResultParams: false };
+
+  it("defaults to fixtures when absent and no result params", () => {
+    expect(parseMatchesTab(undefined, base)).toBe("fixtures");
+    expect(parseMatchesTab("", base)).toBe("fixtures");
+  });
+
+  it("returns a valid explicit tab (case/space-insensitive)", () => {
+    expect(parseMatchesTab("sync", base)).toBe("sync");
+    expect(parseMatchesTab(" REVEAL ", base)).toBe("reveal");
+    expect(parseMatchesTab(["fixtures"], base)).toBe("fixtures");
+  });
+
+  it("falls back to fixtures for an unknown tab", () => {
+    expect(parseMatchesTab("bogus", base)).toBe("fixtures");
+  });
+
+  it("downgrades reveal to fixtures when there are no knockout rounds", () => {
+    expect(parseMatchesTab("reveal", { ...base, hasKnockout: false })).toBe("fixtures");
+  });
+
+  it("infers sync from result params when no explicit tab", () => {
+    expect(parseMatchesTab(undefined, { ...base, hasResultParams: true })).toBe("sync");
+  });
+
+  it("lets an explicit tab win over result-param inference", () => {
+    expect(parseMatchesTab("fixtures", { ...base, hasResultParams: true })).toBe("fixtures");
   });
 });
 

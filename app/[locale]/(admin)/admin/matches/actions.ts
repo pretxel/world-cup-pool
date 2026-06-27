@@ -273,6 +273,7 @@ export async function syncNow(formData: FormData): Promise<void> {
   revalidateAfterMutation(managed.is_active);
 
   const params = new URLSearchParams({
+    tab: "sync",
     syncSource: summary.source,
     syncFetched: String(summary.fetched),
     syncMatched: String(summary.matched),
@@ -305,6 +306,7 @@ export async function confirmKnockoutTeams(formData: FormData): Promise<void> {
   revalidateAfterMutation(managed.is_active);
 
   const params = new URLSearchParams({
+    tab: "sync",
     confirmUpdated: String(result.updated),
   });
   redirect(localePath(locale, `/admin/matches?${params.toString()}`));
@@ -810,5 +812,5 @@ export async function deleteMatch(formData: FormData) {
 export async function deleteMatchDetail(formData: FormData): Promise<void> {
   const locale = localeFrom(formData);
   await deleteMatch(formData);
-  redirect(localePath(locale, `/admin/matches?deleteResult=deleted`));
+  redirect(localePath(locale, `/admin/matches?deleteResult=deleted&tab=fixtures`));
 }
