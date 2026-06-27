@@ -21,6 +21,7 @@ import {
   getManagedCompetition,
   assertMatchInManaged,
 } from "@/lib/admin/managed-competition";
+import { applyKnockoutTeamConfirmation } from "@/lib/admin/confirm-knockout-teams";
 import { isLocale, localePath, DEFAULT_LOCALE } from "@/lib/i18n";
 
 const resultSchema = z.object({
@@ -278,6 +279,32 @@ export async function syncNow(formData: FormData): Promise<void> {
     syncStale: String(summary.stale),
     syncStaleResolved: String(summary.staleResolved),
     syncErrors: String(summary.errors),
+  });
+  redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+}
+
+// Stamps the confirmed real teams onto resolvable knockout fixtures (the R32
+// once groups finish), derived from the live bracket. Mirrors syncNow: scoped
+// to the managed competition, revalidates the match surfaces, and reports the
+// number of fixtures confirmed back through query params. Idempotent — a run
+// with nothing newly confirmed updates zero fixtures.
+export async function confirmKnockoutTeams(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+
+  const rawLocale = formData.get("locale");
+  const locale =
+    typeof rawLocale === "string" && isLocale(rawLocale)
+      ? rawLocale
+      : DEFAULT_LOCALE;
+
+  const result = await applyKnockoutTeamConfirmation(managed.id);
+
+  revalidateAfterMutation(managed.is_active);
+
+  const params = new URLSearchParams({
+    confirmUpdated: String(result.updated),
   });
   redirect(localePath(locale, `/admin/matches?${params.toString()}`));
 }

@@ -1135,7 +1135,11 @@
         "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
         "unknownUser": "Unknown player"
       }
-    }
+    },
+    "confirmKnockout": "Confirm knockout teams",
+    "confirmKnockoutRunning": "Confirming…",
+    "confirmKnockoutResult": "Confirmed {count} fixtures",
+    "confirmKnockoutNone": "No new fixtures to confirm"
   },
   "error": {
     "eyebrow": "Stoppage time",

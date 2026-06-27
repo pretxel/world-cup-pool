@@ -1135,7 +1135,11 @@
         "emptyBody": "Spielerregistrierungen, Tipps, Quiz-Antworten und Gruppenbeitritte erscheinen hier.",
         "unknownUser": "Unbekannter Spieler"
       }
-    }
+    },
+    "confirmKnockout": "K.-o.-Teams bestätigen",
+    "confirmKnockoutRunning": "Bestätige…",
+    "confirmKnockoutResult": "{count} Spiele bestätigt",
+    "confirmKnockoutNone": "Keine neuen Spiele zu bestätigen"
   },
   "error": {
     "eyebrow": "Nachspielzeit",
