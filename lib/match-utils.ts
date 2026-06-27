@@ -315,6 +315,35 @@ export function soonestPickableMatch<T extends { id: string; kickoff_at: string;
   return null;
 }
 
+// --- Admin matches tab (ephemeral, URL-driven) ---------------------------
+// The admin /admin/matches workspace groups its sections into three tabs. The
+// active tab is owned by the URL (`?tab=`), read server-side, so it is linkable,
+// survives reload, and stays correct after a server action redirects back here.
+
+export type MatchesTab = "fixtures" | "sync" | "reveal";
+
+const MATCHES_TABS: readonly MatchesTab[] = ["fixtures", "sync", "reveal"];
+
+// Resolve the active admin matches tab from a `?tab=` value. Precedence:
+// 1. an explicit, valid tab wins (but `reveal` downgrades to `fixtures` when the
+//    competition has no knockout rounds, since that tab isn't rendered);
+// 2. otherwise infer `sync` when a sync/confirm action just redirected back with
+//    its result params present;
+// 3. otherwise default to `fixtures`.
+export function parseMatchesTab(
+  raw: string | string[] | undefined,
+  opts: { hasKnockout: boolean; hasResultParams: boolean },
+): MatchesTab {
+  const value = (Array.isArray(raw) ? raw[0] : raw)?.trim().toLowerCase();
+  if (value && (MATCHES_TABS as readonly string[]).includes(value)) {
+    const tab = value as MatchesTab;
+    if (tab === "reveal" && !opts.hasKnockout) return "fixtures";
+    return tab;
+  }
+  if (opts.hasResultParams) return "sync";
+  return "fixtures";
+}
+
 // A match is "confirmed" once both participants are real participating
 // countries. Knockout fixtures seed placeholder participants ("2nd Group A",
 // "Winner Match 73", …) that don't resolve to a flag; those stay unconfirmed
