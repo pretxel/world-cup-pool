@@ -15,10 +15,12 @@ import {
   matchInvolvesTeam,
   needsPick,
   parsePicksParam,
+  parseRoundParam,
   parseStatusParam,
   parseTeamParam,
   reconcileSelectedTeams,
   soonestPickableMatch,
+  stagesPresent,
   statusBucket,
   utcDateKey,
 } from "@/lib/match-utils";
@@ -148,6 +150,39 @@ describe("matchInvolvesTeam", () => {
     expect(matchInvolvesTeam(team("Brazil", "Spain"), sel)).toBe(true);
     expect(matchInvolvesTeam(team("Mexico", "Spain"), sel)).toBe(true);
     expect(matchInvolvesTeam(team("Spain", "France"), sel)).toBe(false);
+  });
+});
+
+describe("parseRoundParam", () => {
+  it("returns null for undefined and empty", () => {
+    expect(parseRoundParam(undefined)).toBeNull();
+    expect(parseRoundParam("")).toBeNull();
+    expect(parseRoundParam("   ")).toBeNull();
+  });
+
+  it("returns the trimmed stage key", () => {
+    expect(parseRoundParam("r32")).toBe("r32");
+    expect(parseRoundParam(" r16 ")).toBe("r16");
+  });
+
+  it("keeps the first non-empty value of a repeated param", () => {
+    expect(parseRoundParam(["", "group", "final"])).toBe("group");
+  });
+});
+
+describe("stagesPresent", () => {
+  it("returns the distinct stage keys present", () => {
+    const got = stagesPresent([
+      { stage: "group" },
+      { stage: "group" },
+      { stage: "r32" },
+      { stage: "final" },
+    ]);
+    expect([...got].sort()).toEqual(["final", "group", "r32"]);
+  });
+
+  it("is empty for no matches", () => {
+    expect(stagesPresent([]).size).toBe(0);
   });
 });
 

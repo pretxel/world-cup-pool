@@ -238,7 +238,9 @@
       "noneBody": "Todos los partidos están bloqueados o ya jugados por ahora; vuelve pronto para hacer tu primer pronóstico."
     },
     "loadFailed": "No se pudieron cargar los partidos: {message}",
-    "rowTeamsTbd": "Equipos por definir"
+    "rowTeamsTbd": "Equipos por definir",
+    "filterRoundLabel": "Filtrar por ronda",
+    "filterAllRounds": "Todas las rondas"
   },
   "news": {
     "title": "Noticias",

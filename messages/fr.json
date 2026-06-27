@@ -238,7 +238,9 @@
       "noneBody": "Tous les matchs sont verrouillés ou terminés pour l'instant — revenez bientôt pour faire votre premier pronostic."
     },
     "loadFailed": "Échec du chargement des matchs : {message}",
-    "rowTeamsTbd": "Équipes à venir"
+    "rowTeamsTbd": "Équipes à venir",
+    "filterRoundLabel": "Filtrer par tour",
+    "filterAllRounds": "Tous les tours"
   },
   "news": {
     "title": "Actualités",

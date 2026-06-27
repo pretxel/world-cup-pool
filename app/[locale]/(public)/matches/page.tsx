@@ -22,17 +22,24 @@ import {
   matchInvolvesTeam,
   needsPick,
   parsePicksParam,
+  parseRoundParam,
   parseStatusParam,
   parseTeamParam,
   reconcileSelectedTeams,
   soonestPickableMatch,
+  stagesPresent,
   statusBucket,
 } from "@/lib/match-utils";
 import { persistTimeZoneForCurrentUser, readTimeZoneCookie } from "@/lib/timezone";
 import { TimezoneSync } from "@/components/timezone-sync";
+import { MatchRoundFilter } from "@/components/match-round-filter";
 import { maybeScheduleOpportunisticSync } from "@/lib/result-sync/opportunistic";
 import { getActiveCompetition } from "@/lib/competition";
-import { getStageLabel, revealedKnockoutStageKeys } from "@/lib/competition-schema";
+import {
+  getStageLabel,
+  revealedKnockoutStageKeys,
+  sortedStages,
+} from "@/lib/competition-schema";
 import type { MatchRow } from "@/lib/db";
 import { CheckCircle2Icon, ChevronRightIcon, MapPinIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -79,13 +86,19 @@ export default async function MatchesPage({
     team?: string | string[];
     status?: string | string[];
     picks?: string | string[];
+    round?: string | string[];
   }>;
 }) {
   const { locale: raw } = await params;
   const locale: Locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   setRequestLocale(locale);
 
-  const { team: teamParam, status: statusParam, picks: picksParam } = await searchParams;
+  const {
+    team: teamParam,
+    status: statusParam,
+    picks: picksParam,
+    round: roundParam,
+  } = await searchParams;
 
   const t = await getTranslations("matches");
   const activeCompetition = await getActiveCompetition();
@@ -146,29 +159,51 @@ export default async function MatchesPage({
   const selectedKeys = new Set(selectedTeams.map((team) => team.toLowerCase()));
   const teamFiltered = list.filter((m) => matchInvolvesTeam(m, selectedKeys));
 
-  // Stats and the needs-pick count come from the team-filtered set BEFORE the
-  // status/picks filters, so each control shows what activating it would
-  // yield (clicking "Live · 3" can never produce an empty list).
+  // Round (stage) filter options: the rounds present in the visible list, in the
+  // competition format's stage order, labeled with localized stage names. A
+  // `?round=` value not among them falls back to "All rounds".
+  const present = stagesPresent(list);
+  const roundOptions = format
+    ? sortedStages(format)
+        .filter((s) => present.has(s.key))
+        .map((s) => ({ key: s.key, label: getStageLabel(format, s.key, locale) }))
+    : [];
+  const parsedRound = parseRoundParam(roundParam);
+  const selectedRound = parsedRound && present.has(parsedRound) ? parsedRound : null;
+
+  // The round filter joins the team filter in the "scoped" set that feeds the
+  // header stats and the needs-pick count, so those reflect the selected round.
+  const scoped = selectedRound
+    ? teamFiltered.filter((m) => m.stage === selectedRound)
+    : teamFiltered;
+
+  // Stats and the needs-pick count come from the scoped (team + round) set
+  // BEFORE the status/picks filters, so each control shows what activating it
+  // would yield (clicking "Live · 3" can never produce an empty list).
   const stats = {
-    upcoming: teamFiltered.filter((m) => statusBucket(m) === "upcoming").length,
-    live: teamFiltered.filter((m) => statusBucket(m) === "live").length,
-    final: teamFiltered.filter((m) => statusBucket(m) === "final").length,
+    upcoming: scoped.filter((m) => statusBucket(m) === "upcoming").length,
+    live: scoped.filter((m) => statusBucket(m) === "live").length,
+    final: scoped.filter((m) => statusBucket(m) === "final").length,
   };
 
   const statusFilter = parseStatusParam(statusParam);
   const statusFiltered = statusFilter
-    ? teamFiltered.filter((m) => statusBucket(m) === statusFilter)
-    : teamFiltered;
+    ? scoped.filter((m) => statusBucket(m) === statusFilter)
+    : scoped;
 
   // The picks filter exists only for signed-in users; an anonymous request
   // carrying `?picks=needed` is silently ignored.
   const picksNeeded = user != null && parsePicksParam(picksParam);
-  const needsPickCount = user ? teamFiltered.filter((m) => needsPick(m, pickedIds)).length : 0;
+  const needsPickCount = user ? scoped.filter((m) => needsPick(m, pickedIds)).length : 0;
   const filtered = picksNeeded
     ? statusFiltered.filter((m) => needsPick(m, pickedIds))
     : statusFiltered;
 
-  const isFiltered = selectedTeams.length > 0 || statusFilter !== null || picksNeeded;
+  const isFiltered =
+    selectedTeams.length > 0 ||
+    statusFilter !== null ||
+    picksNeeded ||
+    selectedRound !== null;
 
   // First-pick lead state (QW8): a signed-in user who has made zero picks and
   // has no filter active gets an inviting nudge toward the soonest still-open
@@ -252,6 +287,17 @@ export default async function MatchesPage({
             />
           </Suspense>
         </div>
+      ) : null}
+
+      {roundOptions.length > 1 ? (
+        <Suspense fallback={null}>
+          <MatchRoundFilter
+            rounds={roundOptions}
+            selected={selectedRound}
+            allLabel={t("filterAllRounds")}
+            label={t("filterRoundLabel")}
+          />
+        </Suspense>
       ) : null}
 
       {availableTeams.length > 0 ? (
