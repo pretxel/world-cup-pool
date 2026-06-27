@@ -17,9 +17,17 @@ function mk(
     score?: [number, number] | null;
     status?: string;
     id?: string;
+    venue?: string | null;
   } = {},
 ): BracketMatchInput {
-  const { group = stage === "group" ? "A" : null, kickoff, score = null, status, id } = opts;
+  const {
+    group = stage === "group" ? "A" : null,
+    kickoff,
+    score = null,
+    status,
+    id,
+    venue = null,
+  } = opts;
   return {
     id: id ?? `m${seq++}`,
     stage,
@@ -30,6 +38,7 @@ function mk(
     status: status ?? (score ? "final" : "scheduled"),
     home_score: score ? score[0] : null,
     away_score: score ? score[1] : null,
+    venue,
   };
 }
 
@@ -132,5 +141,23 @@ describe("buildBracket — structure", () => {
     const b = buildBracket([r32, fin]);
     expect(b.rounds.map((r) => r.stage)).toEqual(["r32", "final"]);
     expect(find(b, "r32").home).toMatchObject({ team: "Brazil", status: "confirmed" });
+  });
+
+  it("carries kickoff and venue through to the slot match", () => {
+    const withVenue = mk("r32", "Brazil", "Serbia", {
+      kickoff: "2026-06-28T19:00:00Z",
+      venue: "MetLife Stadium, New York",
+      id: "with-venue",
+    });
+    const noVenue = mk("final", "Spain", "France", {
+      kickoff: "2026-07-19T19:00:00Z",
+      id: "no-venue",
+    });
+    const b = buildBracket([withVenue, noVenue]);
+    expect(find(b, "r32")).toMatchObject({
+      kickoffAt: "2026-06-28T19:00:00Z",
+      venue: "MetLife Stadium, New York",
+    });
+    expect(find(b, "final").venue).toBeNull();
   });
 });
