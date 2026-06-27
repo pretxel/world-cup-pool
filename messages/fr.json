@@ -237,7 +237,8 @@
       "noneTitle": "Aucun match ouvert pour le moment",
       "noneBody": "Tous les matchs sont verrouillés ou terminés pour l'instant — revenez bientôt pour faire votre premier pronostic."
     },
-    "loadFailed": "Échec du chargement des matchs : {message}"
+    "loadFailed": "Échec du chargement des matchs : {message}",
+    "rowTeamsTbd": "Équipes à venir"
   },
   "news": {
     "title": "Actualités",
@@ -1139,7 +1140,13 @@
     "confirmKnockout": "Confirmer les équipes (élim.)",
     "confirmKnockoutRunning": "Confirmation…",
     "confirmKnockoutResult": "{count} matchs confirmés",
-    "confirmKnockoutNone": "Aucun nouveau match à confirmer"
+    "confirmKnockoutNone": "Aucun nouveau match à confirmer",
+    "revealTitle": "Tours à élimination",
+    "revealLede": "Affichez un tour pour montrer ses matchs (date, lieu) sur la page publique avant la confirmation des équipes. Les lignes affichées sont en lecture seule jusqu'à la confirmation.",
+    "revealStateOn": "Affiché",
+    "revealStateOff": "Masqué",
+    "revealShow": "Afficher",
+    "revealHide": "Masquer"
   },
   "error": {
     "eyebrow": "Temps additionnel",

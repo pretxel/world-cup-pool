@@ -23,6 +23,7 @@ import {
 } from "@/lib/admin/managed-competition";
 import { applyKnockoutTeamConfirmation } from "@/lib/admin/confirm-knockout-teams";
 import { isLocale, localePath, DEFAULT_LOCALE } from "@/lib/i18n";
+import type { Json } from "@/lib/database.types";
 
 const resultSchema = z.object({
   match_id: z.string().uuid(),
@@ -307,6 +308,50 @@ export async function confirmKnockoutTeams(formData: FormData): Promise<void> {
     confirmUpdated: String(result.updated),
   });
   redirect(localePath(locale, `/admin/matches?${params.toString()}`));
+}
+
+// Toggles a knockout round's public visibility for the managed competition by
+// flipping that stage's `revealed` flag in the competition format. A revealed
+// round's fixtures appear on the public matches list (read-only) even before
+// their teams are confirmed; pickability is unchanged. Only knockout stages can
+// be toggled.
+export async function toggleKnockoutRoundReveal(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const managed = await getManagedCompetition();
+  if (!managed) throw new Error("No competition to manage");
+
+  const rawLocale = formData.get("locale");
+  const locale =
+    typeof rawLocale === "string" && isLocale(rawLocale)
+      ? rawLocale
+      : DEFAULT_LOCALE;
+
+  const stageKey = formData.get("stage");
+  const reveal = formData.get("reveal") === "true";
+  if (typeof stageKey !== "string" || stageKey.length === 0) {
+    throw new Error("Missing stage");
+  }
+  const target = managed.format.stages.find((s) => s.key === stageKey);
+  if (!target || target.kind !== "knockout") {
+    throw new Error("Stage is not a knockout round");
+  }
+
+  const newFormat = {
+    ...managed.format,
+    stages: managed.format.stages.map((s) =>
+      s.key === stageKey ? { ...s, revealed: reveal } : s,
+    ),
+  };
+
+  const admin = createAdminSupabaseClient();
+  const { error } = await admin
+    .from("competitions")
+    .update({ format_config: newFormat as unknown as Json })
+    .eq("id", managed.id);
+  if (error) throw new Error(`Failed to update competition format: ${error.message}`);
+
+  revalidateAfterMutation(managed.is_active);
+  redirect(localePath(locale, "/admin/matches"));
 }
 
 // Admin force-resend of result emails for one final match. Re-emails the

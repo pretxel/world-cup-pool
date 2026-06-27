@@ -15,9 +15,15 @@ import { EmptyState } from "@/components/admin/empty-state";
 import { ActionStatus } from "@/components/admin/action-status";
 import { LiveRegion } from "@/components/admin/live-region";
 import { SubmitButton } from "@/components/admin/submit-button";
-import { confirmKnockoutTeams, saveFixture, syncNow } from "./actions";
+import {
+  confirmKnockoutTeams,
+  saveFixture,
+  syncNow,
+  toggleKnockoutRoundReveal,
+} from "./actions";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { isConfirmedMatch } from "@/lib/match-utils";
+import { cn } from "@/lib/utils";
 import { isStaleMatch } from "@/lib/result-sync/staleness";
 import { getManagedCompetition } from "@/lib/admin/managed-competition";
 import {
@@ -101,6 +107,10 @@ export default async function AdminMatchesPage({
       }))
     : [];
   const showGroupCode = managed ? hasGroupStage(managed.format) : true;
+  // Knockout rounds the admin can reveal/hide on the public matches list.
+  const knockoutStages = managed
+    ? sortedStages(managed.format).filter((s) => s.kind === "knockout")
+    : [];
   const stageText = (stage: string) =>
     managed ? getStageLabel(managed.format, stage, locale) : stage;
 
@@ -199,6 +209,57 @@ export default async function AdminMatchesPage({
             )
           ) : null}
         </Card>
+
+        {/* Knockout round reveal */}
+        {knockoutStages.length > 0 ? (
+          <Card className="gap-3 p-5">
+            <div className="space-y-0.5">
+              <h2 className="font-heading text-base font-semibold">
+                {t("revealTitle")}
+              </h2>
+              <p className="text-sm text-muted-foreground">{t("revealLede")}</p>
+            </div>
+            <ul className="divide-border divide-y">
+              {knockoutStages.map((s) => {
+                const revealed = s.revealed === true;
+                return (
+                  <li
+                    key={s.key}
+                    className="flex items-center justify-between gap-3 py-2"
+                  >
+                    <span className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">
+                        {getStageLabel(managed!.format, s.key, locale)}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-sm border px-1.5 py-0.5 font-mono text-[10px] tracking-[0.16em] uppercase",
+                          revealed
+                            ? "border-pitch/40 bg-pitch/10 text-pitch"
+                            : "border-border bg-secondary text-muted-foreground",
+                        )}
+                      >
+                        {revealed ? t("revealStateOn") : t("revealStateOff")}
+                      </span>
+                    </span>
+                    <form action={toggleKnockoutRoundReveal}>
+                      <input type="hidden" name="locale" value={locale} />
+                      <input type="hidden" name="stage" value={s.key} />
+                      <input
+                        type="hidden"
+                        name="reveal"
+                        value={revealed ? "false" : "true"}
+                      />
+                      <SubmitButton size="sm" variant="outline">
+                        {revealed ? t("revealHide") : t("revealShow")}
+                      </SubmitButton>
+                    </form>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        ) : null}
 
         {/* New fixture */}
         <Card className="p-5">

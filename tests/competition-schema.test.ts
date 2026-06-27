@@ -7,7 +7,9 @@ import {
   groupCodePattern,
   hasGroupStage,
   parseFormatConfig,
+  revealedKnockoutStageKeys,
   sortedStages,
+  stageSchema,
   type CompetitionFormat,
 } from "@/lib/competition-schema";
 
@@ -137,5 +139,49 @@ describe("competitionSchema", () => {
       format_config: WC_FORMAT,
     });
     expect(r.success).toBe(false);
+  });
+});
+
+describe("stageSchema revealed default", () => {
+  it("defaults revealed to false when absent", () => {
+    const s = stageSchema.parse({
+      key: "r32",
+      kind: "knockout",
+      order: 2,
+      labels: { en: "Round of 32" },
+    });
+    expect(s.revealed).toBe(false);
+  });
+});
+
+describe("revealedKnockoutStageKeys", () => {
+  const FORMAT = {
+    stages: [
+      { key: "group", kind: "group", order: 1, hasGroupCode: false, labels: { en: "Group" }, revealed: true },
+      { key: "r32", kind: "knockout", order: 2, hasGroupCode: false, labels: { en: "R32" }, revealed: true },
+      { key: "r16", kind: "knockout", order: 3, hasGroupCode: false, labels: { en: "R16" } },
+      { key: "final", kind: "knockout", order: 4, hasGroupCode: false, labels: { en: "Final" }, revealed: true },
+    ],
+    groups: { enabled: false },
+  };
+
+  it("returns only revealed knockout stage keys", () => {
+    const keys = revealedKnockoutStageKeys(parseFormatConfig(FORMAT));
+    expect([...keys].sort()).toEqual(["final", "r32"]);
+  });
+
+  it("ignores a revealed flag on a non-knockout stage", () => {
+    const keys = revealedKnockoutStageKeys(parseFormatConfig(FORMAT));
+    expect(keys.has("group")).toBe(false);
+  });
+
+  it("excludes an unrevealed knockout stage", () => {
+    const keys = revealedKnockoutStageKeys(parseFormatConfig(FORMAT));
+    expect(keys.has("r16")).toBe(false);
+  });
+
+  it("returns an empty set when no rounds are revealed", () => {
+    const keys = revealedKnockoutStageKeys(parseFormatConfig(WC_FORMAT));
+    expect(keys.size).toBe(0);
   });
 });

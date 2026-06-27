@@ -34,6 +34,11 @@ export const stageSchema = z.object({
   labels: stageLabelsSchema,
   icon: z.string().optional(),
   hasGroupCode: z.boolean().default(false),
+  // Admin-controlled per-round visibility: when true, a knockout round's
+  // fixtures are surfaced on the public matches list even while their
+  // participants are still placeholders (read-only schedule). Defaults to
+  // hidden, so existing formats are unaffected. Ignored for non-knockout kinds.
+  revealed: z.boolean().default(false),
 });
 
 export const groupsSchema = z.discriminatedUnion("enabled", [
@@ -154,6 +159,17 @@ export function getStageOrder(
 
 export function hasGroupStage(format: CompetitionFormat): boolean {
   return format.groups.enabled;
+}
+
+// The keys of knockout stages an admin has revealed. A revealed round's
+// fixtures are surfaced on the public matches list even before their teams are
+// confirmed. Non-knockout and unrevealed stages are excluded.
+export function revealedKnockoutStageKeys(format: CompetitionFormat): Set<string> {
+  return new Set(
+    format.stages
+      .filter((s) => s.kind === "knockout" && s.revealed)
+      .map((s) => s.key),
+  );
 }
 
 // The stage key of the (first) group stage, e.g. "group" — or null when the

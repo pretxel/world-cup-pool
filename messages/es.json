@@ -237,7 +237,8 @@
       "noneTitle": "No hay partidos abiertos ahora mismo",
       "noneBody": "Todos los partidos están bloqueados o ya jugados por ahora; vuelve pronto para hacer tu primer pronóstico."
     },
-    "loadFailed": "No se pudieron cargar los partidos: {message}"
+    "loadFailed": "No se pudieron cargar los partidos: {message}",
+    "rowTeamsTbd": "Equipos por definir"
   },
   "news": {
     "title": "Noticias",
@@ -1139,7 +1140,13 @@
     "confirmKnockout": "Confirmar equipos eliminatorias",
     "confirmKnockoutRunning": "Confirmando…",
     "confirmKnockoutResult": "{count} partidos confirmados",
-    "confirmKnockoutNone": "No hay partidos nuevos por confirmar"
+    "confirmKnockoutNone": "No hay partidos nuevos por confirmar",
+    "revealTitle": "Rondas eliminatorias",
+    "revealLede": "Muestra una ronda para ver sus partidos (fecha, sede) en la página pública antes de confirmar los equipos. Las filas reveladas son de solo lectura hasta definir los equipos.",
+    "revealStateOn": "Visible",
+    "revealStateOff": "Oculta",
+    "revealShow": "Mostrar",
+    "revealHide": "Ocultar"
   },
   "error": {
     "eyebrow": "Tiempo añadido",

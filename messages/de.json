@@ -237,7 +237,8 @@
       "noneTitle": "Derzeit keine offenen Spiele",
       "noneBody": "Alle Spiele sind im Moment gesperrt oder beendet — schau bald wieder vorbei, um deinen ersten Tipp abzugeben."
     },
-    "loadFailed": "Spiele konnten nicht geladen werden: {message}"
+    "loadFailed": "Spiele konnten nicht geladen werden: {message}",
+    "rowTeamsTbd": "Teams offen"
   },
   "news": {
     "title": "Nachrichten",
@@ -1139,7 +1140,13 @@
     "confirmKnockout": "K.-o.-Teams bestätigen",
     "confirmKnockoutRunning": "Bestätige…",
     "confirmKnockoutResult": "{count} Spiele bestätigt",
-    "confirmKnockoutNone": "Keine neuen Spiele zu bestätigen"
+    "confirmKnockoutNone": "Keine neuen Spiele zu bestätigen",
+    "revealTitle": "K.-o.-Runden",
+    "revealLede": "Gib eine Runde frei, um ihre Spiele (Datum, Ort) vor der Team-Bestätigung auf der öffentlichen Spieleseite zu zeigen. Freigegebene Zeilen sind bis zur Team-Festlegung schreibgeschützt.",
+    "revealStateOn": "Sichtbar",
+    "revealStateOff": "Verborgen",
+    "revealShow": "Anzeigen",
+    "revealHide": "Verbergen"
   },
   "error": {
     "eyebrow": "Nachspielzeit",
