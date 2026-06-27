@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/admin/empty-state";
 import { ActionStatus } from "@/components/admin/action-status";
 import { LiveRegion } from "@/components/admin/live-region";
 import { SubmitButton } from "@/components/admin/submit-button";
-import { saveFixture, syncNow } from "./actions";
+import { confirmKnockoutTeams, saveFixture, syncNow } from "./actions";
 import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { isConfirmedMatch } from "@/lib/match-utils";
 import { isStaleMatch } from "@/lib/result-sync/staleness";
@@ -82,6 +82,11 @@ export default async function AdminMatchesPage({
 
   const sp = await searchParams;
   const syncSummary = parseSyncSummaryParams(sp);
+  // The confirmKnockoutTeams action reports the number of fixtures stamped.
+  const confirmUpdated =
+    typeof sp.confirmUpdated === "string" && /^\d+$/.test(sp.confirmUpdated)
+      ? Number(sp.confirmUpdated)
+      : null;
   // The detail page's delete redirects here with `deleteResult=deleted`.
   const fixtureDeleted = sp.deleteResult === "deleted";
   const now = new Date();
@@ -146,14 +151,32 @@ export default async function AdminMatchesPage({
               </h2>
               <p className="text-sm text-muted-foreground">{t("syncLede")}</p>
             </div>
-            <form action={syncNow}>
-              <input type="hidden" name="locale" value={locale} />
-              <SubmitButton variant="outline">
-                <RefreshCwIcon aria-hidden />
-                {t("syncNow")}
-              </SubmitButton>
-            </form>
+            <div className="flex flex-wrap items-center gap-2">
+              <form action={confirmKnockoutTeams}>
+                <input type="hidden" name="locale" value={locale} />
+                <SubmitButton
+                  variant="outline"
+                  pendingLabel={t("confirmKnockoutRunning")}
+                >
+                  {t("confirmKnockout")}
+                </SubmitButton>
+              </form>
+              <form action={syncNow}>
+                <input type="hidden" name="locale" value={locale} />
+                <SubmitButton variant="outline">
+                  <RefreshCwIcon aria-hidden />
+                  {t("syncNow")}
+                </SubmitButton>
+              </form>
+            </div>
           </div>
+          {confirmUpdated != null ? (
+            <ActionStatus variant="success" live={false}>
+              {confirmUpdated > 0
+                ? t("confirmKnockoutResult", { count: confirmUpdated })
+                : t("confirmKnockoutNone")}
+            </ActionStatus>
+          ) : null}
           {syncSummary ? (
             syncSummary.source === "none" ? (
               <ActionStatus variant="error" live={false}>

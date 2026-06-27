@@ -1135,7 +1135,11 @@
         "emptyBody": "Les inscriptions, pronostics, réponses au quiz et adhésions aux groupes apparaissent ici.",
         "unknownUser": "Joueur inconnu"
       }
-    }
+    },
+    "confirmKnockout": "Confirmer les équipes (élim.)",
+    "confirmKnockoutRunning": "Confirmation…",
+    "confirmKnockoutResult": "{count} matchs confirmés",
+    "confirmKnockoutNone": "Aucun nouveau match à confirmer"
   },
   "error": {
     "eyebrow": "Temps additionnel",

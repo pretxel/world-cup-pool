@@ -1135,7 +1135,11 @@
         "emptyBody": "Aquí aparecen registros, pronósticos, respuestas del quiz y uniones a grupos.",
         "unknownUser": "Jugador desconocido"
       }
-    }
+    },
+    "confirmKnockout": "Confirmar equipos eliminatorias",
+    "confirmKnockoutRunning": "Confirmando…",
+    "confirmKnockoutResult": "{count} partidos confirmados",
+    "confirmKnockoutNone": "No hay partidos nuevos por confirmar"
   },
   "error": {
     "eyebrow": "Tiempo añadido",
