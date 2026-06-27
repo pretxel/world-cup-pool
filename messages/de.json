@@ -1047,7 +1047,8 @@
         "results_digest": "Ergebnisübersicht",
         "recap_digest": "Recap-Übersicht",
         "comeback_emails": "Comeback-E-Mails",
-        "playoff_score_email": "Playoff-Ergebnis-E-Mail"
+        "playoff_score_email": "Playoff-Ergebnis-E-Mail",
+        "score_rules_email": "Wertungs-E-Mail"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
@@ -1057,7 +1058,8 @@
         "results_digest": "Tägliche Zusammenfassung von Tabelle und Aufsteigern",
         "recap_digest": "Versendet neu erstellte Spiel-Comics",
         "comeback_emails": "Holt inaktive Spieler mit tippbarem Spiel zurück",
-        "playoff_score_email": "Samstags-E-Mail mit den K.-o.-Ergebnissen des Tages"
+        "playoff_score_email": "Samstags-E-Mail mit den K.-o.-Ergebnissen des Tages",
+        "score_rules_email": "Einmalige Ankündigung der phasengewichteten Wertung"
       },
       "status": {
         "success": "Erfolgreich",
@@ -1075,7 +1077,8 @@
         "nextRun": "Nächste Ausführung",
         "runNow": "Jetzt ausführen",
         "running": "Wird ausgeführt…",
-        "ranError": "Ausführung fehlgeschlagen"
+        "ranError": "Ausführung fehlgeschlagen",
+        "manualOnly": "Nur manuell"
       },
       "runs": {
         "title": "Ausführungsverlauf",
@@ -1321,5 +1324,20 @@
     "ctaLabel": "Tipps abgeben",
     "footer": "Du erhältst diese E-Mail, weil du am World Cup Pool teilnimmst und schon eine Weile nicht getippt hast.",
     "unsubscribeLabel": "Comeback-E-Mails abbestellen"
+  },
+  "scoreRulesEmail": {
+    "subject": "Neue Punktewertung: spätere Runden zählen mehr",
+    "preheader": "Punkte skalieren jetzt nach Phase – sieh, was jede Runde wert ist.",
+    "eyebrow": "Wertungs-Update",
+    "heading": "Wir haben die Punktevergabe geändert",
+    "intro": "Tipps bringen in den späteren Runden jetzt mehr. Deine Trefferpunkte werden mit der Phase des Spiels multipliziert, daher zählen Tipps im Turnierfinale am meisten. Das ist jede Phase wert.",
+    "tableLabel": "Punkte pro Phase",
+    "phaseHeader": "Phase",
+    "multHeader": "×",
+    "exactHeader": "Exakt",
+    "winnerGdHeader": "Sieger + TD",
+    "winnerHeader": "Sieger",
+    "ctaLabel": "Volle Wertung ansehen",
+    "footer": "Du erhältst dies, weil sich die Wertungsregeln des Pools geändert haben. Du kannst diese E-Mails in den E-Mail-Einstellungen deines Kontos deaktivieren."
   }
 }
