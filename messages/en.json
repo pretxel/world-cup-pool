@@ -242,7 +242,10 @@
     "filterAllRounds": "All rounds",
     "loadFailedTitle": "We couldn't load the matches",
     "loadFailedBody": "Something went wrong fetching the fixtures. Please try again.",
-    "loadFailedRetry": "Try again"
+    "loadFailedRetry": "Try again",
+    "allFinishedTitle": "All matches are finished",
+    "allFinishedBody": "Every fixture in view has been played. Check the final results.",
+    "allFinishedAction": "View results"
   },
   "news": {
     "title": "News",

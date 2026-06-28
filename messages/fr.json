@@ -242,7 +242,10 @@
     "filterAllRounds": "Tous les tours",
     "loadFailedTitle": "Impossible de charger les matchs",
     "loadFailedBody": "Une erreur est survenue lors du chargement des matchs. Veuillez réessayer.",
-    "loadFailedRetry": "Réessayer"
+    "loadFailedRetry": "Réessayer",
+    "allFinishedTitle": "Tous les matchs sont terminés",
+    "allFinishedBody": "Tous les matchs affichés ont été joués. Consultez les résultats finaux.",
+    "allFinishedAction": "Voir les résultats"
   },
   "news": {
     "title": "Actualités",

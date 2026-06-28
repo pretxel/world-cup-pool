@@ -242,7 +242,10 @@
     "filterAllRounds": "Alle Runden",
     "loadFailedTitle": "Spiele konnten nicht geladen werden",
     "loadFailedBody": "Beim Laden der Spiele ist ein Fehler aufgetreten. Bitte versuche es erneut.",
-    "loadFailedRetry": "Erneut versuchen"
+    "loadFailedRetry": "Erneut versuchen",
+    "allFinishedTitle": "Alle Spiele sind beendet",
+    "allFinishedBody": "Alle angezeigten Spiele wurden gespielt. Sieh dir die Endergebnisse an.",
+    "allFinishedAction": "Ergebnisse ansehen"
   },
   "news": {
     "title": "Nachrichten",
