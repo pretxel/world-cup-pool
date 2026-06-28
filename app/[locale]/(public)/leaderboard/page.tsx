@@ -110,6 +110,8 @@ export default async function LeaderboardPage({
   }
 
   const loadError = error?.message ?? null;
+  // Log the raw cause server-side; never render exception text to the user.
+  if (loadError) console.error("[leaderboard] load failed:", loadError);
   const rows: LeaderboardRow[] = (data ?? []) as LeaderboardRow[];
 
   const myRow = user ? rows.find((r) => r.user_id === user.id) : undefined;
@@ -124,6 +126,9 @@ export default async function LeaderboardPage({
     exact: t("headerExact"),
     winnerGd: t("headerWinnerGd"),
     wins: t("headerWins"),
+    exactHint: t("headerExactHint"),
+    winnerGdHint: t("headerWinnerGdHint"),
+    winsHint: t("headerWinsHint"),
     you: t("you"),
     noName: t("noName"),
   };
@@ -177,8 +182,18 @@ export default async function LeaderboardPage({
       />
 
       {loadError ? (
-        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
-          {loadError}
+        <div
+          role="alert"
+          className="border-border bg-card mx-auto max-w-md rounded-xl border p-6 text-center"
+        >
+          <p className="text-foreground text-base font-semibold">{t("loadFailedTitle")}</p>
+          <p className="text-muted-foreground mt-2 text-sm">{t("loadFailedBody")}</p>
+          <a
+            href={localePath(locale, "/leaderboard")}
+            className="bg-primary text-primary-foreground focus-visible:ring-ring focus-visible:ring-offset-background mt-5 inline-flex min-h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            {t("loadFailedRetry")}
+          </a>
         </div>
       ) : rows.length === 0 ? (
         <div className="border-border bg-muted/30 rounded-xl border border-dashed p-10 text-center">

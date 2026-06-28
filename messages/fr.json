@@ -237,10 +237,12 @@
       "noneTitle": "Aucun match ouvert pour le moment",
       "noneBody": "Tous les matchs sont verrouillés ou terminés pour l'instant — revenez bientôt pour faire votre premier pronostic."
     },
-    "loadFailed": "Échec du chargement des matchs : {message}",
     "rowTeamsTbd": "Équipes à venir",
     "filterRoundLabel": "Filtrer par tour",
-    "filterAllRounds": "Tous les tours"
+    "filterAllRounds": "Tous les tours",
+    "loadFailedTitle": "Impossible de charger les matchs",
+    "loadFailedBody": "Une erreur est survenue lors du chargement des matchs. Veuillez réessayer.",
+    "loadFailedRetry": "Réessayer"
   },
   "news": {
     "title": "Actualités",
@@ -515,13 +517,15 @@
     "rowFinal": "Final",
     "rowPending": "En attente",
     "rowEdit": "Modifier",
-    "loadFailed": "Échec du chargement des pronos : {message}",
     "ptsSingular": "pt",
     "ptsPlural": "pts",
     "paginationLabel": "Pagination",
     "pagePosition": "Page {current} sur {total}",
     "prevPage": "Précédent",
-    "nextPage": "Suivant"
+    "nextPage": "Suivant",
+    "loadFailedTitle": "Impossible de charger vos pronostics",
+    "loadFailedBody": "Une erreur est survenue lors du chargement de vos pronostics. Veuillez réessayer.",
+    "loadFailedRetry": "Réessayer"
   },
   "standingCards": {
     "ariaLabel": "Votre classement",
@@ -652,7 +656,13 @@
     "segmentGroup": "Affichage",
     "segmentOverall": "Général",
     "segmentWeek": "Cette semaine",
-    "segmentStage": "Par phase"
+    "segmentStage": "Par phase",
+    "loadFailedTitle": "Impossible de charger le classement",
+    "loadFailedBody": "Une erreur est survenue lors du chargement du classement. Veuillez réessayer.",
+    "loadFailedRetry": "Réessayer",
+    "headerExactHint": "Scores exacts trouvés",
+    "headerWinnerGdHint": "Vainqueur + différence de buts corrects",
+    "headerWinsHint": "Bon vainqueur (ou match nul)"
   },
   "groups": {
     "title": "Groupes",

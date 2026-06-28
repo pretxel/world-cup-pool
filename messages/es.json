@@ -237,10 +237,12 @@
       "noneTitle": "No hay partidos abiertos ahora mismo",
       "noneBody": "Todos los partidos están bloqueados o ya jugados por ahora; vuelve pronto para hacer tu primer pronóstico."
     },
-    "loadFailed": "No se pudieron cargar los partidos: {message}",
     "rowTeamsTbd": "Equipos por definir",
     "filterRoundLabel": "Filtrar por ronda",
-    "filterAllRounds": "Todas las rondas"
+    "filterAllRounds": "Todas las rondas",
+    "loadFailedTitle": "No pudimos cargar los partidos",
+    "loadFailedBody": "Algo salió mal al obtener los partidos. Inténtalo de nuevo.",
+    "loadFailedRetry": "Reintentar"
   },
   "news": {
     "title": "Noticias",
@@ -515,13 +517,15 @@
     "rowFinal": "Final",
     "rowPending": "Pendiente",
     "rowEdit": "Editar",
-    "loadFailed": "No se pudieron cargar los pronósticos: {message}",
     "ptsSingular": "pt",
     "ptsPlural": "pts",
     "paginationLabel": "Paginación",
     "pagePosition": "Página {current} de {total}",
     "prevPage": "Anterior",
-    "nextPage": "Siguiente"
+    "nextPage": "Siguiente",
+    "loadFailedTitle": "No pudimos cargar tus pronósticos",
+    "loadFailedBody": "Algo salió mal al obtener tus pronósticos. Inténtalo de nuevo.",
+    "loadFailedRetry": "Reintentar"
   },
   "standingCards": {
     "ariaLabel": "Tu posición",
@@ -652,7 +656,13 @@
     "segmentGroup": "Ver",
     "segmentOverall": "General",
     "segmentWeek": "Esta semana",
-    "segmentStage": "Por fase"
+    "segmentStage": "Por fase",
+    "loadFailedTitle": "No pudimos cargar la clasificación",
+    "loadFailedBody": "Algo salió mal al obtener la clasificación. Inténtalo de nuevo.",
+    "loadFailedRetry": "Reintentar",
+    "headerExactHint": "Marcadores exactos acertados",
+    "headerWinnerGdHint": "Ganador + diferencia de goles correctos",
+    "headerWinsHint": "Ganador correcto (o empate)"
   },
   "groups": {
     "title": "Grupos",

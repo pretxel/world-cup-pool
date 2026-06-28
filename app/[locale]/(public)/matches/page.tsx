@@ -111,10 +111,23 @@ export default async function MatchesPage({
     .order("kickoff_at", { ascending: true });
 
   if (error) {
+    // Log the raw cause server-side for diagnostics; never surface exception
+    // text to the user (WCAG-friendly, trust-preserving error state).
+    console.error("[matches] load failed:", error.message);
     return (
       <main className="mx-auto max-w-4xl px-4 py-10">
-        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-4 text-sm">
-          {t("loadFailed", { message: error.message })}
+        <div
+          role="alert"
+          className="border-border bg-card mx-auto max-w-md rounded-xl border p-6 text-center"
+        >
+          <h1 className="text-foreground text-lg font-semibold">{t("loadFailedTitle")}</h1>
+          <p className="text-muted-foreground mt-2 text-sm">{t("loadFailedBody")}</p>
+          <a
+            href={localePath(locale, "/matches")}
+            className="bg-primary text-primary-foreground focus-visible:ring-ring focus-visible:ring-offset-background mt-5 inline-flex min-h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            {t("loadFailedRetry")}
+          </a>
         </div>
       </main>
     );
@@ -470,11 +483,19 @@ function MatchRowCard({
   const pickable = uiStatus === "scheduled" && !picked && confirmed;
   const closingSoon = pickable && isClosingSoon(match.kickoff_at);
 
+  // Accessible name for the whole-row link: lead with the action when the match
+  // is pickable so screen-reader users hear "Pick: Algeria – Austria", otherwise
+  // a plain "view" name. Keeps the link's name concise vs. its inner text.
+  const rowAriaLabel = pickable
+    ? `${tPick}: ${match.home_team} – ${match.away_team}`
+    : `${match.home_team} – ${match.away_team}`;
+
   return (
     <Link
       href={localePath(locale, `/matches/${match.id}`)}
+      aria-label={rowAriaLabel}
       className={cn(
-        "group/match hover:bg-muted/50 relative flex items-center gap-3 px-4 py-3.5 transition-colors sm:gap-4",
+        "group/match hover:bg-muted/50 focus-visible:ring-ring focus-visible:ring-inset relative flex items-center gap-3 px-4 py-3.5 transition-colors focus-visible:ring-2 focus-visible:outline-none sm:gap-4 sm:px-5",
         // Subtle urgency accent, distinct from the live `live-pulse` and the
         // muted locked treatment: a warm inset ring + faint tint.
         closingSoon && "bg-flag/[0.06] ring-flag/30 ring-1 ring-inset",
@@ -563,7 +584,7 @@ function MatchRowCard({
               </span>
             }
             pickNode={
-              <span className="text-muted-foreground hidden font-mono text-[10px] tracking-[0.2em] uppercase sm:inline">
+              <span className="bg-pitch text-pitch-foreground inline-flex items-center rounded-full px-3 py-1.5 font-heading text-xs font-semibold tracking-tight">
                 {tPick}
               </span>
             }

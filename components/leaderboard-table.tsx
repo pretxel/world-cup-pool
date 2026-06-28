@@ -29,7 +29,24 @@ export type LeaderboardLabels = {
   wins: string;
   you: string;
   noName: string;
+  // Optional plain-language expansions for the abbreviated stat columns,
+  // surfaced via <abbr title> so first-time viewers can decode EXACT / W+GD /
+  // WINS without leaving the page.
+  exactHint?: string;
+  winnerGdHint?: string;
+  winsHint?: string;
 };
+
+// Wraps an abbreviated column header in <abbr> when a hint is provided, giving
+// a native tooltip + assistive-tech expansion; renders plain text otherwise.
+function ColHint({ label, hint }: { label: string; hint?: string }) {
+  if (!hint) return <>{label}</>;
+  return (
+    <abbr title={hint} className="cursor-help no-underline [text-decoration:none]">
+      {label}
+    </abbr>
+  );
+}
 
 export function RankBadge({ rank }: { rank: number | null }) {
   const r = rank ?? 0;
@@ -81,13 +98,13 @@ export function LeaderboardTable({
               {labels.points}
             </TableHead>
             <TableHead className="hidden text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-              {labels.exact}
+              <ColHint label={labels.exact} hint={labels.exactHint} />
             </TableHead>
             <TableHead className="hidden text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-              {labels.winnerGd}
+              <ColHint label={labels.winnerGd} hint={labels.winnerGdHint} />
             </TableHead>
             <TableHead className="hidden pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:table-cell">
-              {labels.wins}
+              <ColHint label={labels.wins} hint={labels.winsHint} />
             </TableHead>
           </TableRow>
         </TableHeader>

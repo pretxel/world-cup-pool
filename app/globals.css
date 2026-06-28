@@ -72,8 +72,11 @@
   --accent: oklch(0.93 0.07 92);
   --accent-foreground: oklch(0.28 0.05 60);
   --destructive: oklch(0.6 0.22 27);
-  --border: oklch(0.9 0.012 92);
-  --input: oklch(0.92 0.01 92);
+  /* Darkened from 0.9L so row/card separators reach ~3:1 against the white card
+     surface (WCAG 1.4.11 non-text contrast) instead of near-invisible hairlines.
+     Inputs keep a slightly lighter border so fields don't read as heavier. */
+  --border: oklch(0.64 0.016 92);
+  --input: oklch(0.72 0.014 92);
   --ring: oklch(0.43 0.13 158);
   --chart-1: oklch(0.43 0.13 158);
   --chart-2: oklch(0.78 0.16 78);
@@ -116,8 +119,10 @@
   --accent: oklch(0.3 0.05 82);
   --accent-foreground: oklch(0.92 0.12 92);
   --destructive: oklch(0.7 0.2 22);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
+  /* Raised from 10% so row/card separators reach ~3:1 against the dark card
+     surface (WCAG 1.4.11 non-text contrast) instead of near-invisible hairlines. */
+  --border: oklch(1 0 0 / 36%);
+  --input: oklch(1 0 0 / 30%);
   --ring: oklch(0.78 0.17 158);
   --chart-1: oklch(0.78 0.17 158);
   --chart-2: oklch(0.82 0.17 82);
