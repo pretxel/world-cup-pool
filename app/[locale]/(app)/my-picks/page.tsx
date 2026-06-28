@@ -67,10 +67,22 @@ export default async function MyPicksPage({
     .eq("user_id", user.id);
 
   if (error) {
+    // Log the raw cause server-side; never surface exception text to the user.
+    console.error("[my-picks] load failed:", error.message);
     return (
       <main className="mx-auto max-w-3xl px-4 py-10">
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          {t("loadFailed", { message: error.message })}
+        <div
+          role="alert"
+          className="border-border bg-card mx-auto max-w-md rounded-xl border p-6 text-center"
+        >
+          <p className="text-foreground text-base font-semibold">{t("loadFailedTitle")}</p>
+          <p className="text-muted-foreground mt-2 text-sm">{t("loadFailedBody")}</p>
+          <a
+            href={localePath(locale, "/my-picks")}
+            className="bg-primary text-primary-foreground focus-visible:ring-ring focus-visible:ring-offset-background mt-5 inline-flex min-h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            {t("loadFailedRetry")}
+          </a>
         </div>
       </main>
     );

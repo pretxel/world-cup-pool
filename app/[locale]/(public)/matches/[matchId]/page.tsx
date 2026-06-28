@@ -380,7 +380,7 @@ export default async function MatchDetailPage({
 
         <div className="relative px-6 pt-5 pb-2">
           <div className="flex flex-wrap items-center gap-2 motion-safe:animate-in motion-safe:zoom-in-50 motion-safe:duration-300 motion-safe:delay-100 motion-safe:fill-mode-both">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-pitch-foreground/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/80 ring-1 ring-pitch-foreground/15">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-pitch-foreground/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/90 ring-1 ring-pitch-foreground/15">
               <StageIcon stage={match.stage} className="size-3" />
               {stageLabelLocalized}
               {match.group_code ? ` · ${match.group_code}` : ""}
@@ -395,7 +395,7 @@ export default async function MatchDetailPage({
 
         <div className="relative flex flex-col gap-3 px-6 pt-3 pb-6 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-6 sm:px-8">
           <div className="min-w-0">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/90">
               {t("home")}
             </div>
             <div className="mt-1 flex items-center gap-2 sm:gap-3">
@@ -413,12 +413,12 @@ export default async function MatchDetailPage({
             {isFinal ? (
               <div className="font-mono text-4xl font-semibold leading-none tabular-nums sm:text-6xl motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:fade-in motion-safe:duration-400 motion-safe:delay-200 motion-safe:fill-mode-both">
                 {match.home_score}
-                <span className="px-1 text-pitch-foreground/40">–</span>
+                <span className="px-1 text-pitch-foreground/65">–</span>
                 {match.away_score}
               </div>
             ) : (
               <>
-                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/90">
                   {t("vs")}
                 </div>
                 <div className="mt-1 font-heading text-2xl font-semibold leading-none sm:text-4xl">
@@ -429,7 +429,7 @@ export default async function MatchDetailPage({
           </div>
 
           <div className="min-w-0 text-right">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/70">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-pitch-foreground/90">
               {t("away")}
             </div>
             <div className="mt-1 flex items-center justify-end gap-2 sm:gap-3">
@@ -444,13 +444,13 @@ export default async function MatchDetailPage({
           </div>
         </div>
 
-        <div className="relative flex flex-col gap-2 border-t border-pitch-foreground/15 bg-black/10 px-6 py-3 text-pitch-foreground/85 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex flex-col gap-2 border-t border-pitch-foreground/15 bg-black/10 px-6 py-3 text-pitch-foreground/90 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em]">
             <span>
               {t("kickoffLabel")} <LocalTime iso={match.kickoff_at} />
             </span>
             {match.venue ? (
-              <span className="flex items-center gap-1 text-pitch-foreground/70">
+              <span className="flex items-center gap-1 text-pitch-foreground/90">
                 <MapPinIcon className="size-3" aria-hidden />
                 {match.venue}
               </span>
@@ -459,7 +459,7 @@ export default async function MatchDetailPage({
           {!isFinal && uiStatus !== "cancelled" ? (
             <KickoffCountdown
               kickoffAt={match.kickoff_at}
-              className="text-pitch-foreground/85"
+              className="text-pitch-foreground/90"
               lockedLabel={tForm("lockedAtKickoff")}
             />
           ) : null}

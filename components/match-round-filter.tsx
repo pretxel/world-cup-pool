@@ -28,7 +28,7 @@ export function MatchRoundFilter({
 
   return (
     <div className="mb-8">
-      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+      <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
         {label}
       </p>
       <div role="group" aria-label={label} className="flex flex-wrap gap-1.5">
@@ -63,7 +63,7 @@ function Chip({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-heading text-xs font-medium tracking-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 font-heading text-xs font-medium tracking-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         active
           ? "border-pitch/50 bg-pitch/10 text-pitch"
           : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground",
