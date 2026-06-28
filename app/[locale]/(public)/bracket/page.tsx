@@ -79,6 +79,7 @@ export default async function BracketPage({
             stage,
             provisional: t("provisional"),
             thirdPlace: stage.third ?? t("thirdPlace"),
+            selectorLabel: t("roundSelectorLabel"),
           }}
         />
       ) : (

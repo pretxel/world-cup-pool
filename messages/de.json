@@ -625,7 +625,8 @@
     "provisional": "Vorläufig",
     "thirdPlace": "Spiel um Platz 3",
     "emptyTitle": "Noch kein Baum",
-    "emptyBody": "Der aktuelle Wettbewerb hat keine K.-o.-Runde."
+    "emptyBody": "Der aktuelle Wettbewerb hat keine K.-o.-Runde.",
+    "roundSelectorLabel": "Runden"
   },
   "leaderboard": {
     "title": "Leaderboard",
