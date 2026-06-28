@@ -200,9 +200,14 @@ export default async function MatchesPage({
   };
 
   const statusFilter = parseStatusParam(statusParam);
+  // Default (no status filter): hide finished fixtures (final/cancelled) so the
+  // list leads with what's still actionable; the `final` card opts them back in.
   const statusFiltered = statusFilter
     ? scoped.filter((m) => statusBucket(m) === statusFilter)
-    : scoped;
+    : scoped.filter((m) => {
+        const bucket = statusBucket(m);
+        return bucket !== "final" && bucket !== "cancelled";
+      });
 
   // The picks filter exists only for signed-in users; an anonymous request
   // carrying `?picks=needed` is silently ignored.
@@ -217,6 +222,10 @@ export default async function MatchesPage({
     statusFilter !== null ||
     picksNeeded ||
     selectedRound !== null;
+
+  // Default view is empty only because every in-scope fixture is finished:
+  // guide to the Final filter instead of the generic "no matches" state.
+  const allFinishedDefault = !isFiltered && filtered.length === 0 && stats.final > 0;
 
   // First-pick lead state (QW8): a signed-in user who has made zero picks and
   // has no filter active gets an inviting nudge toward the soonest still-open
@@ -419,21 +428,29 @@ export default async function MatchesPage({
                 ? t("needsPickEmptyTitle")
                 : isFiltered
                   ? t("filterEmptyTitle")
-                  : t("emptyTitle")}
+                  : allFinishedDefault
+                    ? t("allFinishedTitle")
+                    : t("emptyTitle")}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm">
               {picksNeeded
                 ? t("needsPickEmptyBody")
                 : isFiltered
                   ? t("filterEmptyBody")
-                  : t("emptyBody")}
+                  : allFinishedDefault
+                    ? t("allFinishedBody")
+                    : t("emptyBody")}
             </p>
-            {isFiltered ? (
+            {isFiltered || allFinishedDefault ? (
               <Link
-                href={localePath(locale, "/matches")}
+                href={localePath(locale, allFinishedDefault ? "/matches?status=final" : "/matches")}
                 className="border-border bg-card font-heading text-foreground hover:bg-muted/50 focus-visible:ring-ring mt-4 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
-                {picksNeeded ? t("needsPickEmptyAction") : t("filterClear")}
+                {picksNeeded
+                  ? t("needsPickEmptyAction")
+                  : allFinishedDefault
+                    ? t("allFinishedAction")
+                    : t("filterClear")}
               </Link>
             ) : null}
           </div>

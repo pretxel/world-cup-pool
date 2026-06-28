@@ -242,7 +242,10 @@
     "filterAllRounds": "Todas las rondas",
     "loadFailedTitle": "No pudimos cargar los partidos",
     "loadFailedBody": "Algo salió mal al obtener los partidos. Inténtalo de nuevo.",
-    "loadFailedRetry": "Reintentar"
+    "loadFailedRetry": "Reintentar",
+    "allFinishedTitle": "Todos los partidos han terminado",
+    "allFinishedBody": "Todos los partidos en vista ya se jugaron. Consulta los resultados finales.",
+    "allFinishedAction": "Ver resultados"
   },
   "news": {
     "title": "Noticias",
