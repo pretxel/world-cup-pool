@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { FormSection } from "@/components/admin/form-section";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionStatus } from "@/components/admin/action-status";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { SUPPORTED_LOCALES } from "@/lib/i18n";
@@ -91,6 +92,10 @@ export function CompetitionForm({
   const [groupCount, setGroupCount] = useState<number>(
     initial?.format?.groups.enabled ? initial.format.groups.count : 8,
   );
+  // Active editor tab. Sections stay mounted (keepMounted) so every field — incl.
+  // the Providers/Branding hidden JSON inputs built from their own state — is
+  // always submitted regardless of which tab is showing.
+  const [tab, setTab] = useState<string>("identity");
 
   function patch(i: number, next: Partial<StageDraft>) {
     setStages((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...next } : s)));
@@ -133,6 +138,28 @@ export function CompetitionForm({
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="format_config" value={formatJson} />
 
+      <Tabs value={tab} onValueChange={(v) => setTab(String(v))}>
+        <TabsList className="h-auto w-full flex-wrap justify-start">
+          <TabsTrigger value="identity">{t("form.sectionIdentity")}</TabsTrigger>
+          <TabsTrigger value="dates">{t("form.sectionDates")}</TabsTrigger>
+          <TabsTrigger
+            value="format"
+            data-invalid={!validation.success || undefined}
+            aria-invalid={!validation.success || undefined}
+          >
+            {t("form.sectionFormat")}
+            {!validation.success ? (
+              <span
+                className="ml-1.5 size-1.5 shrink-0 rounded-full bg-destructive"
+                aria-hidden
+              />
+            ) : null}
+          </TabsTrigger>
+          <TabsTrigger value="providers">{t("form.sectionProviders")}</TabsTrigger>
+          <TabsTrigger value="branding">{t("form.sectionBranding")}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="identity" keepMounted>
       <FormSection
         title={t("form.sectionIdentity")}
         description={t("form.sectionIdentityDesc")}
@@ -171,7 +198,9 @@ export function CompetitionForm({
           </Field>
         </div>
       </FormSection>
+        </TabsContent>
 
+        <TabsContent value="dates" keepMounted>
       <FormSection
         title={t("form.sectionDates")}
         description={t("form.sectionDatesDesc")}
@@ -199,7 +228,9 @@ export function CompetitionForm({
           </Field>
         </div>
       </FormSection>
+        </TabsContent>
 
+        <TabsContent value="format" keepMounted>
       <FormSection
         title={t("form.sectionFormat")}
         description={t("form.sectionFormatDesc")}
@@ -336,32 +367,42 @@ export function CompetitionForm({
           ) : null}
         </div>
 
-        {!validation.success ? (
-          <ActionStatus variant="error">
-            <ul className="space-y-1">
-              {validation.error.issues.map((issue, idx) => (
-                <li key={idx}>
-                  {issue.path.join(".") || "format"}: {issue.message}
-                </li>
-              ))}
-            </ul>
-          </ActionStatus>
-        ) : null}
       </FormSection>
 
+        </TabsContent>
+
+        <TabsContent value="providers" keepMounted>
       <FormSection
         title={t("form.sectionProviders")}
         description={t("form.sectionProvidersDesc")}
       >
         <ProvidersFields initial={initial?.providers} />
       </FormSection>
+        </TabsContent>
 
+        <TabsContent value="branding" keepMounted>
       <FormSection
         title={t("form.sectionBranding")}
         description={t("form.sectionBrandingDesc")}
       >
         <BrandingFields initial={initial?.branding} />
       </FormSection>
+        </TabsContent>
+      </Tabs>
+
+      {/* Outside the tabs so the gating format errors are visible from any tab
+          (the Format tab also carries an invalid dot). */}
+      {!validation.success ? (
+        <ActionStatus variant="error">
+          <ul className="space-y-1">
+            {validation.error.issues.map((issue, idx) => (
+              <li key={idx}>
+                {issue.path.join(".") || "format"}: {issue.message}
+              </li>
+            ))}
+          </ul>
+        </ActionStatus>
+      ) : null}
 
       <div className="flex gap-3">
         <SubmitButton
