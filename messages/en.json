@@ -625,7 +625,8 @@
     "provisional": "Provisional",
     "thirdPlace": "Third-place play-off",
     "emptyTitle": "No bracket yet",
-    "emptyBody": "The current competition has no knockout stage."
+    "emptyBody": "The current competition has no knockout stage.",
+    "roundSelectorLabel": "Rounds"
   },
   "leaderboard": {
     "title": "Leaderboard",

@@ -625,7 +625,8 @@
     "provisional": "Provisoire",
     "thirdPlace": "Match pour la 3e place",
     "emptyTitle": "Pas encore de tableau",
-    "emptyBody": "La compétition actuelle n'a pas de phase à élimination directe."
+    "emptyBody": "La compétition actuelle n'a pas de phase à élimination directe.",
+    "roundSelectorLabel": "Tours"
   },
   "leaderboard": {
     "title": "Classement",

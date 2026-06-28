@@ -625,7 +625,8 @@
     "provisional": "Provisional",
     "thirdPlace": "Partido por el tercer puesto",
     "emptyTitle": "Aún no hay cuadro",
-    "emptyBody": "La competición actual no tiene fase eliminatoria."
+    "emptyBody": "La competición actual no tiene fase eliminatoria.",
+    "roundSelectorLabel": "Rondas"
   },
   "leaderboard": {
     "title": "Clasificación",
