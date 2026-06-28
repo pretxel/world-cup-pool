@@ -3,11 +3,13 @@ import { MatchCard, type Labels } from "@/components/bracket-match-card";
 import type { BracketRound } from "@/lib/bracket-core";
 
 // Data-driven knockout bracket. On large screens the main rounds (R32→final)
-// render as columns that scroll horizontally; `justify-around` on equal-height
-// columns centers each later-round match between its two feeders, and the
-// third-place play-off renders as a separate block below. On small screens a
-// single-round selector (BracketRoundsMobile) replaces the columns so one
-// round's matches stack full-width with no horizontal content scroll.
+// render as columns that scroll horizontally. Each column pins its round heading
+// at the top (so headings align on one baseline across columns) and distributes
+// only the match cards with `justify-around` in the equal-height space beneath,
+// which centers each later-round match between its two feeders. The third-place
+// play-off renders as a separate block below. On small screens a single-round
+// selector (BracketRoundsMobile) replaces the columns so one round's matches
+// stack full-width with no horizontal content scroll.
 export function BracketView({
   rounds,
   labels,
@@ -29,14 +31,16 @@ export function BracketView({
             {main.map((round) => (
               <div
                 key={round.stage}
-                className="flex w-52 flex-col justify-around gap-3 sm:w-56"
+                className="flex w-52 flex-col gap-3 sm:w-56"
               >
                 <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                   {labels.stage[round.stage] ?? round.stage}
                 </h2>
-                {round.matches.map((m) => (
-                  <MatchCard key={m.id} match={m} provisionalLabel={labels.provisional} />
-                ))}
+                <div className="flex flex-1 flex-col justify-around gap-3">
+                  {round.matches.map((m) => (
+                    <MatchCard key={m.id} match={m} provisionalLabel={labels.provisional} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>
