@@ -16,7 +16,7 @@ import { getGroupTables } from "@/lib/group-table";
 import { getActiveCompetition } from "@/lib/competition";
 import { groupStageKey } from "@/lib/competition-schema";
 import { paginate, parsePageParam } from "@/lib/pagination";
-import { sortPicksByKickoff } from "@/lib/picks-order";
+import { sortPicksByKickoffDesc } from "@/lib/picks-order";
 import { isLocked } from "@/lib/match-utils";
 import { computePredictionStreak } from "@/lib/prediction-streak";
 import {
@@ -158,13 +158,13 @@ export default async function MyPicksPage({
   // signed-in landing. Never recomputes or writes competitive scoring.
   const standingSummary = await getStandingSummary(user.id);
 
-  // Order the full pick set by match kickoff (earliest first) BEFORE paging, so
-  // the pages partition one global kickoff order. The DB does not sort this for
-  // us — the query's embedded match cannot order the parent predictions — so it
-  // is done in memory here. Stats above and the group simulation below read the
-  // same full set; only the rendered list is windowed. Page is clamped, so any
-  // URL renders.
-  const allPicks = sortPicksByKickoff(picks ?? []);
+  // Order the full pick set by match kickoff (latest first) BEFORE paging, so
+  // the pages partition one global kickoff-descending order and page 1 holds
+  // the newest picks. The DB does not sort this for us — the query's embedded
+  // match cannot order the parent predictions — so it is done in memory here.
+  // Stats above and the group simulation below read the same full set; only
+  // the rendered list is windowed. Page is clamped, so any URL renders.
+  const allPicks = sortPicksByKickoffDesc(picks ?? []);
   const pageInfo = paginate(allPicks.length, parsePageParam(pageParam));
   const pagePicks = allPicks.slice(pageInfo.start, pageInfo.end);
 
