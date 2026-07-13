@@ -8,6 +8,7 @@ const h = vi.hoisted(() => ({
   recordRunMock: vi.fn(),
   cronSecret: "cron-secret" as string | null,
   saturday: true,
+  enabled: true,
 }));
 
 vi.mock("@/lib/env", () => ({
@@ -31,6 +32,10 @@ vi.mock("@/lib/operations/record-run", () => ({
   recordRun: h.recordRunMock,
 }));
 
+vi.mock("@/lib/operations/settings", () => ({
+  isOperationEnabled: vi.fn(async () => h.enabled),
+}));
+
 import { GET } from "@/app/api/cron/playoff-score-saturday/route";
 
 function req(headers: Record<string, string> = {}) {
@@ -48,6 +53,7 @@ beforeEach(() => {
     }));
   h.cronSecret = "cron-secret";
   h.saturday = true;
+  h.enabled = true;
 });
 
 afterEach(() => {
@@ -61,6 +67,15 @@ describe("GET /api/cron/playoff-score-saturday", () => {
     const r2 = await GET(req({ authorization: "Bearer nope" }));
     expect(r2.status).toBe(401);
     expect(h.dispatchMock).not.toHaveBeenCalled();
+  });
+
+  it("skips (204 disabled) when the job is paused, without running or recording", async () => {
+    h.enabled = false;
+    const res = await GET(req({ authorization: "Bearer cron-secret" }));
+    expect(res.status).toBe(204);
+    expect(res.headers.get("x-skipped")).toBe("disabled");
+    expect(h.dispatchMock).not.toHaveBeenCalled();
+    expect(h.recordRunMock).not.toHaveBeenCalled();
   });
 
   it("skips (204) on a non-Saturday run", async () => {

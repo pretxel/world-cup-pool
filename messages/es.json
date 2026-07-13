@@ -1098,7 +1098,11 @@
         "runNow": "Ejecutar ahora",
         "running": "Ejecutando…",
         "ranError": "La ejecución falló",
-        "manualOnly": "Solo manual"
+        "manualOnly": "Solo manual",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "paused": "En pausa",
+        "updating": "Actualizando…"
       },
       "runs": {
         "title": "Historial de ejecuciones",

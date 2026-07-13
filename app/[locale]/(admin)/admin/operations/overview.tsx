@@ -1,5 +1,5 @@
 import { getFormatter, getTranslations } from "next-intl/server";
-import { RefreshCwIcon } from "lucide-react";
+import { PauseIcon, PlayIcon, RefreshCwIcon } from "lucide-react";
 import { StatusCard } from "@/components/admin/status-card";
 import { ActionStatus } from "@/components/admin/action-status";
 import { SubmitButton } from "@/components/admin/submit-button";
@@ -7,7 +7,8 @@ import { LocalTime } from "@/components/local-time";
 import type { Locale } from "@/lib/i18n";
 import { OPERATION_KINDS, type OperationKind } from "@/lib/operations/record-run";
 import { getLatestRunPerKind } from "@/lib/operations/queries";
-import { nextScheduledRun } from "@/lib/operations/schedule";
+import { nextScheduledRun, OPERATION_SCHEDULES } from "@/lib/operations/schedule";
+import { getOperationSettings } from "@/lib/operations/settings";
 import { StatusBadge } from "./status-badge";
 import {
   runSyncMatches,
@@ -19,6 +20,7 @@ import {
   runComebackEmails,
   runPlayoffScoreEmail,
   runScoreRulesEmail,
+  toggleOperationEnabled,
 } from "./actions";
 
 const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> = {
@@ -64,7 +66,10 @@ export async function Overview({
   const format = await getFormatter();
   const now = new Date();
 
-  const latest = await getLatestRunPerKind();
+  const [latest, settings] = await Promise.all([
+    getLatestRunPerKind(),
+    getOperationSettings(),
+  ]);
   const ran = parseRanResult(sp);
 
   return (
@@ -74,22 +79,29 @@ export async function Overview({
         const next = nextScheduledRun(kind, now);
         const action = RUN_ACTION[kind];
         const showResult = ran?.kind === kind;
+        // Only jobs with a cron schedule can be paused; a manual-only job has
+        // nothing scheduled to switch off.
+        const scheduled = kind in OPERATION_SCHEDULES;
+        const paused = scheduled && !settings[kind];
 
         return (
           <StatusCard
             key={kind}
             label={t(`jobs.${kind}`)}
             value={
-              run ? (
-                <span className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-2">
+                {run ? (
                   <StatusBadge
                     status={run.status}
                     label={t(`status.${run.status}`)}
                   />
-                </span>
-              ) : (
-                <StatusBadge status="never" label={t("status.never")} />
-              )
+                ) : (
+                  <StatusBadge status="never" label={t("status.never")} />
+                )}
+                {paused ? (
+                  <StatusBadge status="paused" label={t("overview.paused")} />
+                ) : null}
+              </span>
             }
             meta={
               <>
@@ -113,7 +125,9 @@ export async function Overview({
               <div className="flex justify-between gap-2">
                 <dt>{t("overview.nextRun")}</dt>
                 <dd className="font-mono tabular-nums text-foreground">
-                  {next ? (
+                  {paused ? (
+                    t("overview.paused")
+                  ) : next ? (
                     <LocalTime iso={next.toISOString()} />
                   ) : (
                     t("overview.manualOnly")
@@ -122,17 +136,38 @@ export async function Overview({
               </div>
             </dl>
 
-            <form action={action}>
-              <input type="hidden" name="locale" value={locale} />
-              <SubmitButton
-                size="sm"
-                variant="outline"
-                pendingLabel={t("overview.running")}
-              >
-                <RefreshCwIcon aria-hidden />
-                {t("overview.runNow")}
-              </SubmitButton>
-            </form>
+            <div className="flex flex-wrap gap-2">
+              <form action={action}>
+                <input type="hidden" name="locale" value={locale} />
+                <SubmitButton
+                  size="sm"
+                  variant="outline"
+                  pendingLabel={t("overview.running")}
+                >
+                  <RefreshCwIcon aria-hidden />
+                  {t("overview.runNow")}
+                </SubmitButton>
+              </form>
+              {scheduled ? (
+                <form action={toggleOperationEnabled}>
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="kind" value={kind} />
+                  <input
+                    type="hidden"
+                    name="enabled"
+                    value={paused ? "true" : "false"}
+                  />
+                  <SubmitButton
+                    size="sm"
+                    variant="ghost"
+                    pendingLabel={t("overview.updating")}
+                  >
+                    {paused ? <PlayIcon aria-hidden /> : <PauseIcon aria-hidden />}
+                    {paused ? t("overview.resume") : t("overview.pause")}
+                  </SubmitButton>
+                </form>
+              ) : null}
+            </div>
 
             {showResult ? (
               ran.status === "error" ? (

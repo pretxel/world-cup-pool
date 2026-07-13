@@ -1098,7 +1098,11 @@
         "runNow": "Jetzt ausführen",
         "running": "Wird ausgeführt…",
         "ranError": "Ausführung fehlgeschlagen",
-        "manualOnly": "Nur manuell"
+        "manualOnly": "Nur manuell",
+        "pause": "Pausieren",
+        "resume": "Fortsetzen",
+        "paused": "Pausiert",
+        "updating": "Wird aktualisiert…"
       },
       "runs": {
         "title": "Ausführungsverlauf",

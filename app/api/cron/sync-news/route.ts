@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { runNewsSync } from "@/lib/news-sync";
 import { recordRun } from "@/lib/operations/record-run";
+import { isOperationEnabled } from "@/lib/operations/settings";
 
 function unauthorized() {
   return new NextResponse("unauthorized", { status: 401 });
@@ -23,6 +24,10 @@ export async function GET(request: NextRequest) {
   } else if (isProd) {
     return skipped("missing-env");
   }
+
+  // Admin kill switch (operation_settings): a paused job's cron invocation is
+  // a cheap no-op. Manual "Run now" bypasses this by design.
+  if (!(await isOperationEnabled("sync_news"))) return skipped("disabled");
 
   // 2. Token gate. Skip (not error) when the upstream token is absent.
   if (!env.newsApiToken) return skipped("missing-env");

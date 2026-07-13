@@ -14,7 +14,12 @@ import { dispatchPlayoffScoreEmail } from "@/lib/notifications/playoff-score-ema
 import { dispatchScoreRulesEmail } from "@/lib/notifications/score-rules-emails";
 import { runNewsSync } from "@/lib/news-sync";
 import { getActiveBranding } from "@/lib/competition";
-import { recordRun, type OperationKind } from "@/lib/operations/record-run";
+import {
+  OPERATION_KINDS,
+  recordRun,
+  type OperationKind,
+} from "@/lib/operations/record-run";
+import { setOperationEnabled } from "@/lib/operations/settings";
 import { isLocale, localePath, DEFAULT_LOCALE } from "@/lib/i18n";
 
 async function assertAdmin() {
@@ -117,6 +122,26 @@ async function trigger(kind: OperationKind, formData: FormData): Promise<void> {
   if (summary) params.set("ranSummary", JSON.stringify(summary));
   if (error) params.set("ranError", error.slice(0, 300));
   redirect(localePath(locale, `/admin/operations?${params.toString()}`));
+}
+
+// Pause/resume a scheduled job's cron. One action for all kinds (the target
+// kind and desired state ride in hidden form fields, validated here) — unlike
+// the run-now triggers there is no per-kind body to bind, so per-kind exports
+// would be pure boilerplate. Manual "Run now" ignores the switch by design, so
+// pausing never locks the admin out of a job.
+export async function toggleOperationEnabled(formData: FormData): Promise<void> {
+  await assertAdmin();
+  const locale = formLocale(formData);
+
+  const rawKind = formData.get("kind");
+  const kind = OPERATION_KINDS.find((k) => k === rawKind);
+  if (!kind) throw new Error("Unknown operation kind");
+  const enabled = formData.get("enabled") === "true";
+
+  await setOperationEnabled(kind, enabled);
+
+  revalidatePath("/admin/operations");
+  redirect(localePath(locale, "/admin/operations?view=overview"));
 }
 
 export async function runSyncMatches(formData: FormData) {
