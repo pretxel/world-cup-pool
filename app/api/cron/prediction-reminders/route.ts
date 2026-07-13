@@ -6,6 +6,7 @@ import {
 } from "@/lib/notifications/prediction-reminder-emails";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
+import { isOperationEnabled } from "@/lib/operations/settings";
 
 // Emailing every eligible player can resolve many addresses + send several
 // batches; give the function room beyond the default request budget.
@@ -31,6 +32,10 @@ export async function GET(request: NextRequest) {
   } else if (isProd) {
     return skipped("missing-env");
   }
+
+  // Admin kill switch (operation_settings): a paused job's cron invocation is
+  // a cheap no-op. Manual "Run now" bypasses this by design.
+  if (!(await isOperationEnabled("prediction_reminders"))) return skipped("disabled");
 
   // Dispatch is fully isolated: a failure is logged and surfaced as a zero
   // summary rather than a 500, so a flaky run never trips Vercel's cron alerting

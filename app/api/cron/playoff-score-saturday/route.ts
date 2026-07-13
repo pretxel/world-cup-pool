@@ -6,6 +6,7 @@ import {
 } from "@/lib/notifications/playoff-score-emails";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
+import { isOperationEnabled } from "@/lib/operations/settings";
 
 // Emailing every opted-in player can resolve many addresses + send several
 // batches; give the function room beyond the default request budget.
@@ -31,6 +32,10 @@ export async function GET(request: NextRequest) {
   } else if (isProd) {
     return skipped("missing-env");
   }
+
+  // Admin kill switch (operation_settings): a paused job's cron invocation is
+  // a cheap no-op. Manual "Run now" bypasses this by design.
+  if (!(await isOperationEnabled("playoff_score_email"))) return skipped("disabled");
 
   // Defensive cadence guard: the cron is scheduled for Saturday only, but a
   // misfire (manual hit, schedule change) must not blast a non-Saturday email.

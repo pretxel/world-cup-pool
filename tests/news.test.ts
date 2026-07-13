@@ -1,4 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// The cron routes now consult the operation_settings kill switch before
+// running; keep it enabled here so these tests exercise the normal path.
+// (vi.mock is hoisted, so placement near the top is cosmetic.)
+vi.mock("@/lib/operations/settings", () => ({
+  isOperationEnabled: vi.fn(async () => true),
+}));
+
 import {
   buildNewsRequestUrl,
   dedupKeyFor,

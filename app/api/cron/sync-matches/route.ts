@@ -10,6 +10,7 @@ import {
 import { captureRankSnapshot } from "@/lib/notifications/rank-snapshot";
 import { getActiveBranding } from "@/lib/competition";
 import { recordRun } from "@/lib/operations/record-run";
+import { isOperationEnabled } from "@/lib/operations/settings";
 import { generatePendingSummaries } from "@/lib/matches/match-summary";
 import { generatePendingImagePrompts } from "@/lib/matches/match-image-prompt";
 import { requestPendingRenders } from "@/lib/matches/match-image-render";
@@ -34,6 +35,10 @@ export async function GET(request: NextRequest) {
   } else if (isProd) {
     return skipped("missing-env");
   }
+
+  // Admin kill switch (operation_settings): a paused job's cron invocation is
+  // a cheap no-op. Manual "Run now" bypasses this by design.
+  if (!(await isOperationEnabled("sync_matches"))) return skipped("disabled");
 
   // A missing FOOTBALL_DATA_TOKEN only skips the primary provider; the run
   // proceeds on whatever sources remain. Nothing available → degrade cleanly.

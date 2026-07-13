@@ -757,6 +757,24 @@ export type Database = {
         }
         Relationships: []
       }
+      operation_settings: {
+        Row: {
+          enabled: boolean
+          kind: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          kind: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          kind?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       prediction_reminder_log: {
         Row: {
           reminder_date: string

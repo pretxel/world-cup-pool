@@ -1098,7 +1098,11 @@
         "runNow": "Lancer",
         "running": "En cours…",
         "ranError": "Échec de l'exécution",
-        "manualOnly": "Manuel uniquement"
+        "manualOnly": "Manuel uniquement",
+        "pause": "Mettre en pause",
+        "resume": "Reprendre",
+        "paused": "En pause",
+        "updating": "Mise à jour…"
       },
       "runs": {
         "title": "Historique des exécutions",

@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// The cron routes now consult the operation_settings kill switch before
+// running; keep it enabled here so these tests exercise the normal path.
+// (vi.mock is hoisted, so placement near the top is cosmetic.)
+vi.mock("@/lib/operations/settings", () => ({
+  isOperationEnabled: vi.fn(async () => true),
+}));
+
+
 const MATCH_ID = "11111111-1111-4111-8111-111111111111";
 const CRON_SECRET = "test-secret";
 const FOOTBALL_TOKEN = "test-token";

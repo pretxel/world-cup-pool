@@ -1098,7 +1098,11 @@
         "runNow": "Run now",
         "running": "Running…",
         "ranError": "Run failed",
-        "manualOnly": "Manual only"
+        "manualOnly": "Manual only",
+        "pause": "Pause",
+        "resume": "Resume",
+        "paused": "Paused",
+        "updating": "Updating…"
       },
       "runs": {
         "title": "Run history",
