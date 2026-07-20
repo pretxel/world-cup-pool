@@ -1157,7 +1157,34 @@
         "ofPlayers": "von {total}",
         "emptyTitle": "Noch keine Aktivität",
         "emptyBody": "Spielerregistrierungen, Tipps, Quiz-Antworten und Gruppenbeitritte erscheinen hier.",
-        "unknownUser": "Unbekannter Spieler"
+        "unknownUser": "Unbekannter Spieler",
+        "mode": {
+          "log": "Protokoll",
+          "previews": "Vorschauen"
+        },
+        "previews": {
+          "templateLabel": "Vorlage",
+          "localeLabel": "Sprache",
+          "bodyLabel": "Inhalt",
+          "bodyHtml": "HTML",
+          "bodyText": "Nur Text",
+          "subject": "Betreff",
+          "preheader": "Preheader",
+          "sampleNote": "Mit Beispieldaten gerendert — es wird nichts versendet.",
+          "templates": {
+            "welcome": "Willkommen",
+            "result": "Spielergebnisse",
+            "resultsDigest": "Ergebnisübersicht",
+            "recapDigest": "Recap-Übersicht",
+            "predictionReminder": "Tipp-Erinnerung",
+            "quizReminder": "Quiz-Erinnerung",
+            "playoffScore": "Playoff-Ergebnisse",
+            "comeback": "Comeback",
+            "scoreRules": "Wertungsregeln",
+            "groupInvite": "Gruppeneinladung",
+            "magicLink": "Magic Link"
+          }
+        }
       }
     },
     "confirmKnockout": "K.-o.-Teams bestätigen",

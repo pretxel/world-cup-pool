@@ -1157,7 +1157,34 @@
         "ofPlayers": "de {total}",
         "emptyTitle": "Aún no hay actividad",
         "emptyBody": "Aquí aparecen registros, pronósticos, respuestas del quiz y uniones a grupos.",
-        "unknownUser": "Jugador desconocido"
+        "unknownUser": "Jugador desconocido",
+        "mode": {
+          "log": "Registro",
+          "previews": "Vistas previas"
+        },
+        "previews": {
+          "templateLabel": "Plantilla",
+          "localeLabel": "Idioma",
+          "bodyLabel": "Cuerpo",
+          "bodyHtml": "HTML",
+          "bodyText": "Texto plano",
+          "subject": "Asunto",
+          "preheader": "Preencabezado",
+          "sampleNote": "Renderizado con datos de ejemplo — no se envía nada.",
+          "templates": {
+            "welcome": "Bienvenida",
+            "result": "Resultados de partidos",
+            "resultsDigest": "Resumen de resultados",
+            "recapDigest": "Resumen de recaps",
+            "predictionReminder": "Recordatorio de pronósticos",
+            "quizReminder": "Recordatorio del quiz",
+            "playoffScore": "Marcadores de playoffs",
+            "comeback": "Regreso",
+            "scoreRules": "Reglas de puntuación",
+            "groupInvite": "Invitación al grupo",
+            "magicLink": "Enlace mágico"
+          }
+        }
       }
     },
     "confirmKnockout": "Confirmar equipos eliminatorias",

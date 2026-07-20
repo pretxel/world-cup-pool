@@ -5,7 +5,7 @@ import { isLocale, localePath, DEFAULT_LOCALE, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Overview } from "./overview";
 import { RunsView } from "./runs-view";
-import { EmailsView } from "./emails-view";
+import { EmailsTab } from "./emails-tab";
 import { ActivityView } from "./activity-view";
 
 export async function generateMetadata({
@@ -84,7 +84,9 @@ export default async function AdminOperationsPage({
         {view === "runs" ? (
           <RunsView locale={locale} searchParams={sp} />
         ) : null}
-        {view === "emails" ? <EmailsView /> : null}
+        {view === "emails" ? (
+          <EmailsTab locale={locale} searchParams={sp} />
+        ) : null}
         {view === "activity" ? <ActivityView /> : null}
       </div>
     </main>
