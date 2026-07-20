@@ -1157,7 +1157,34 @@
         "ofPlayers": "sur {total}",
         "emptyTitle": "Aucune activité",
         "emptyBody": "Les inscriptions, pronostics, réponses au quiz et adhésions aux groupes apparaissent ici.",
-        "unknownUser": "Joueur inconnu"
+        "unknownUser": "Joueur inconnu",
+        "mode": {
+          "log": "Journal",
+          "previews": "Aperçus"
+        },
+        "previews": {
+          "templateLabel": "Modèle",
+          "localeLabel": "Langue",
+          "bodyLabel": "Corps",
+          "bodyHtml": "HTML",
+          "bodyText": "Texte brut",
+          "subject": "Objet",
+          "preheader": "Pré-en-tête",
+          "sampleNote": "Rendu avec des données d'exemple — rien n'est envoyé.",
+          "templates": {
+            "welcome": "Bienvenue",
+            "result": "Résultats des matchs",
+            "resultsDigest": "Résumé des résultats",
+            "recapDigest": "Résumé des récaps",
+            "predictionReminder": "Rappel de pronostics",
+            "quizReminder": "Rappel du quiz",
+            "playoffScore": "Scores des playoffs",
+            "comeback": "Retour",
+            "scoreRules": "Barème",
+            "groupInvite": "Invitation au groupe",
+            "magicLink": "Lien magique"
+          }
+        }
       }
     },
     "confirmKnockout": "Confirmer les équipes (élim.)",

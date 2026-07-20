@@ -1157,7 +1157,34 @@
         "ofPlayers": "of {total}",
         "emptyTitle": "No activity yet",
         "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
-        "unknownUser": "Unknown player"
+        "unknownUser": "Unknown player",
+        "mode": {
+          "log": "Log",
+          "previews": "Previews"
+        },
+        "previews": {
+          "templateLabel": "Template",
+          "localeLabel": "Locale",
+          "bodyLabel": "Body",
+          "bodyHtml": "HTML",
+          "bodyText": "Plain text",
+          "subject": "Subject",
+          "preheader": "Preheader",
+          "sampleNote": "Rendered with sample data — nothing is sent.",
+          "templates": {
+            "welcome": "Welcome",
+            "result": "Match results",
+            "resultsDigest": "Results digest",
+            "recapDigest": "Recap digest",
+            "predictionReminder": "Prediction reminder",
+            "quizReminder": "Quiz reminder",
+            "playoffScore": "Playoff scores",
+            "comeback": "Comeback",
+            "scoreRules": "Scoring rules",
+            "groupInvite": "Group invite",
+            "magicLink": "Magic link"
+          }
+        }
       }
     },
     "confirmKnockout": "Confirm knockout teams",
