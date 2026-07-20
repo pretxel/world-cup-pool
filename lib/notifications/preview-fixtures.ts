@@ -15,6 +15,7 @@ import type { ComebackEmailData } from "./comeback-email-template";
 import type { ScoreRulesData } from "./score-rules-template";
 import type { GroupInviteEmailData } from "./group-invite-template";
 import type { MagicLinkEmailData } from "./magic-link-email-template";
+import type { WinnersEmailData } from "./winners-email-template";
 
 // Deliberately long display name so previews surface truncation/wrap issues.
 export const LONG_NAME = "Maximiliano Aristóbulo de la Santísima Trinidad";
@@ -163,4 +164,20 @@ export const groupInviteFixture: Fixture<GroupInviteEmailData> = (siteUrl, local
 
 export const magicLinkFixture: Fixture<MagicLinkEmailData> = (siteUrl, locale) => ({
   actionUrl: `${siteUrl}${localePath(locale, "/auth/confirm")}?token=preview`,
+});
+
+// Recipient is the runner-up so the you-chip renders on a non-gold row.
+export const SAMPLE_WINNER_RANK = 2;
+export const SAMPLE_WINNER_POINTS = 58;
+
+export const winnersFixture: Fixture<WinnersEmailData> = (siteUrl, locale) => ({
+  displayName: SAMPLE_NAME,
+  rank: SAMPLE_WINNER_RANK,
+  totalPoints: SAMPLE_WINNER_POINTS,
+  podium: [
+    { rank: 1, displayName: LONG_NAME, totalPoints: 61, isYou: false },
+    { rank: 2, displayName: SAMPLE_NAME, totalPoints: SAMPLE_WINNER_POINTS, isYou: true },
+    { rank: 3, displayName: "Karim", totalPoints: 55, isYou: false },
+  ],
+  leaderboardUrl: path(siteUrl, locale, "/leaderboard"),
 });

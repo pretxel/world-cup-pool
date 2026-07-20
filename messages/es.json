@@ -1068,7 +1068,8 @@
         "recap_digest": "Resumen de recaps",
         "comeback_emails": "Correos de regreso",
         "playoff_score_email": "Correo de marcadores de playoffs",
-        "score_rules_email": "Correo de puntuación"
+        "score_rules_email": "Correo de puntuación",
+        "winners_email": "Correo de ganadores"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
@@ -1079,7 +1080,8 @@
         "recap_digest": "Envía los cómics de partidos recién generados",
         "comeback_emails": "Recupera a jugadores inactivos con un partido por pronosticar",
         "playoff_score_email": "Correo del sábado con los marcadores de la fase eliminatoria del día",
-        "score_rules_email": "Anuncio único de las reglas de puntuación por fase"
+        "score_rules_email": "Anuncio único de las reglas de puntuación por fase",
+        "winners_email": "Felicita al podio final (top 3). Enviar una sola vez, después de puntuar la final."
       },
       "status": {
         "success": "Éxito",
@@ -1182,7 +1184,8 @@
             "comeback": "Regreso",
             "scoreRules": "Reglas de puntuación",
             "groupInvite": "Invitación al grupo",
-            "magicLink": "Enlace mágico"
+            "magicLink": "Enlace mágico",
+            "winners": "Ganadores"
           }
         }
       }
@@ -1402,3 +1405,20 @@
     "footer": "Recibes esto porque cambiaron las reglas de puntuación del grupo. Puedes desactivar estos correos en las preferencias de correo de tu cuenta."
   }
 }
+  },
+  "winnersEmail": {
+    "subject": "{rank, select, 1 {¡Ganaste la quiniela! 🏆} 2 {¡Quedaste 2.º en la quiniela! 🥈} 3 {¡Quedaste 3.º en la quiniela! 🥉} other {¡Subiste al podio!}}",
+    "preheader": "La clasificación final está lista — estás en el podio con {points} puntos.",
+    "eyebrow": "Silbatazo final",
+    "heading": "{rank, select, 1 {{name}, ¡te llevas el título!} 2 {{name}, ¡segundo lugar!} 3 {{name}, ¡tercer lugar!} other {{name}, ¡estás en el podio!}}",
+    "headingNoName": "{rank, select, 1 {¡Te llevas el título!} 2 {¡Segundo lugar!} 3 {¡Tercer lugar!} other {¡Estás en el podio!}}",
+    "intro": "La quiniela terminó y los resultados son oficiales: terminaste en el puesto #{rank} con {points} puntos. Gracias por jugar cada partido con nosotros.",
+    "podiumLabel": "Podio final",
+    "rankLabel": "Puesto",
+    "playerLabel": "Jugador",
+    "pointsLabel": "pts",
+    "youLabel": "Tú",
+    "ctaLabel": "Ver la clasificación final",
+    "footer": "Recibes este correo porque jugaste la quiniela del Mundial y terminaste en el podio.",
+    "madeWithLove": "Hecho con amor :) — pretxel",
+    "comingSoon": "Próximamente: La Liga Pool"

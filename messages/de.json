@@ -1068,7 +1068,8 @@
         "recap_digest": "Recap-Übersicht",
         "comeback_emails": "Comeback-E-Mails",
         "playoff_score_email": "Playoff-Ergebnis-E-Mail",
-        "score_rules_email": "Wertungs-E-Mail"
+        "score_rules_email": "Wertungs-E-Mail",
+        "winners_email": "Gewinner-E-Mail"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
@@ -1079,7 +1080,8 @@
         "recap_digest": "Versendet neu erstellte Spiel-Comics",
         "comeback_emails": "Holt inaktive Spieler mit tippbarem Spiel zurück",
         "playoff_score_email": "Samstags-E-Mail mit den K.-o.-Ergebnissen des Tages",
-        "score_rules_email": "Einmalige Ankündigung der phasengewichteten Wertung"
+        "score_rules_email": "Einmalige Ankündigung der phasengewichteten Wertung",
+        "winners_email": "Gratuliert dem finalen Podium (Top 3). Nur einmal senden, nachdem das Finale gewertet wurde."
       },
       "status": {
         "success": "Erfolgreich",
@@ -1182,7 +1184,8 @@
             "comeback": "Comeback",
             "scoreRules": "Wertungsregeln",
             "groupInvite": "Gruppeneinladung",
-            "magicLink": "Magic Link"
+            "magicLink": "Magic Link",
+            "winners": "Gewinner"
           }
         }
       }
@@ -1402,3 +1405,20 @@
     "footer": "Du erhältst dies, weil sich die Wertungsregeln des Pools geändert haben. Du kannst diese E-Mails in den E-Mail-Einstellungen deines Kontos deaktivieren."
   }
 }
+  },
+  "winnersEmail": {
+    "subject": "{rank, select, 1 {Du hast den Pool gewonnen! 🏆} 2 {Platz 2 im Pool! 🥈} 3 {Platz 3 im Pool! 🥉} other {Du bist auf dem Podium!}}",
+    "preheader": "Die Endwertung steht — du bist mit {points} Punkten auf dem Podium.",
+    "eyebrow": "Schlusspfiff",
+    "heading": "{rank, select, 1 {{name}, du bist der Champion!} 2 {{name}, zweiter Platz!} 3 {{name}, dritter Platz!} other {{name}, du bist auf dem Podium!}}",
+    "headingNoName": "{rank, select, 1 {Du bist der Champion!} 2 {Zweiter Platz!} 3 {Dritter Platz!} other {Du bist auf dem Podium!}}",
+    "intro": "Der Pool ist vorbei und die Ergebnisse sind offiziell: Du hast mit {points} Punkten Platz {rank} belegt. Danke, dass du jedes Spiel mitgetippt hast.",
+    "podiumLabel": "Finales Podium",
+    "rankLabel": "Platz",
+    "playerLabel": "Spieler",
+    "pointsLabel": "Pkt.",
+    "youLabel": "Du",
+    "ctaLabel": "Zur Endtabelle",
+    "footer": "Du erhältst diese E-Mail, weil du beim WM-Pool mitgespielt und das Podium erreicht hast.",
+    "madeWithLove": "Mit Liebe gemacht :) — pretxel",
+    "comingSoon": "Bald verfügbar: La Liga Pool"
