@@ -13,7 +13,8 @@ export type OperationKind =
   | "recap_digest"
   | "comeback_emails"
   | "playoff_score_email"
-  | "score_rules_email";
+  | "score_rules_email"
+  | "winners_email";
 
 export const OPERATION_KINDS: readonly OperationKind[] = [
   "sync_matches",
@@ -25,6 +26,7 @@ export const OPERATION_KINDS: readonly OperationKind[] = [
   "comeback_emails",
   "playoff_score_email",
   "score_rules_email",
+  "winners_email",
 ] as const;
 
 // How a run was started: the daily schedule, or an admin pressing "Run now".

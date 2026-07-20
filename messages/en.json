@@ -1068,7 +1068,8 @@
         "recap_digest": "Recap digest",
         "comeback_emails": "Comeback emails",
         "playoff_score_email": "Playoff score email",
-        "score_rules_email": "Scoring-rules email"
+        "score_rules_email": "Scoring-rules email",
+        "winners_email": "Winners email"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
@@ -1079,7 +1080,8 @@
         "recap_digest": "Emails newly-rendered match comics",
         "comeback_emails": "Wins back inactive players with a pickable match",
         "playoff_score_email": "Saturday email with the day's finished knockout scores",
-        "score_rules_email": "One-off announcement of the stage-weighted scoring rules"
+        "score_rules_email": "One-off announcement of the stage-weighted scoring rules",
+        "winners_email": "Congratulates the final podium (top 3). Send once, after the final match is scored."
       },
       "status": {
         "success": "Success",
@@ -1137,26 +1139,6 @@
         "emptyTitle": "No emails sent",
         "emptyBody": "Sent emails appear here once the jobs dispatch result or reminder messages.",
         "noEmail": "(no address)",
-        "unknownUser": "Unknown player"
-      },
-      "activity": {
-        "title": "User activity",
-        "feedTitle": "Recent activity",
-        "type": {
-          "signup": "Signed up",
-          "prediction": "Submitted a prediction",
-          "quiz_answer": "Answered the quiz",
-          "group_join": "Joined a group"
-        },
-        "stat": {
-          "totalPlayers": "Players",
-          "active": "Active (7d)",
-          "predictionOptOut": "Prediction opt-outs",
-          "quizOptOut": "Quiz opt-outs"
-        },
-        "ofPlayers": "of {total}",
-        "emptyTitle": "No activity yet",
-        "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
         "unknownUser": "Unknown player",
         "mode": {
           "log": "Log",
@@ -1182,9 +1164,30 @@
             "comeback": "Comeback",
             "scoreRules": "Scoring rules",
             "groupInvite": "Group invite",
-            "magicLink": "Magic link"
+            "magicLink": "Magic link",
+            "winners": "Winners"
           }
         }
+      },
+      "activity": {
+        "title": "User activity",
+        "feedTitle": "Recent activity",
+        "type": {
+          "signup": "Signed up",
+          "prediction": "Submitted a prediction",
+          "quiz_answer": "Answered the quiz",
+          "group_join": "Joined a group"
+        },
+        "stat": {
+          "totalPlayers": "Players",
+          "active": "Active (7d)",
+          "predictionOptOut": "Prediction opt-outs",
+          "quizOptOut": "Quiz opt-outs"
+        },
+        "ofPlayers": "of {total}",
+        "emptyTitle": "No activity yet",
+        "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
+        "unknownUser": "Unknown player"
       }
     },
     "confirmKnockout": "Confirm knockout teams",
@@ -1400,5 +1403,22 @@
     "winnerHeader": "Winner",
     "ctaLabel": "See full scoring",
     "footer": "You're getting this because the pool's scoring rules changed. You can turn these emails off in your account email preferences."
+  },
+  "winnersEmail": {
+    "subject": "{rank, select, 1 {You won the pool! 🏆} 2 {You finished 2nd in the pool! 🥈} 3 {You finished 3rd in the pool! 🥉} other {You made the podium!}}",
+    "preheader": "Final standings are in — you're on the podium with {points} points.",
+    "eyebrow": "Final whistle",
+    "heading": "{rank, select, 1 {{name}, you are the champion!} 2 {{name}, you took second place!} 3 {{name}, you took third place!} other {{name}, you made the podium!}}",
+    "headingNoName": "{rank, select, 1 {You are the champion!} 2 {You took second place!} 3 {You took third place!} other {You made the podium!}}",
+    "intro": "The pool is over and the results are official: you finished #{rank} with {points} points. Thanks for playing every match with us.",
+    "podiumLabel": "Final podium",
+    "rankLabel": "Rank",
+    "playerLabel": "Player",
+    "pointsLabel": "pts",
+    "youLabel": "You",
+    "ctaLabel": "See the final leaderboard",
+    "footer": "You're getting this because you played the World Cup pool and finished on the podium.",
+    "madeWithLove": "Made with love :) — pretxel",
+    "comingSoon": "Coming soon: La Liga Pool"
   }
 }

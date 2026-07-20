@@ -20,6 +20,7 @@ import {
   runComebackEmails,
   runPlayoffScoreEmail,
   runScoreRulesEmail,
+  runWinnersEmail,
   toggleOperationEnabled,
 } from "./actions";
 
@@ -33,6 +34,7 @@ const RUN_ACTION: Record<OperationKind, (formData: FormData) => Promise<void>> =
   comeback_emails: runComebackEmails,
   playoff_score_email: runPlayoffScoreEmail,
   score_rules_email: runScoreRulesEmail,
+  winners_email: runWinnersEmail,
 };
 
 // Parses the "Run now" outcome the trigger action redirects back with. The

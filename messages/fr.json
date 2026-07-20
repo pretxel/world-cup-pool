@@ -1068,7 +1068,8 @@
         "recap_digest": "Résumé des récaps",
         "comeback_emails": "E-mails de retour",
         "playoff_score_email": "E-mail des scores des playoffs",
-        "score_rules_email": "E-mail de barème"
+        "score_rules_email": "E-mail de barème",
+        "winners_email": "E-mail des vainqueurs"
       },
       "jobsDesc": {
         "sync_matches": "Récupère les résultats et recalcule le classement",
@@ -1079,7 +1080,8 @@
         "recap_digest": "Envoie les BD de match nouvellement générées",
         "comeback_emails": "Relance les joueurs inactifs ayant un match à pronostiquer",
         "playoff_score_email": "E-mail du samedi avec les scores des matchs à élimination directe du jour",
-        "score_rules_email": "Annonce unique du barème pondéré par phase"
+        "score_rules_email": "Annonce unique du barème pondéré par phase",
+        "winners_email": "Félicite le podium final (top 3). À envoyer une seule fois, après le score de la finale."
       },
       "status": {
         "success": "Succès",
@@ -1137,26 +1139,6 @@
         "emptyTitle": "Aucun e-mail envoyé",
         "emptyBody": "Les e-mails envoyés apparaîtront ici lorsque les tâches enverront des résultats ou des rappels.",
         "noEmail": "(pas d'adresse)",
-        "unknownUser": "Joueur inconnu"
-      },
-      "activity": {
-        "title": "Activité des utilisateurs",
-        "feedTitle": "Activité récente",
-        "type": {
-          "signup": "Inscription",
-          "prediction": "A envoyé un pronostic",
-          "quiz_answer": "A répondu au quiz",
-          "group_join": "A rejoint un groupe"
-        },
-        "stat": {
-          "totalPlayers": "Joueurs",
-          "active": "Actifs (7 j)",
-          "predictionOptOut": "Désabonnés pronostics",
-          "quizOptOut": "Désabonnés quiz"
-        },
-        "ofPlayers": "sur {total}",
-        "emptyTitle": "Aucune activité",
-        "emptyBody": "Les inscriptions, pronostics, réponses au quiz et adhésions aux groupes apparaissent ici.",
         "unknownUser": "Joueur inconnu",
         "mode": {
           "log": "Journal",
@@ -1182,9 +1164,30 @@
             "comeback": "Retour",
             "scoreRules": "Barème",
             "groupInvite": "Invitation au groupe",
-            "magicLink": "Lien magique"
+            "magicLink": "Lien magique",
+            "winners": "Vainqueurs"
           }
         }
+      },
+      "activity": {
+        "title": "Activité des utilisateurs",
+        "feedTitle": "Activité récente",
+        "type": {
+          "signup": "Inscription",
+          "prediction": "A envoyé un pronostic",
+          "quiz_answer": "A répondu au quiz",
+          "group_join": "A rejoint un groupe"
+        },
+        "stat": {
+          "totalPlayers": "Joueurs",
+          "active": "Actifs (7 j)",
+          "predictionOptOut": "Désabonnés pronostics",
+          "quizOptOut": "Désabonnés quiz"
+        },
+        "ofPlayers": "sur {total}",
+        "emptyTitle": "Aucune activité",
+        "emptyBody": "Les inscriptions, pronostics, réponses au quiz et adhésions aux groupes apparaissent ici.",
+        "unknownUser": "Joueur inconnu"
       }
     },
     "confirmKnockout": "Confirmer les équipes (élim.)",
@@ -1400,5 +1403,22 @@
     "winnerHeader": "Vainqueur",
     "ctaLabel": "Voir le barème complet",
     "footer": "Vous recevez ceci car les règles de score du pool ont changé. Vous pouvez désactiver ces e-mails dans les préférences e-mail de votre compte."
+  },
+  "winnersEmail": {
+    "subject": "{rank, select, 1 {Vous avez gagné le pool ! 🏆} 2 {Vous terminez 2e du pool ! 🥈} 3 {Vous terminez 3e du pool ! 🥉} other {Vous êtes sur le podium !}}",
+    "preheader": "Le classement final est tombé — vous êtes sur le podium avec {points} points.",
+    "eyebrow": "Coup de sifflet final",
+    "heading": "{rank, select, 1 {{name}, vous êtes champion !} 2 {{name}, deuxième place !} 3 {{name}, troisième place !} other {{name}, vous êtes sur le podium !}}",
+    "headingNoName": "{rank, select, 1 {Vous êtes champion !} 2 {Deuxième place !} 3 {Troisième place !} other {Vous êtes sur le podium !}}",
+    "intro": "Le pool est terminé et les résultats sont officiels : vous finissez #{rank} avec {points} points. Merci d'avoir joué chaque match avec nous.",
+    "podiumLabel": "Podium final",
+    "rankLabel": "Rang",
+    "playerLabel": "Joueur",
+    "pointsLabel": "pts",
+    "youLabel": "Vous",
+    "ctaLabel": "Voir le classement final",
+    "footer": "Vous recevez cet e-mail parce que vous avez joué au pool de la Coupe du monde et terminé sur le podium.",
+    "madeWithLove": "Fait avec amour :) — pretxel",
+    "comingSoon": "Bientôt : La Liga Pool"
   }
 }
