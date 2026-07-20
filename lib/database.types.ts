@@ -1210,12 +1210,6 @@ export type Database = {
           },
         ]
       }
-      scores: {
-        Row: {
-          computed_at: string
-          hit_type: string
-          match_id: string
-          points: number
       winners_email_log: {
         Row: {
           sent_at: string
@@ -1239,6 +1233,12 @@ export type Database = {
           },
         ]
       }
+      scores: {
+        Row: {
+          computed_at: string
+          hit_type: string
+          match_id: string
+          points: number
           user_id: string
         }
         Insert: {

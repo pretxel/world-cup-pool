@@ -1139,26 +1139,6 @@
         "emptyTitle": "No se han enviado correos",
         "emptyBody": "Los correos enviados aparecerán aquí cuando los trabajos despachen resultados o recordatorios.",
         "noEmail": "(sin dirección)",
-        "unknownUser": "Jugador desconocido"
-      },
-      "activity": {
-        "title": "Actividad de usuarios",
-        "feedTitle": "Actividad reciente",
-        "type": {
-          "signup": "Se registró",
-          "prediction": "Envió un pronóstico",
-          "quiz_answer": "Respondió el quiz",
-          "group_join": "Se unió a un grupo"
-        },
-        "stat": {
-          "totalPlayers": "Jugadores",
-          "active": "Activos (7d)",
-          "predictionOptOut": "Bajas de pronósticos",
-          "quizOptOut": "Bajas del quiz"
-        },
-        "ofPlayers": "de {total}",
-        "emptyTitle": "Aún no hay actividad",
-        "emptyBody": "Aquí aparecen registros, pronósticos, respuestas del quiz y uniones a grupos.",
         "unknownUser": "Jugador desconocido",
         "mode": {
           "log": "Registro",
@@ -1188,6 +1168,26 @@
             "winners": "Ganadores"
           }
         }
+      },
+      "activity": {
+        "title": "Actividad de usuarios",
+        "feedTitle": "Actividad reciente",
+        "type": {
+          "signup": "Se registró",
+          "prediction": "Envió un pronóstico",
+          "quiz_answer": "Respondió el quiz",
+          "group_join": "Se unió a un grupo"
+        },
+        "stat": {
+          "totalPlayers": "Jugadores",
+          "active": "Activos (7d)",
+          "predictionOptOut": "Bajas de pronósticos",
+          "quizOptOut": "Bajas del quiz"
+        },
+        "ofPlayers": "de {total}",
+        "emptyTitle": "Aún no hay actividad",
+        "emptyBody": "Aquí aparecen registros, pronósticos, respuestas del quiz y uniones a grupos.",
+        "unknownUser": "Jugador desconocido"
       }
     },
     "confirmKnockout": "Confirmar equipos eliminatorias",
@@ -1403,8 +1403,6 @@
     "winnerHeader": "Ganador",
     "ctaLabel": "Ver puntuación completa",
     "footer": "Recibes esto porque cambiaron las reglas de puntuación del grupo. Puedes desactivar estos correos en las preferencias de correo de tu cuenta."
-  }
-}
   },
   "winnersEmail": {
     "subject": "{rank, select, 1 {¡Ganaste la quiniela! 🏆} 2 {¡Quedaste 2.º en la quiniela! 🥈} 3 {¡Quedaste 3.º en la quiniela! 🥉} other {¡Subiste al podio!}}",
@@ -1422,3 +1420,5 @@
     "footer": "Recibes este correo porque jugaste la quiniela del Mundial y terminaste en el podio.",
     "madeWithLove": "Hecho con amor :) — pretxel",
     "comingSoon": "Próximamente: La Liga Pool"
+  }
+}

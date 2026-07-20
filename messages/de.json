@@ -1139,26 +1139,6 @@
         "emptyTitle": "Keine E-Mails gesendet",
         "emptyBody": "Gesendete E-Mails erscheinen hier, sobald die Jobs Ergebnis- oder Erinnerungsnachrichten versenden.",
         "noEmail": "(keine Adresse)",
-        "unknownUser": "Unbekannter Spieler"
-      },
-      "activity": {
-        "title": "Nutzeraktivität",
-        "feedTitle": "Letzte Aktivität",
-        "type": {
-          "signup": "Registriert",
-          "prediction": "Tipp abgegeben",
-          "quiz_answer": "Quiz beantwortet",
-          "group_join": "Gruppe beigetreten"
-        },
-        "stat": {
-          "totalPlayers": "Spieler",
-          "active": "Aktiv (7 Tage)",
-          "predictionOptOut": "Tipp-Abmeldungen",
-          "quizOptOut": "Quiz-Abmeldungen"
-        },
-        "ofPlayers": "von {total}",
-        "emptyTitle": "Noch keine Aktivität",
-        "emptyBody": "Spielerregistrierungen, Tipps, Quiz-Antworten und Gruppenbeitritte erscheinen hier.",
         "unknownUser": "Unbekannter Spieler",
         "mode": {
           "log": "Protokoll",
@@ -1188,6 +1168,26 @@
             "winners": "Gewinner"
           }
         }
+      },
+      "activity": {
+        "title": "Nutzeraktivität",
+        "feedTitle": "Letzte Aktivität",
+        "type": {
+          "signup": "Registriert",
+          "prediction": "Tipp abgegeben",
+          "quiz_answer": "Quiz beantwortet",
+          "group_join": "Gruppe beigetreten"
+        },
+        "stat": {
+          "totalPlayers": "Spieler",
+          "active": "Aktiv (7 Tage)",
+          "predictionOptOut": "Tipp-Abmeldungen",
+          "quizOptOut": "Quiz-Abmeldungen"
+        },
+        "ofPlayers": "von {total}",
+        "emptyTitle": "Noch keine Aktivität",
+        "emptyBody": "Spielerregistrierungen, Tipps, Quiz-Antworten und Gruppenbeitritte erscheinen hier.",
+        "unknownUser": "Unbekannter Spieler"
       }
     },
     "confirmKnockout": "K.-o.-Teams bestätigen",
@@ -1403,8 +1403,6 @@
     "winnerHeader": "Sieger",
     "ctaLabel": "Volle Wertung ansehen",
     "footer": "Du erhältst dies, weil sich die Wertungsregeln des Pools geändert haben. Du kannst diese E-Mails in den E-Mail-Einstellungen deines Kontos deaktivieren."
-  }
-}
   },
   "winnersEmail": {
     "subject": "{rank, select, 1 {Du hast den Pool gewonnen! 🏆} 2 {Platz 2 im Pool! 🥈} 3 {Platz 3 im Pool! 🥉} other {Du bist auf dem Podium!}}",
@@ -1422,3 +1420,5 @@
     "footer": "Du erhältst diese E-Mail, weil du beim WM-Pool mitgespielt und das Podium erreicht hast.",
     "madeWithLove": "Mit Liebe gemacht :) — pretxel",
     "comingSoon": "Bald verfügbar: La Liga Pool"
+  }
+}

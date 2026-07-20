@@ -1139,26 +1139,6 @@
         "emptyTitle": "No emails sent",
         "emptyBody": "Sent emails appear here once the jobs dispatch result or reminder messages.",
         "noEmail": "(no address)",
-        "unknownUser": "Unknown player"
-      },
-      "activity": {
-        "title": "User activity",
-        "feedTitle": "Recent activity",
-        "type": {
-          "signup": "Signed up",
-          "prediction": "Submitted a prediction",
-          "quiz_answer": "Answered the quiz",
-          "group_join": "Joined a group"
-        },
-        "stat": {
-          "totalPlayers": "Players",
-          "active": "Active (7d)",
-          "predictionOptOut": "Prediction opt-outs",
-          "quizOptOut": "Quiz opt-outs"
-        },
-        "ofPlayers": "of {total}",
-        "emptyTitle": "No activity yet",
-        "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
         "unknownUser": "Unknown player",
         "mode": {
           "log": "Log",
@@ -1188,6 +1168,26 @@
             "winners": "Winners"
           }
         }
+      },
+      "activity": {
+        "title": "User activity",
+        "feedTitle": "Recent activity",
+        "type": {
+          "signup": "Signed up",
+          "prediction": "Submitted a prediction",
+          "quiz_answer": "Answered the quiz",
+          "group_join": "Joined a group"
+        },
+        "stat": {
+          "totalPlayers": "Players",
+          "active": "Active (7d)",
+          "predictionOptOut": "Prediction opt-outs",
+          "quizOptOut": "Quiz opt-outs"
+        },
+        "ofPlayers": "of {total}",
+        "emptyTitle": "No activity yet",
+        "emptyBody": "Player signups, predictions, quiz answers, and group joins appear here.",
+        "unknownUser": "Unknown player"
       }
     },
     "confirmKnockout": "Confirm knockout teams",
@@ -1403,8 +1403,6 @@
     "winnerHeader": "Winner",
     "ctaLabel": "See full scoring",
     "footer": "You're getting this because the pool's scoring rules changed. You can turn these emails off in your account email preferences."
-  }
-}
   },
   "winnersEmail": {
     "subject": "{rank, select, 1 {You won the pool! 🏆} 2 {You finished 2nd in the pool! 🥈} 3 {You finished 3rd in the pool! 🥉} other {You made the podium!}}",
@@ -1422,3 +1420,5 @@
     "footer": "You're getting this because you played the World Cup pool and finished on the podium.",
     "madeWithLove": "Made with love :) — pretxel",
     "comingSoon": "Coming soon: La Liga Pool"
+  }
+}
