@@ -1,14 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { getActiveCompetition } from "@/lib/competition";
-import { getStageLabel } from "@/lib/competition-schema";
-import { BASE_POINTS, STAGE_POINT_MULTIPLIER } from "@/lib/scoring";
+import { getStageLabel, sortedStages } from "@/lib/competition-schema";
+import { BASE_POINTS, resolveStageMultiplier } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n";
-
-// Phases shown in the explainer, in ascending-stakes order. The per-stage points
-// are derived from BASE_POINTS × STAGE_POINT_MULTIPLIER (the shared scoring
-// constants) so this section can never drift from the actual scorer.
-const STAGE_ORDER = ["group", "r32", "r16", "qf", "sf", "final", "third"] as const;
 
 // Base-point tiers, in the order they appear as columns.
 const TIERS = [
@@ -22,12 +17,16 @@ export async function ScoringExplainer({ locale }: { locale: Locale }) {
   const competition = await getActiveCompetition();
   const format = competition?.format;
 
-  const rows = STAGE_ORDER.map((stage) => ({
+  // Pull stages from the competition format when available, falling back to the
+  // hardcoded World Cup stage list. This lets the explainer adapt to any format.
+  const stages = format
+    ? sortedStages(format).map((s) => s.key)
+    : (["group", "r32", "r16", "qf", "sf", "final", "third"] as const);
+
+  const rows = stages.map((stage) => ({
     stage,
-    // Localized stage name from the active competition format; falls back to the
-    // stage key when there is no active competition or the stage is unmapped.
     label: format ? getStageLabel(format, stage, locale) : stage,
-    multiplier: STAGE_POINT_MULTIPLIER[stage] ?? 1,
+    multiplier: resolveStageMultiplier(stage, format),
   }));
 
   return (

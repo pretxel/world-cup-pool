@@ -1,4 +1,6 @@
 import type { HitType } from "@/lib/db";
+import type { CompetitionFormat } from "@/lib/competition-schema";
+import { getStageConfig } from "@/lib/competition-schema";
 
 export interface ScoredPrediction {
   points: number;
@@ -25,16 +27,31 @@ export const STAGE_POINT_MULTIPLIER: Record<string, number> = {
   third: 4,
 };
 
+// Resolve the point multiplier for a stage, preferring the competition's
+// format_config.stages[].pointMultiplier when present, falling back to the
+// hardcoded STAGE_POINT_MULTIPLIER map, and ultimately ×1.
+export function resolveStageMultiplier(
+  stage: string,
+  format?: CompetitionFormat | null,
+): number {
+  if (format) {
+    const cfg = getStageConfig(format, stage);
+    if (cfg?.pointMultiplier != null) return cfg.pointMultiplier;
+  }
+  return STAGE_POINT_MULTIPLIER[stage] ?? 1;
+}
+
 // Pure TypeScript replica of the SQL function `public.compute_match_scores`.
 // Kept here so the scoring rules can be unit-tested without a database.
-// `stage` is optional: when omitted (or unmapped) the multiplier is ×1, which
+// `stage` and `format` are optional: when omitted the multiplier is ×1, which
 // preserves the original flat-scoring behavior.
 export function scorePrediction(
   prediction: { home_goals: number; away_goals: number },
   result: { home_score: number; away_score: number },
   stage?: string,
+  format?: CompetitionFormat | null,
 ): ScoredPrediction {
-  const mult = (stage && STAGE_POINT_MULTIPLIER[stage]) || 1;
+  const mult = resolveStageMultiplier(stage ?? "", format);
 
   const exact =
     prediction.home_goals === result.home_score && prediction.away_goals === result.away_score;

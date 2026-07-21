@@ -39,6 +39,12 @@ export const stageSchema = z.object({
   // participants are still placeholders (read-only schedule). Defaults to
   // hidden, so existing formats are unaffected. Ignored for non-knockout kinds.
   revealed: z.boolean().default(false),
+  // Per-stage point multiplier for scoring. When present overrides the
+  // hardcoded STAGE_POINT_MULTIPLIER map. Absent = use hardcoded defaults.
+  pointMultiplier: z.number().positive().optional(),
+  // Tiebreaker method for league stages. `"gd"` (goal difference) is the
+  // default; `"h2h"` uses head-to-head results between tied teams first.
+  tiebreaker: z.enum(["gd", "h2h"]).optional().default("gd"),
 });
 
 export const groupsSchema = z.discriminatedUnion("enabled", [
@@ -74,6 +80,17 @@ export const formatConfigSchema = z
         message: "a stage has hasGroupCode but groups.enabled is false",
         path: ["groups", "enabled"],
       });
+    }
+    // pointMultiplier must be >= 1 when present (Zod .positive() handles this,
+    // but also reject 0 explicitly for clarity).
+    for (const s of cfg.stages) {
+      if (s.pointMultiplier != null && s.pointMultiplier < 1) {
+        ctx.addIssue({
+          code: "custom",
+          message: `stage "${s.key}" pointMultiplier must be ≥ 1`,
+          path: ["stages", String(cfg.stages.indexOf(s)), "pointMultiplier"],
+        });
+      }
     }
   });
 
@@ -177,6 +194,12 @@ export function revealedKnockoutStageKeys(format: CompetitionFormat): Set<string
 // without hardcoding the literal "group".
 export function groupStageKey(format: CompetitionFormat): string | null {
   return format.stages.find((s) => s.kind === "group")?.key ?? null;
+}
+
+// The stage key of the (first) league stage, e.g. "league" — or null when the
+// competition has no league stage. Used to query league-stage fixtures.
+export function leagueStageKey(format: CompetitionFormat): string | null {
+  return format.stages.find((s) => s.kind === "league")?.key ?? null;
 }
 
 export function groupCodePattern(format: CompetitionFormat): string | null {

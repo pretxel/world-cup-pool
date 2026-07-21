@@ -200,3 +200,128 @@ export function buildGroupTables(
 
   return simulateAllGroups(fixtures, resultsByMatchId);
 }
+
+// Tiebreaker method for league standings.
+export type Tiebreaker = "gd" | "h2h";
+
+// Reorder a list of team rows that share the same points total using
+// head-to-head results. `matches` must be the same source the rows were
+// derived from (only `final` matches with scores are considered). Returns a
+// new array of the same length — the final ordering uses H2H points → H2H GD
+// → H2H GF → overall GD → overall GF → team name, so the fallback chain
+// eventually produces a stable result even when H2H is fully symmetric.
+function resolveH2HTie(
+  tied: GroupTeamRow[],
+  matches: GroupTableMatch[],
+): GroupTeamRow[] {
+  const teamSet = new Set(tied.map((r) => r.team));
+  const h2hPoints = new Map<string, number>();
+  const h2hGd = new Map<string, number>();
+  const h2hGf = new Map<string, number>();
+
+  for (const row of tied) {
+    h2hPoints.set(row.team, 0);
+    h2hGd.set(row.team, 0);
+    h2hGf.set(row.team, 0);
+  }
+
+  for (const m of matches) {
+    if (m.status !== "final") continue;
+    if (m.home_score == null || m.away_score == null) continue;
+    if (!teamSet.has(m.home_team) || !teamSet.has(m.away_team)) continue;
+
+    const homePts = h2hPoints.get(m.home_team)!;
+    const awayPts = h2hPoints.get(m.away_team)!;
+    const homeGd = h2hGd.get(m.home_team)!;
+    const awayGd = h2hGd.get(m.away_team)!;
+    const homeGf = h2hGf.get(m.home_team)!;
+    const awayGf = h2hGf.get(m.away_team)!;
+
+    h2hGf.set(m.home_team, homeGf + m.home_score);
+    h2hGf.set(m.away_team, awayGf + m.away_score);
+    h2hGd.set(m.home_team, homeGd + (m.home_score - m.away_score));
+    h2hGd.set(m.away_team, awayGd + (m.away_score - m.home_score));
+
+    if (m.home_score > m.away_score) {
+      h2hPoints.set(m.home_team, homePts + WIN_POINTS);
+    } else if (m.home_score < m.away_score) {
+      h2hPoints.set(m.away_team, awayPts + WIN_POINTS);
+    } else {
+      h2hPoints.set(m.home_team, homePts + DRAW_POINTS);
+      h2hPoints.set(m.away_team, awayPts + DRAW_POINTS);
+    }
+  }
+
+  return [...tied].sort((a, b) => {
+    const h2hA = h2hPoints.get(a.team) ?? 0;
+    const h2hB = h2hPoints.get(b.team) ?? 0;
+    if (h2hB !== h2hA) return h2hB - h2hA;
+    const gdA = h2hGd.get(a.team) ?? 0;
+    const gdB = h2hGd.get(b.team) ?? 0;
+    if (gdB !== gdA) return gdB - gdA;
+    const gfA = h2hGf.get(a.team) ?? 0;
+    const gfB = h2hGf.get(b.team) ?? 0;
+    if (gfB !== gfA) return gfB - gfA;
+    // Fall through to overall tiebreakers
+    if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
+    if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+    return a.team.localeCompare(b.team, undefined, { sensitivity: "base" });
+  });
+}
+
+// Build a single league table from actual match results. Uses the same 3/1/0
+// points engine as the group standings, but returns one SimulatedGroup with a
+// null groupCode. Every team named in a fixture is seeded so all 18 appear even
+// before any result. Counts only `final` matches with recorded scores.
+// When `tiebreaker` is `"h2h"`, tied teams are reordered by head-to-head
+// results before the standard fallback chain.
+export function buildLeagueTable(
+  matches: GroupTableMatch[],
+  tiebreaker: Tiebreaker = "gd",
+): SimulatedGroup {
+  const fixtures: GroupFixture[] = matches.map((m) => ({
+    id: m.id,
+    home_team: m.home_team,
+    away_team: m.away_team,
+  }));
+
+  const resultsByMatchId = new Map<string, PredictedScore>();
+  for (const m of matches) {
+    if (m.status !== "final") continue;
+    if (m.home_score == null || m.away_score == null) continue;
+    resultsByMatchId.set(m.id, {
+      home_goals: m.home_score,
+      away_goals: m.away_score,
+    });
+  }
+
+  const rows = simulateGroup(fixtures, resultsByMatchId);
+
+  if (tiebreaker === "h2h") {
+    // Group by points, apply H2H within each tied group.
+    const byPoints = new Map<number, GroupTeamRow[]>();
+    for (const row of rows) {
+      const arr = byPoints.get(row.points) ?? [];
+      arr.push(row);
+      byPoints.set(row.points, arr);
+    }
+
+    const reordered: GroupTeamRow[] = [];
+    for (const pts of [...byPoints.keys()].sort((a, b) => b - a)) {
+      const group = byPoints.get(pts)!;
+      if (group.length > 1) {
+        reordered.push(...resolveH2HTie(group, matches));
+      } else {
+        reordered.push(group[0]);
+      }
+    }
+
+    reordered.forEach((row, i) => {
+      row.rank = i + 1;
+    });
+
+    return { groupCode: "", rows: reordered };
+  }
+
+  return { groupCode: "", rows };
+}

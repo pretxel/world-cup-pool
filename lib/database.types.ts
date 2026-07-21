@@ -629,8 +629,10 @@ export type Database = {
           home_team: string
           id: string
           kickoff_at: string
+          leg: number | null
           stage: string
           status: string
+          tie_key: string | null
           updated_at: string
           venue: string | null
         }
@@ -646,8 +648,10 @@ export type Database = {
           home_team: string
           id?: string
           kickoff_at: string
+          leg?: number | null
           stage: string
           status?: string
+          tie_key?: string | null
           updated_at?: string
           venue?: string | null
         }
@@ -661,8 +665,10 @@ export type Database = {
           home_team?: string
           id?: string
           kickoff_at?: string
+          leg?: number | null
           stage?: string
           status?: string
+          tie_key?: string | null
           updated_at?: string
           venue?: string | null
         }

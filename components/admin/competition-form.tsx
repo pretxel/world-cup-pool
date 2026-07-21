@@ -26,6 +26,7 @@ type StageDraft = {
   kind: (typeof STAGE_KINDS)[number];
   icon: string;
   hasGroupCode: boolean;
+  pointMultiplier: number | undefined;
   labels: Record<string, string>;
 };
 
@@ -47,7 +48,7 @@ export type CompetitionFormInitial = {
 };
 
 function emptyStage(): StageDraft {
-  return { key: "", kind: "knockout", icon: "", hasGroupCode: false, labels: {} };
+  return { key: "", kind: "knockout", icon: "", hasGroupCode: false, pointMultiplier: undefined, labels: {} };
 }
 
 function toDrafts(format?: CompetitionFormat): StageDraft[] {
@@ -59,6 +60,7 @@ function toDrafts(format?: CompetitionFormat): StageDraft[] {
       kind: s.kind,
       icon: s.icon ?? "",
       hasGroupCode: s.hasGroupCode ?? false,
+      pointMultiplier: s.pointMultiplier,
       labels: { ...s.labels },
     }));
 }
@@ -120,6 +122,7 @@ export function CompetitionForm({
         order: i + 1,
         icon: s.icon || undefined,
         hasGroupCode: s.hasGroupCode,
+        pointMultiplier: s.pointMultiplier,
         labels: s.labels,
       })),
       groups: groupsEnabled
@@ -321,6 +324,20 @@ export function CompetitionForm({
                     value={s.icon}
                     onChange={(e) => patch(i, { icon: e.target.value })}
                     placeholder="group / final"
+                  />
+                </Field>
+                <Field label={t("form.stageMultiplier")}>
+                  <Input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={s.pointMultiplier ?? ""}
+                    onChange={(e) =>
+                      patch(i, {
+                        pointMultiplier: e.target.value ? Number(e.target.value) : undefined,
+                      })
+                    }
+                    placeholder="1"
                   />
                 </Field>
                 <label className="flex items-center gap-2 text-sm">

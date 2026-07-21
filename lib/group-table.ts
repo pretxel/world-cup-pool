@@ -1,11 +1,13 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getActiveCompetition } from "@/lib/competition";
-import { groupStageKey } from "@/lib/competition-schema";
+import { getStageConfig, groupStageKey, leagueStageKey } from "@/lib/competition-schema";
 import {
   buildGroupTables,
+  buildLeagueTable,
   type GroupTableMatch,
   type SimulatedGroup,
+  type Tiebreaker,
 } from "@/lib/group-standings";
 
 export type { GroupTableMatch } from "@/lib/group-standings";
@@ -42,4 +44,28 @@ export async function getGroupTables(): Promise<GroupTablesResult> {
 
   const matches = (data ?? []) as GroupTableMatch[];
   return { groups: buildGroupTables(matches), matches, hasGroupStage: true };
+}
+
+// Build the real league table for the active competition. Reads only the
+// league-stage matches and folds their actual results into the shared standings
+// engine. Never throws — a missing competition or league stage yields null.
+export async function getLeagueTable(): Promise<{ group: SimulatedGroup; matches: GroupTableMatch[] } | null> {
+  const competition = await getActiveCompetition();
+  const leagueKey = competition ? leagueStageKey(competition.format) : null;
+  if (!competition || !leagueKey) return null;
+
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase
+    .from("matches")
+    .select(
+      "id, home_team, away_team, group_code, home_score, away_score, status, kickoff_at",
+    )
+    .eq("competition_id", competition.id)
+    .eq("stage", leagueKey);
+
+  const stageConfig = getStageConfig(competition.format, leagueKey);
+  const tiebreaker: Tiebreaker = stageConfig?.tiebreaker ?? "gd";
+
+  const matches = (data ?? []) as GroupTableMatch[];
+  return { group: buildLeagueTable(matches, tiebreaker), matches };
 }
