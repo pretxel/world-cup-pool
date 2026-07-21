@@ -18,6 +18,25 @@ The system SHALL store competitions in a `public.competitions` table, each with 
 - **WHEN** an operator inserts a new `competitions` row with a valid `format_config`
 - **THEN** the insert succeeds without any application code or DDL change
 
+### Requirement: Admin form supports league-stage competition setup
+
+The admin competition form SHALL allow configuring league-stage competitions. The format config editor SHALL handle:
+- Selecting `league` as a stage kind
+- Configuring `pointMultiplier` per stage
+- Adding teams associated with the competition
+
+#### Scenario: Admin creates a league-format competition
+
+- **WHEN** an admin opens the competition form and adds a stage with `kind: 'league'`
+- **THEN** the form accepts it without requiring group configuration
+- **AND** the stage shows a `pointMultiplier` field (defaulting to 1)
+
+#### Scenario: Admin views Liga MX competition
+
+- **WHEN** an admin opens the Liga MX competition for editing
+- **THEN** the form shows all 5 tabs (Identity, Dates, Format, Providers, Branding) pre-populated with Liga MX values
+- **AND** the format tab shows the league stage and liguilla knockout stages with their multipliers
+
 ### Requirement: At most one active competition
 
 The system SHALL guarantee that no more than one competition has `is_active = true` at any time, enforced by a partial unique index on `(is_active) WHERE is_active`.
