@@ -1102,7 +1102,8 @@
         "comeback_emails": "Correos de regreso",
         "playoff_score_email": "Correo de marcadores de playoffs",
         "score_rules_email": "Correo de puntuación",
-        "winners_email": "Correo de ganadores"
+        "winners_email": "Correo de ganadores",
+        "announcement_email": "Correo de anuncio"
       },
       "jobsDesc": {
         "sync_matches": "Obtiene resultados y recalcula la tabla",
@@ -1114,7 +1115,8 @@
         "comeback_emails": "Recupera a jugadores inactivos con un partido por pronosticar",
         "playoff_score_email": "Correo del sábado con los marcadores de la fase eliminatoria del día",
         "score_rules_email": "Anuncio único de las reglas de puntuación por fase",
-        "winners_email": "Felicita al podio final (top 3). Enviar una sola vez, después de puntuar la final."
+        "winners_email": "Felicita al podio final (top 3). Enviar una sola vez, después de puntuar la final.",
+        "announcement_email": "Anuncia el cambio de marca a WinScore y las nuevas funciones a todos los jugadores. Enviar una sola vez."
       },
       "status": {
         "success": "Éxito",
@@ -1453,5 +1455,22 @@
     "footer": "Recibes este correo porque jugaste la quiniela del Mundial y terminaste en el podio.",
     "madeWithLove": "Hecho con amor :) — pretxel",
     "comingSoon": "Próximamente: La Liga Pool"
+  },
+  "announcementEmail": {
+    "subject": "Ahora somos WinScore — con multiligas, pagos en cripto y más 🎉",
+    "preheader": "Un nombre nuevo, un nuevo hogar en winscore.me y las funciones que pediste.",
+    "eyebrow": "Gran noticia",
+    "heading": "Te presentamos WinScore",
+    "intro": "La quiniela que te encanta tiene nombre nuevo y un nuevo hogar en winscore.me. El mismo juego, los mismos amigos — ahora con las funciones que venías pidiendo.",
+    "whatsNewLabel": "Novedades",
+    "feature1Title": "Quinielas multiliga",
+    "feature1Body": "Gestiona quinielas de varias ligas desde una sola cuenta — sin malabares entre juegos separados.",
+    "feature2Title": "Pagos en cripto",
+    "feature2Body": "Únete y cobra con cripto, junto a las opciones que ya usas.",
+    "feature3Title": "…y mucho más",
+    "feature3Body": "Un diseño renovado, clasificaciones más rápidas y un flujo constante de mejoras en camino.",
+    "ctaLabel": "Explorar WinScore",
+    "footer": "Recibes este correo porque juegas la quiniela. Puedes gestionar tus preferencias de correo cuando quieras desde tu cuenta.",
+    "madeWithLove": "Hecho con amor :) — pretxel"
   }
 }

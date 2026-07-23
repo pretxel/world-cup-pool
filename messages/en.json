@@ -1102,7 +1102,8 @@
         "comeback_emails": "Comeback emails",
         "playoff_score_email": "Playoff score email",
         "score_rules_email": "Scoring-rules email",
-        "winners_email": "Winners email"
+        "winners_email": "Winners email",
+        "announcement_email": "Announcement email"
       },
       "jobsDesc": {
         "sync_matches": "Pulls results and recomputes standings",
@@ -1114,7 +1115,8 @@
         "comeback_emails": "Wins back inactive players with a pickable match",
         "playoff_score_email": "Saturday email with the day's finished knockout scores",
         "score_rules_email": "One-off announcement of the stage-weighted scoring rules",
-        "winners_email": "Congratulates the final podium (top 3). Send once, after the final match is scored."
+        "winners_email": "Congratulates the final podium (top 3). Send once, after the final match is scored.",
+        "announcement_email": "Announces the WinScore rebrand and new features to all players. Send once."
       },
       "status": {
         "success": "Success",
@@ -1453,5 +1455,22 @@
     "footer": "You're getting this because you played the World Cup pool and finished on the podium.",
     "madeWithLove": "Made with love :) — pretxel",
     "comingSoon": "Coming soon: La Liga Pool"
+  },
+  "announcementEmail": {
+    "subject": "We're now WinScore — with multi-league, crypto payments & more 🎉",
+    "preheader": "A fresh name, a new home at winscore.me, and the features you asked for.",
+    "eyebrow": "Big news",
+    "heading": "Say hello to WinScore",
+    "intro": "The pool you love has a new name and a new home at winscore.me. Same game, same friends — now with the features you've been asking for.",
+    "whatsNewLabel": "What's new",
+    "feature1Title": "Multi-league pools",
+    "feature1Body": "Run pools across multiple leagues from one account — no more juggling separate games.",
+    "feature2Title": "Crypto payments",
+    "feature2Body": "Buy in and pay out with crypto, alongside the options you already use.",
+    "feature3Title": "…and plenty more",
+    "feature3Body": "A refreshed look, faster standings, and a steady stream of improvements on the way.",
+    "ctaLabel": "Explore WinScore",
+    "footer": "You're getting this because you play the pool. Manage your email preferences any time from your account.",
+    "madeWithLove": "Made with love :) — pretxel"
   }
 }

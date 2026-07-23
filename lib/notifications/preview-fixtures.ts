@@ -16,6 +16,7 @@ import type { ScoreRulesData } from "./score-rules-template";
 import type { GroupInviteEmailData } from "./group-invite-template";
 import type { MagicLinkEmailData } from "./magic-link-email-template";
 import type { WinnersEmailData } from "./winners-email-template";
+import type { AnnouncementEmailData } from "./announcement-email-template";
 
 // Deliberately long display name so previews surface truncation/wrap issues.
 export const LONG_NAME = "Maximiliano Aristóbulo de la Santísima Trinidad";
@@ -180,4 +181,11 @@ export const winnersFixture: Fixture<WinnersEmailData> = (siteUrl, locale) => ({
     { rank: 3, displayName: "Karim", totalPoints: 55, isYou: false },
   ],
   leaderboardUrl: path(siteUrl, locale, "/leaderboard"),
+});
+
+// The announcement is a broadcast with identical content for everyone, so the
+// only datum is the CTA destination — the new WinScore home, not the current
+// app host.
+export const announcementFixture: Fixture<AnnouncementEmailData> = () => ({
+  ctaUrl: "https://winscore.me",
 });

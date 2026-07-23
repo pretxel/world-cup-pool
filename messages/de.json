@@ -1102,7 +1102,8 @@
         "comeback_emails": "Comeback-E-Mails",
         "playoff_score_email": "Playoff-Ergebnis-E-Mail",
         "score_rules_email": "Wertungs-E-Mail",
-        "winners_email": "Gewinner-E-Mail"
+        "winners_email": "Gewinner-E-Mail",
+        "announcement_email": "Ankündigungs-E-Mail"
       },
       "jobsDesc": {
         "sync_matches": "Ruft Ergebnisse ab und berechnet die Tabelle neu",
@@ -1114,7 +1115,8 @@
         "comeback_emails": "Holt inaktive Spieler mit tippbarem Spiel zurück",
         "playoff_score_email": "Samstags-E-Mail mit den K.-o.-Ergebnissen des Tages",
         "score_rules_email": "Einmalige Ankündigung der phasengewichteten Wertung",
-        "winners_email": "Gratuliert dem finalen Podium (Top 3). Nur einmal senden, nachdem das Finale gewertet wurde."
+        "winners_email": "Gratuliert dem finalen Podium (Top 3). Nur einmal senden, nachdem das Finale gewertet wurde.",
+        "announcement_email": "Kündigt das WinScore-Rebranding und neue Funktionen allen Spielern an. Nur einmal senden."
       },
       "status": {
         "success": "Erfolgreich",
@@ -1453,5 +1455,22 @@
     "footer": "Du erhältst diese E-Mail, weil du beim WM-Pool mitgespielt und das Podium erreicht hast.",
     "madeWithLove": "Mit Liebe gemacht :) — pretxel",
     "comingSoon": "Bald verfügbar: La Liga Pool"
+  },
+  "announcementEmail": {
+    "subject": "Wir sind jetzt WinScore — mit Multi-Ligen, Krypto-Zahlungen & mehr 🎉",
+    "preheader": "Ein neuer Name, ein neues Zuhause auf winscore.me und die gewünschten Funktionen.",
+    "eyebrow": "Große Neuigkeit",
+    "heading": "Sag hallo zu WinScore",
+    "intro": "Der Pool, den du liebst, hat einen neuen Namen und ein neues Zuhause auf winscore.me. Gleiches Spiel, gleiche Freunde — jetzt mit den Funktionen, nach denen du gefragt hast.",
+    "whatsNewLabel": "Neuigkeiten",
+    "feature1Title": "Multi-Liga-Pools",
+    "feature1Body": "Verwalte Pools über mehrere Ligen aus einem Konto — kein Jonglieren mit getrennten Spielen mehr.",
+    "feature2Title": "Krypto-Zahlungen",
+    "feature2Body": "Steige ein und lass dir per Krypto auszahlen, zusätzlich zu den Optionen, die du schon nutzt.",
+    "feature3Title": "…und vieles mehr",
+    "feature3Body": "Ein frisches Design, schnellere Tabellen und ein stetiger Strom an Verbesserungen.",
+    "ctaLabel": "WinScore entdecken",
+    "footer": "Du erhältst diese E-Mail, weil du den Pool spielst. Verwalte deine E-Mail-Einstellungen jederzeit in deinem Konto.",
+    "madeWithLove": "Mit Liebe gemacht :) — pretxel"
   }
 }

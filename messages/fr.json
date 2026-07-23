@@ -1102,7 +1102,8 @@
         "comeback_emails": "E-mails de retour",
         "playoff_score_email": "E-mail des scores des playoffs",
         "score_rules_email": "E-mail de barème",
-        "winners_email": "E-mail des vainqueurs"
+        "winners_email": "E-mail des vainqueurs",
+        "announcement_email": "E-mail d'annonce"
       },
       "jobsDesc": {
         "sync_matches": "Récupère les résultats et recalcule le classement",
@@ -1114,7 +1115,8 @@
         "comeback_emails": "Relance les joueurs inactifs ayant un match à pronostiquer",
         "playoff_score_email": "E-mail du samedi avec les scores des matchs à élimination directe du jour",
         "score_rules_email": "Annonce unique du barème pondéré par phase",
-        "winners_email": "Félicite le podium final (top 3). À envoyer une seule fois, après le score de la finale."
+        "winners_email": "Félicite le podium final (top 3). À envoyer une seule fois, après le score de la finale.",
+        "announcement_email": "Annonce le changement de marque WinScore et les nouvelles fonctionnalités à tous les joueurs. À envoyer une seule fois."
       },
       "status": {
         "success": "Succès",
@@ -1453,5 +1455,22 @@
     "footer": "Vous recevez cet e-mail parce que vous avez joué au pool de la Coupe du monde et terminé sur le podium.",
     "madeWithLove": "Fait avec amour :) — pretxel",
     "comingSoon": "Bientôt : La Liga Pool"
+  },
+  "announcementEmail": {
+    "subject": "Nous devenons WinScore — multi-ligues, paiements crypto et plus 🎉",
+    "preheader": "Un nouveau nom, une nouvelle adresse sur winscore.me et les fonctionnalités demandées.",
+    "eyebrow": "Grande nouvelle",
+    "heading": "Découvrez WinScore",
+    "intro": "Le pool que vous aimez change de nom et de maison sur winscore.me. Même jeu, mêmes amis — désormais avec les fonctionnalités que vous réclamiez.",
+    "whatsNewLabel": "Nouveautés",
+    "feature1Title": "Pools multi-ligues",
+    "feature1Body": "Gérez des pools sur plusieurs ligues depuis un seul compte — fini de jongler entre des jeux séparés.",
+    "feature2Title": "Paiements crypto",
+    "feature2Body": "Participez et encaissez en crypto, en plus des options que vous utilisez déjà.",
+    "feature3Title": "…et bien plus",
+    "feature3Body": "Un nouveau design, des classements plus rapides et un flux constant d'améliorations à venir.",
+    "ctaLabel": "Découvrir WinScore",
+    "footer": "Vous recevez cet e-mail parce que vous jouez au pool. Gérez vos préférences d'e-mail à tout moment depuis votre compte.",
+    "madeWithLove": "Fait avec amour :) — pretxel"
   }
 }

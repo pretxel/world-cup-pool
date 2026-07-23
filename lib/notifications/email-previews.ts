@@ -33,6 +33,8 @@ import {
 } from "./magic-link-email-template";
 import { renderWinnersEmail } from "./winners-email-template";
 import { buildWinnersEmailStrings } from "./winners-emails";
+import { renderAnnouncementEmail } from "./announcement-email-template";
+import { buildAnnouncementEmailStrings } from "./announcement-emails";
 import {
   SAMPLE_NAME,
   SAMPLE_EARNED_POINTS,
@@ -53,6 +55,7 @@ import {
   groupInviteFixture,
   magicLinkFixture,
   winnersFixture,
+  announcementFixture,
 } from "./preview-fixtures";
 
 // Minimal translator shape so this stays decoupled from next-intl internals.
@@ -71,6 +74,7 @@ export const EMAIL_PREVIEW_IDS = [
   "groupInvite",
   "magicLink",
   "winners",
+  "announcement",
 ] as const;
 
 export type EmailPreviewId = (typeof EMAIL_PREVIEW_IDS)[number];
@@ -197,6 +201,13 @@ export async function renderEmailPreview(
         totalPoints: data.totalPoints,
       });
       const { subject, html, text } = renderWinnersEmail({ ...data, strings });
+      return { subject, preheader: strings.preheader, html, text };
+    }
+    case "announcement": {
+      const t = (await getTranslations({ locale, namespace: "announcementEmail" })) as Translator;
+      const data = announcementFixture(siteUrl, locale);
+      const strings = buildAnnouncementEmailStrings(t);
+      const { subject, html, text } = renderAnnouncementEmail({ ...data, strings });
       return { subject, preheader: strings.preheader, html, text };
     }
   }

@@ -13,6 +13,7 @@ import { dispatchComebackEmails } from "@/lib/notifications/comeback-emails";
 import { dispatchPlayoffScoreEmail } from "@/lib/notifications/playoff-score-emails";
 import { dispatchScoreRulesEmail } from "@/lib/notifications/score-rules-emails";
 import { dispatchWinnersEmail } from "@/lib/notifications/winners-emails";
+import { dispatchAnnouncementEmail } from "@/lib/notifications/announcement-emails";
 import { runNewsSync } from "@/lib/news-sync";
 import { getActiveBranding } from "@/lib/competition";
 import {
@@ -93,6 +94,10 @@ const JOB: Record<OperationKind, () => Promise<object>> = {
   winners_email: async () => {
     const { emailFromName } = await getActiveBranding();
     return dispatchWinnersEmail(emailFromName);
+  },
+  announcement_email: async () => {
+    const { emailFromName } = await getActiveBranding();
+    return dispatchAnnouncementEmail(emailFromName);
   },
 };
 
@@ -178,4 +183,7 @@ export async function runScoreRulesEmail(formData: FormData) {
 }
 export async function runWinnersEmail(formData: FormData) {
   await trigger("winners_email", formData);
+}
+export async function runAnnouncementEmail(formData: FormData) {
+  await trigger("announcement_email", formData);
 }
