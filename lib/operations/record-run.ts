@@ -14,7 +14,6 @@ export type OperationKind =
   | "comeback_emails"
   | "playoff_score_email"
   | "score_rules_email"
-  | "wager_reconcile"
   | "winners_email"
   | "announcement_email";
 
@@ -28,7 +27,6 @@ export const OPERATION_KINDS: readonly OperationKind[] = [
   "comeback_emails",
   "playoff_score_email",
   "score_rules_email",
-  "wager_reconcile",
   "winners_email",
   "announcement_email",
 ] as const;

@@ -33,8 +33,5 @@
       "path": "/api/cron/playoff-score-saturday",
       "schedule": "0 11 * * 6"
     }
-  ],
-  "redirects": [
-    { "source": "/(.*)", "destination": "https://winscore.me/", "permanent": true }
   ]
 }
