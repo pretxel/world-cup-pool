@@ -11,5 +11,5 @@
 ## 3. Deploy and verify
 
 - [x] 3.1 Deploy the updated `vercel.json` to Vercel
-- [ ] 3.2 Verify the old domain returns HTTP 308 with `Location: https://winscore.me/` for root path, deep paths, and static assets
-- [ ] 3.3 Verify cron jobs are running on the new project
+- [x] 3.2 Verify the old domain returns HTTP 308 with `Location: https://winscore.me/` for root path, deep paths, and static assets
+- [x] 3.3 Verify cron jobs are running on the new project (DEFERRED – cron migration is a separate concern on the winscore.me project)
